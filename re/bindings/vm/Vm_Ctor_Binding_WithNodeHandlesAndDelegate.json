@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Ctor_Binding_WithNodeHandlesAndDelegate",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1442bbdf0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_Ctor_Binding_WithNodeHandlesAndDelegate(void *binding, void *delegate16, void **rootNodeHandle, void **secondNodeHandle)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442be3c0 (RacingPC lab re_groups/_decomp);xref:0x14148ab00,0x142a757b0",
+  "notes": "Zero-inits a 0xe8-byte Vm binding, copies two node pointers into intrusive handles at +0x80 and +0x98 (links each into node+0x28 handle list and increments node+0x24 refcount), allocates a 0x60 segment buffer from g_Vm_Registry allocator (+0xb0 alloc, +0xb8/+0xc0 buffer, +0xc8 capacity 4), copies the 16-byte delegate to +0xd0 and sets flags +0xe0=(x&0xc0)|2. Callers then call Vm_Path_Parse_ToHashedSegments and Vm_Binding_ResolveAndSubscribe."
+ },
+ "signature": {
+  "id": "vm.ctor_binding_with_node_handles_and_delegate",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE C5 F8 57 C0 C5 F8 11 41 10",
+  "match": "0x1442bbdf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442bbdf0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Ctor_Binding_WithNodeHandlesAndDelegate"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1442be3c0",
+  "made_on_target": "0x1442be3c0",
+  "twin": "made on steam-26566308; the target 0x1442be3c0 is KB 0x1442bbdf0: Vm_List_AppendChild (0x42bdef0) and Ne_CallbackList_InvokeReverse (0x42bfac0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1442be3c0",
+    "target": "0x1442be3c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3b23b82a7662e297d1aee08bd64c6c4cfe001d35b79cb4a75fc11732eaa78146"
+  }
+ ]
+}

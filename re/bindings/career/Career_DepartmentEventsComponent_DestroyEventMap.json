@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Career_DepartmentEventsComponent_DestroyEventMap",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d69210",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_DepartmentEventsComponent_DestroyEventMap(void *map)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d69d90 (RacingPC lab re_groups/_decomp);xref:0x140d69aa0",
+  "notes": "Hash map destructor: for every occupied slot (table +0x28, distance bytes +0x30, mask +0x40) takes the node, virtual-destructs the owned object at node+0x60 and frees it through the allocator at node+0x58; frees the table if not the inline one, then frees all node pool blocks listed at +0x10 and zeroes the free list at +0x08."
+ },
+ "signature": {
+  "id": "career.department_events_component_destroy_event_map",
+  "section": ".xtls",
+  "pattern": "48 8D 8E 90 02 00 00 E8 ?? ?? ?? ?? 48 89 F1 48 83 C4 28 5B",
+  "match": "0x140d691e7",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x7"
+  },
+  "target": "0x140d69210",
+  "kind": "call",
+  "names": [
+   "Career_DepartmentEventsComponent_DestroyEventMap"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140d69d67",
+  "made_on_target": "0x140d69d90",
+  "twin": "made on steam-26566308; the target 0x140d69d90 is KB 0x140d69210: Ne_Vector24_PushBackMove (0xd34330) and Career_DeptEvent_CheckStoredUpgradeForDriver (0xd6d5c0) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140d69d67",
+    "target": "0x140d69d90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "53d6718a86d1422dea51bd48e4943031e7a8eafaadac021451743b14b22a2a9a"
+  }
+ ]
+}

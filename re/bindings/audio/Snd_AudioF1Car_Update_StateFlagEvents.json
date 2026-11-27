@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Snd_AudioF1Car_Update_StateFlagEvents",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140a00fc0",
+  "level": "L1",
+  "subsystem": "audio",
+  "proto": "void Snd_AudioF1Car_Update_StateFlagEvents(void *self, uint8_t active)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140a01010 (RacingPC lab re_groups/_decomp);xref:0x142bebe60",
+  "notes": "Needs +0xf80, +0xf88 and audio object +0xe28. Latches bit 4 of +0xff9 when (+0xf80)+0x18 == 2 and its +0xa5 is 0 and posts event 0x14566940d (if +0x6c == 0); clears it when the state is < 2. Latches or clears bit 8 from ((+0xf88)+0x1988 & 1), setting a switch (0x146052910 to 0x146052918 or 0x146052914) and posting event 0x145669424. Finally sets or clears parameter 0x146052924 on +0xe20 (1.0 with 0.8 extra arg when active). Context from caller: Game_DRS_UpdateCars, so +0xf80 is likely the car DRS state."
+ },
+ "signature": {
+  "id": "audio.audio_f1_car_update_state_flag_events",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 48 89 D3 48 89 CE 48 8B 91 80 0F 00 00",
+  "match": "0x140a00fc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140a00fc0",
+  "kind": "func_start",
+  "names": [
+   "Snd_AudioF1Car_Update_StateFlagEvents"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140a01010",
+  "made_on_target": "0x140a01010",
+  "twin": "made on steam-26566308; the target 0x140a01010 is KB 0x140a00fc0: Ne_Vector_PushBack_Elem64_WithCallback (0x9ebf40) and Sess_Restart_ResetGridLineup (0xa12580) on either side both sit 0x50 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140a01010",
+    "target": "0x140a01010"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "33878b2410ae7900adcb4742d69985d19ea80b2ae84ea18e10ae2d773e118490"
+  }
+ ]
+}

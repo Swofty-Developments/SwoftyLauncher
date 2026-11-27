@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_HighlightsInterestSetting_ReadRow",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142c4f2b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_HighlightsInterestSetting_ReadRow(void *out, void *row)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142c51840 (RacingPC lab re_groups/_decomp);xref:0x142c53a40",
+  "notes": "Reads one gamedb row: \"type\" string into out+0 (16 chars), \"importance\" string hashed (FNV-1a 64, lowercase) into enum byte +0x10 (0..3), and int fields \"shotSeparatorDuration\" +0x14, \"startPadding\" +0x18, \"endPadding\" +0x1c, \"maxShotDuration\" +0x20, \"minCameraDuration\" +0x24, \"interestThreshold\" +0x28, \"maxTotalInterest\" +0x2c, \"eventThrottle\" +0x30. Good hook to tune highlight reel shot selection."
+ },
+ "signature": {
+  "id": "game.highlights_interest_setting_read_row",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 48 89 D7 48 89 CE 48 8D 15 ?? ?? ?? ?? 48 89 F9 45 31 C0 E8 ?? ?? ?? ?? 48 8B 00 48 85 C0",
+  "match": "0x142c4f2b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c4f2b0",
+  "kind": "func_start",
+  "names": [
+   "Game_HighlightsInterestSetting_ReadRow"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142c51840",
+  "made_on_target": "0x142c51840",
+  "twin": "made on steam-26566308; the target 0x142c51840 is KB 0x142c4f2b0: Game_TrackCameraShots_StopShot (0x2c50170) and Sess_Rules_LookupPenaltyValue (0x2c70990) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c51840",
+    "target": "0x142c51840"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0d797ec86c5af0059272abc4bcea6e673fa7dc49b4972639bc376d9f9e4467c2"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_TileList_StartScrollAnimation",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14383a070",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void Ui_TileList_StartScrollAnimation(void *self, void *item_list)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14383c600 (RacingPC lab re_groups/_decomp);xref:0x143832480",
+  "notes": "Needs the target node self+0x80 and a non-empty list (item_list+8..+0x10). Reads the id at +0x40 of that node's component of type 0x146ca5498 and looks it up in the UiSystem (vt+0x68) hash map at +0xa8..+0xdc; if the entry has bit 1 at +0x170 it only sets bit 4 at self+0x119 and returns. Otherwise it sends message 0x12 (table 0x14588dd50) for the target node and for self, computes an offset vector from the layout object (+0x1a0, fields +0xf0..+0x11c) of the first or last focusable item or of the selection self+0x108, sends message 0x11 (table 0x14588dd80) with self id, component ids, rate self+0x8c (0 when bit 4 at +0x11a) and the offset, optionally message 0x13, and clears bit 4 at +0x119 and +0x11a. Callers: Ui_TileList_ScrollToChild after it chose self+0x80, and the tick 0x14383b950 to restart a pending scroll. The meaning of messages 0x11/0x12/0x13 (play/stop) is inferred. Better context needed: the handlers 0x1438fbd20, 0x1438fb980, 0x1438fb230. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.tile_list_start_scroll_animation",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 C5 F8 29 B4 24 00 01 00 00 48 83 B9 80 00 00 00 00",
+  "match": "0x14383a070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14383a070",
+  "kind": "func_start",
+  "names": [
+   "Ui_TileList_StartScrollAnimation"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14383c600",
+  "made_on_target": "0x14383c600",
+  "twin": "made on steam-26566308; the target 0x14383c600 is KB 0x14383a070: site_Game_TileListSelect_ChildNext (0x383b5de) and Game_TileList_PushChildSelection_Thunk (0x383d920) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14383c600",
+    "target": "0x14383c600"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6bfd55c0f9f90069809dd85c9b66142f1af953c3ce12e6faff20741f800fd640"
+  }
+ ]
+}

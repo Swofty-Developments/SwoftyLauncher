@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_ContextComponent_Resolve_NodeHandle",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144248d70",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void **Vm_ContextComponent_Resolve_NodeHandle(void *comp)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14424b340 (RacingPC lab re_groups/_decomp);xref:0x1437fd2d0,0x1437fe100,0x143815d80",
+  "notes": "Renamed from Vm_Element_Resolve_ContextNodeHandle: all callers pass a component taken from the element's component vector after a type check against 0x146ca59b0, not the element. If flag 0x10 at comp+0xf8 is set returns comp+0xb0 (or &k_Vm_EmptyNodeHandle when flag 0x20). Otherwise recurses into the parent comp+0x10, takes the parent's handle (+0xb0, or the registry root [g_Vm_Registry+8]+8 / empty) and passes it with comp+0x18 to 0x144211330, then calls Vm_Path_Resolve_Node(g_Vm_Registry, comp+0x18, comp+0x98) and relinks the intrusive node handle comp+0xb0 (+0xb8/+0xc0, node refcount +0x24) to the result; with flag 2 it also follows up to 0x62 redirect links (vt+0x30 / +0x58 vt+0x38) and relinks to the final node. Returns comp+0xb0. Context from caller: callers read comp+0xb0 afterwards (skipping it when flag 0x20). Caller 0x1437fd2d0: element update that resolves its context then refreshes children; caller 0x1437fe100: copies the resolved handle into a local node ref; caller 0x143815d80: OSD timer-pill / race-flags panel setup. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.context_component_resolve_node_handle",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CF 0F B6 81 F8 00 00 00",
+  "match": "0x144248d70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144248d70",
+  "kind": "func_start",
+  "names": [
+   "Vm_ContextComponent_Resolve_NodeHandle"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14424b340",
+  "made_on_target": "0x14424b340",
+  "twin": "made on steam-26566308; the target 0x14424b340 is KB 0x144248d70: Ne_UINodeBase_SetElementVisibility (0x4249e10) and Ne_UINodeBase_OnVMSetDataContext (0x424b9b0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14424b340",
+    "target": "0x14424b340"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "62421082e4d540e8b2021e28d6aea14c8586f6c1afe0103c0258ee5401b82077"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Path_ResolveAgainstBaseDir",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143f41880",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int32_t Ne_Path_ResolveAgainstBaseDir(void *self, const char *path, void *out_fixed_str, uint8_t strict)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143f43e50 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143f2ce30,0x143f44190",
+  "notes": "Validates path: null or empty, or a hit from the substring/charset search 0x145361380 (pattern set chosen by the strict flag), sets the thread errno chain to 0x16, logs to the errno trace ring and returns 0x16. Otherwise writes into the fixed string at out+0x18 (capacity 0x104 at out+0x8, data pointer at out+0x10): a path starting with '/' is copied as is, any other path is appended to the 0x104-byte base directory stored at self+0x370. Returns 0. Caller 0x143f44190: resolves the path with this, then walks the mount list at self+0xf8 to find the entry whose prefix matches the resolved path and strips that prefix. The call from 0x143f2ce30 was not visible in its decompile. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "core.path_resolve_against_base_dir",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 40 01 00 00 48 85 D2",
+  "match": "0x143f41880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143f41880",
+  "kind": "func_start",
+  "names": [
+   "Ne_Path_ResolveAgainstBaseDir"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143f43e50",
+  "made_on_target": "0x143f43e50",
+  "twin": "made on steam-26566308; the target 0x143f43e50 is KB 0x143f41880: Ne_FileSystem_OpenStream (0x3f3b970) and Ne_PathBuf_Construct (0x3f446e0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143f43e50",
+    "target": "0x143f43e50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8ff752922e6055475ed839baef98986c36afc275a2935537a5c769921ab0aee6"
+  }
+ ]
+}

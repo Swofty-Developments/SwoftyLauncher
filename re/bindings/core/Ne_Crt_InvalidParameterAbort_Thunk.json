@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbort_Thunk",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143a40ab0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbort_Thunk(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a43080 (RacingPC lab re_groups/_decomp);xref:0x143a3fd50",
+  "notes": "(thunk) Only calls Ne_Crt_InvalidParameterAbort then int3. Noreturn overflow trap used by the robin-hood map code (0x143a43090) when the info-byte increment cannot shrink further."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_thunk",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC 48 83 EC 28 C4 E2 79 18 05",
+  "match": "0x143a4107e",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x143a40ab0",
+  "kind": "call",
+  "names": [
+   "Ne_Crt_InvalidParameterAbort_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143a4364e",
+  "made_on_target": "0x143a43080",
+  "twin": "made on steam-26566308; the target 0x143a43080 is KB 0x143a40ab0: Ne_BindingTable_AddOrUpdate (0x3a41870) and Ne_Map_FindOrDefaultWithErrorContext (0x3a454e0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a4364e",
+    "target": "0x143a43080"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a54177f6d5204642da58b6351acd37fb1b8ae030b6ed922f1437c6c612c05d01"
+  }
+ ]
+}

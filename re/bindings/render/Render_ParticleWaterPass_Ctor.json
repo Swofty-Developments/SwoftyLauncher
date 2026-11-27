@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_ParticleWaterPass_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143d679b0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "void *Render_ParticleWaterPass_Ctor(void *self, void *allocator, void *gfx, void *props, void *arg5, void *arg6)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143d69f80 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140104f70",
+  "notes": "Whole body read: Render_GeometryPass_Ctor with 0x10 slots, vtable 0x1459b55c0, stores arg5/arg6 at +0x550/+0x558, inline 128-char string at +0x560 defaulting to the literal 'ParticleWater' and overwritten by props 'name' when present; shared material once (refcount 0x146545c78). Binds props mainRTV, surface2, mainDSV, halfRTV, quarterRTV, tinyRTV, halfSRV, quarterSRV, tinySRV, depthSRV, depthpyramidsource, spd, mask0Uav, mask1Uav, mask2Uav to slots 0..0xe and the material to 0xf. Context from caller: Render_Gfx_BuildConfigObject (decompile timed out; factory role from KB name) creates this pass from render config. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.particle_water_pass_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC D0 00 00 00 C5 F8 29 B4 24 C0 00 00 00 4C 89 CF",
+  "match": "0x143d679b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d679b0",
+  "kind": "func_start",
+  "names": [
+   "Render_ParticleWaterPass_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143d69f80",
+  "made_on_target": "0x143d69f80",
+  "twin": "made on steam-26566308; the target 0x143d69f80 is KB 0x143d679b0: Render_Batch_Submit (0x3d4de90) and Render_RainFile_ParseMaterials (0x3d6f4f0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143d69f80",
+    "target": "0x143d69f80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f92849b7a25e61f9007cddfbaa544c672b1f9db5dd1409b4808345a5dce835bf"
+  }
+ ]
+}

@@ -26,15 +26,15 @@ pub(crate) const RELEASE_AFTER: Duration = Duration::from_secs(30);
 #[cfg(target_os = "linux")]
 mod linux;
 #[cfg(target_os = "linux")]
-use linux::{Backend, Opener, View};
+use linux::{Backend, Closing, Opener, View};
 #[cfg(windows)]
 mod windows;
 #[cfg(windows)]
-use windows::{Backend, Opener, View};
+use windows::{Backend, Closing, Opener, View};
 #[cfg(not(any(windows, target_os = "linux")))]
 mod none;
 #[cfg(not(any(windows, target_os = "linux")))]
-use none::{Backend, Opener, View};
+use none::{Backend, Closing, Opener, View};
 mod stand_in;
 mod ui;
 
@@ -218,21 +218,41 @@ impl Host {
                 let _ = self.backend.show(unit, &url, area, scale);
             }
             Some(_) => self.backend.hide(unit),
-            None => self.backend.close(unit),
+            None => {
+                if let Some(closing) = self.backend.close(unit) {
+                    closing.finish();
+                }
+            }
         }
     }
 
     fn close(&mut self, unit: Unit) {
-        if self.slots.remove(&unit).is_some() {
-            self.backend.close(unit);
+        if self.slots.remove(&unit).is_some()
+            && let Some(closing) = self.backend.close(unit)
+        {
+            closing.finish();
         }
     }
 
-    fn release(&mut self) {
-        for unit in self.slots.keys() {
-            self.backend.close(*unit);
-        }
+    fn release(&mut self) -> Vec<Closing> {
+        let closing = self
+            .slots
+            .keys()
+            .filter_map(|unit| self.backend.close(*unit))
+            .collect();
         self.slots.clear();
+        closing
+    }
+}
+
+#[must_use]
+pub(crate) struct Released(Vec<Closing>);
+
+impl Released {
+    pub(crate) fn finish(self) {
+        for closing in self.0 {
+            closing.finish();
+        }
     }
 }
 
@@ -308,17 +328,20 @@ impl Ads {
     }
 
     /// Closes every slot's webview, freeing its memory, once the game has run
-    /// for [`RELEASE_AFTER`]. Returns whether it did.
-    pub(crate) fn release_for_game(&self) -> bool {
-        let Some(host) = &self.host else { return false };
+    /// for [`RELEASE_AFTER`]. Returns what it took out, or `None` when it
+    /// didn't. Destroying a slot's window runs the launcher's own window
+    /// procedure, which needs the app, so the caller finishes the [`Released`]
+    /// once it is out of any app update.
+    pub(crate) fn release_for_game(&self) -> Option<Released> {
+        let host = self.host.as_ref()?;
         let host = &mut *host.borrow_mut();
         let long = host.game_since.is_some_and(|t| t.elapsed() >= RELEASE_AFTER);
         if !long || host.paused {
-            return false;
+            return None;
         }
-        host.release();
+        let closing = host.release();
         host.paused = true;
-        true
+        Some(Released(closing))
     }
 
     /// At the start of the shell's render: whether an overlay could be over a slot.

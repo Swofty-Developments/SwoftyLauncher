@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Customisation_FillLiveryColoursFinish_FromItem",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1414264e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Customisation_FillLiveryColoursFinish_FromItem(void *self, void *item, void *out_data)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141426cc0 (RacingPC lab re_groups/_decomp);xref:0x141fdd4d0",
+  "notes": "Resolves the item key (0x141426370) in the customisation system table self+0x250 (+0x38 + type*0x10) and stores it at out+0x120 block; then for up to desc(+200)->+0x30 colour slots (max 4) reads colour id from item+0x18/+0x20/+0x28/+0x30 (ptr->ptr->+8) and the XOR-decoded finish string from item+0x38..+0x50, parsed by Game_Livery_ParseFinishType_2. Writes out+0x18 key, out+0x20..+0x2c four colour ids, out+0x30..+0x33 finish bytes, out+0x38 valid flag. Good hook for livery colour/finish selection."
+ },
+ "signature": {
+  "id": "game.customisation_fill_livery_colours_finish_from_item",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 4C 89 C6 48 89 D7 48 89 CB 48 8D 54 24 38",
+  "match": "0x1414264e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414264e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Customisation_FillLiveryColoursFinish_FromItem"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141426cc0",
+  "made_on_target": "0x141426cc0",
+  "twin": "made on steam-26566308; the target 0x141426cc0 is KB 0x1414264e0: Game_CustomisationDecals_LoadConfig (0x141f7c0) and Game_CustomisationDecals_UnloadAssetBatch (0x14284c0) on either side both sit 0x7e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141426cc0",
+    "target": "0x141426cc0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "17b90a91d7d8ae14e67becc0b3e2acf80dfbcc8c15a388c2666db410c73cedf4"
+  }
+ ]
+}

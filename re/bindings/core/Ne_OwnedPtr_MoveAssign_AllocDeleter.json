@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_OwnedPtr_MoveAssign_AllocDeleter",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143c74ec0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void **Ne_OwnedPtr_MoveAssign_AllocDeleter(void **dst, void **src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c77490 (RacingPC lab re_groups/_decomp)",
+  "notes": "(lib) Move-assigns an {allocator, object} owning pointer: steals src[1], destroys the previous object via its vfn 0x08 and frees it through the old allocator vfn 0x38, then copies the allocator."
+ },
+ "signature": {
+  "id": "core.owned_ptr_move_assign_alloc_deleter",
+  "section": ".xtls",
+  "pattern": "48 89 FA E8 ?? ?? ?? ?? 48 8B 74 24 58",
+  "match": "0x143c68ec5",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x143c74ec0",
+  "kind": "call",
+  "names": [
+   "Ne_OwnedPtr_MoveAssign_AllocDeleter"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c6b495",
+  "made_on_target": "0x143c77490",
+  "twin": "made on steam-26566308; the target 0x143c77490 is KB 0x143c74ec0: Ne_CustomisationDecalRenderer_BakePasses (0x3c73230) and Ne_DecalsProjectionAreaProxy_Ctor (0x3c77b20) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c6b495",
+    "target": "0x143c77490"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "38aec2889209d24a220935f5310346388601cbbbaa065e23bfb8e471826087aa"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_SpectatorDirector_ValidateTarget",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142e19220",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_SpectatorDirector_ValidateTarget(void *self, uint8_t driver, int32_t *camera_io)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142e1b7b0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142e1abe0,0x142e1b360,0x142e1c160",
+  "notes": "In/out camera mode for a driver index. Writes 0 when the index is past the vehicle array ((self+0x40)+0x28..+0x30), when the vehicle entity's component (type 0x146ceab00) has +0x58 null, when the (self+0x58)+0x30[idx] record is inactive or masked (+0x508 against +0x518/+0x520), or when 0x143071250 is true and (self+0x68)+0x29 is 0. Then by state at (self+0x60)+0x68+idx*0x10 -> +4: mask 0x1e01 gives 0, state 2 gives 1, mask 0xe1f8 forces 2; mode 2 is kept only if the (self+0x30)+0x60 list (0x38-byte rows) has a non-null second field for that vehicle, else 1. Callers: Sess_SpectatorDirector_Update validates requested_driver/requested_camera before SetCurrent; SetActive and 0x142e1c160 (steps to next/previous driver in the order list) seed 1 and accept the driver when the result is 1 or 2. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.spectator_director_validate_target",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 20 4C 89 C6 89 D3 48 89 CF",
+  "match": "0x142e19220",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e19220",
+  "kind": "func_start",
+  "names": [
+   "Sess_SpectatorDirector_ValidateTarget"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142e1b7b0",
+  "made_on_target": "0x142e1b7b0",
+  "twin": "made on steam-26566308; the target 0x142e1b7b0 is KB 0x142e19220: Sess_SpectatorDirector_Update (0x2e1b360) and Game_UIThumbnailSystem_FindDriverCustomisationWill (0x2e32ff0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142e1b7b0",
+    "target": "0x142e1b7b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d4fac3f52c68b31a8f40ee23ff9fad885c34f898f05102069587edc1e8d072d9"
+  }
+ ]
+}

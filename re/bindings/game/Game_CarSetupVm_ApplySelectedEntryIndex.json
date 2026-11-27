@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_CarSetupVm_ApplySelectedEntryIndex",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140c1c9f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_CarSetupVm_ApplySelectedEntryIndex(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140c1d4b0 (RacingPC lab re_groups/_decomp);xref:0x140c1ce20",
+  "notes": "Resolves the node held at vm+0x76c0 through its reference chain (max 0x62 hops), takes a weak ref, and compares it with the six entry nodes at vm+0x76e0+i*0x120 to get index 0..5 (returns if none match). Passes the index to 0x140c0ea50(vm+0x268,idx), calls Game_CarSetupVm_UpdateFuelRange and, when (vm+0x268)->+0x28->+0x9f40 == 100, the two diff range updaters; writes idx to vm+0x7e68 and +0x7e69, sets the six bool nodes at vm+0x77e0+i*0x120 to false and the chosen one to true, then releases the ref. Caller 0x140c1ce20 (car-setup VM message handler) runs it on message hash 0x6ffbb046 before re-registering Car_Setup_OnValueChanged on the setting nodes; good hook to see which of the 6 entries is selected. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.car_setup_vm_apply_selected_entry_index",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE 48 8B 81 C0 76 00 00",
+  "match": "0x140c1c9f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c1c9f0",
+  "kind": "func_start",
+  "names": [
+   "Game_CarSetupVm_ApplySelectedEntryIndex"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140c1d4b0",
+  "made_on_target": "0x140c1d4b0",
+  "twin": "made on steam-26566308; the target 0x140c1d4b0 is KB 0x140c1c9f0: Ui_Unk_140c1c360 (0xc1ce20) and site_Game_GarageSetups_EntryStep (0xc23703) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140c1d4b0",
+    "target": "0x140c1d4b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f8a2a68d58273e90bc3059845cf0d672dd029abc6f38d1be5b715aac7b71118d"
+  }
+ ]
+}

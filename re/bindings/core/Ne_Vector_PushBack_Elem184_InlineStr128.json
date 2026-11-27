@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_PushBack_Elem184_InlineStr128",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143ab77f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_Vector_PushBack_Elem184_InlineStr128(void *vec, void *elem)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ab9dc0 (RacingPC lab re_groups/_decomp);xref:0x141db42d0,0x142af42f0,0x143aa16a0,0x1441170f0,0x1446f5df0",
+  "notes": "(lib) Vector {+0 allocator,+8 begin,+0x10 end,+0x18 capacity} of 0xb8-byte elements; copies fields +0..+0x28, a bounded 128-char string at +0x30..+0xaf and a u32 at +0xb0; grows by 1.5x through allocator vfunc +0x18 and frees old storage via +0x38. Returns 0. Context from caller: input action/control scheme entries."
+ },
+ "signature": {
+  "id": "core.vector_push_back_elem184_inline_str128",
+  "section": ".xtls",
+  "pattern": "4C 89 E2 E8 ?? ?? ?? ?? 48 81 C6 D8 00 00 00",
+  "match": "0x141db0378",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x143ab77f0",
+  "kind": "call",
+  "names": [
+   "Ne_Vector_PushBack_Elem184_InlineStr128"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141db1f78",
+  "made_on_target": "0x143ab9dc0",
+  "twin": "made on steam-26566308; the target 0x143ab9dc0 is KB 0x143ab77f0: Ne_InputLibraryDirectInput_IsXInputDevice (0x3aa6d90) and Ne_JobQueue_FindBestJob (0x3abfaa0) on either side both sit 0x25d0 above their KB addresses; the match 0x141db1f78 is KB 0x141db0378: Ne_UICrashDumpInfo_SettingsScreenClearSelectedCategory (0x1daff80) and Game_OptionsUI_ApplyFilterLevelCollectChanges (0x1dbef30) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141db1f78",
+    "target": "0x143ab9dc0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3d3535dde778750d207e61224e05a83f36ec3a59ef85a4ec8abc3dfe627e25a6"
+  }
+ ]
+}

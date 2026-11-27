@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Process_PendingBindingReady",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144209b40",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Process_PendingBindingReady(void *subobj)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14420c110 (RacingPC lab re_groups/_decomp);xref:0x144242460,0x144275910",
+  "notes": "Whole body read: subobj is a secondary base, primary object = subobj-0x48. If primary vf+0xf0() is true: calls vf+0x1a0() when flag 0x10 at primary+0x0a is clear; if pending byte subobj+0x30 is set, the node handle at [subobj+0x08]+0xb0 (empty handle when flag 0x20 at +0xf8) must resolve to non-null through the forwarding chain (vf+0x30 / [+0x58]->vf+0x38, max 0x62 hops); then if [subobj+0x10] is null it just clears +0x30, otherwise once that second node also resolves it clears +0x30 and calls primary vf+0x1e8(primary,1). Callers: 0x144242460 Vm_Unk_14423fe90 (per-frame update of a list/scroll element, last call) and 0x144275910 (derived update that calls this first and then refreshes its cached node at +0x40). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.process_pending_binding_ready",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CF 48 8D 71 B8",
+  "match": "0x144209b40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144209b40",
+  "kind": "func_start",
+  "names": [
+   "Vm_Process_PendingBindingReady"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14420c110",
+  "made_on_target": "0x14420c110",
+  "twin": "made on steam-26566308; the target 0x14420c110 is KB 0x144209b40: Ne_Time_BreakDownMicroseconds (0x41f15f0) and Vm_Node_Clear (0x420f330) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14420c110",
+    "target": "0x14420c110"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1a43fad576beb9073e3e509656be3194d29a666cbbfb06dd0b68cfb63f2494bf"
+  }
+ ]
+}

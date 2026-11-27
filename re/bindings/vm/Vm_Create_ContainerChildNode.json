@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Create_ContainerChildNode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1442b2f70",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void **Vm_Create_ContainerChildNode(void *allocator, void **parent_handle, uint32_t *name_hash, uint8_t flags, int32_t index)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442b5540 (RacingPC lab re_groups/_decomp);xref:0x1442b4130,0x1442b56b0",
+  "notes": "Allocates a 0x80-byte container VM node (vtable 0x145a72110, +0x20 name hash, +0x26 low 2 flag bits, +0x24 refcount=1, two empty child arrays at +0x38 and +0x58) and attaches it to *parent_handle: if the parent is a list (vfunc +0x10) via Vm_Node_InsertChildAtIndex(index), else if keyed (vfunc +0x28) via Vm_Node_AddKeyedChild(hash). Returns the new node's handle slot (node+8) or &k_Vm_EmptyNodeHandle after destroying the node on failure."
+ },
+ "signature": {
+  "id": "vm.create_container_child_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 89 CF 48 8B 0A 48 8D 35 ?? ?? ?? ?? 48 85 C9 0F 84 ?? ?? ?? ?? 44 89 CD 4D 89 C6 48 89 D3 48 8B 01 FF 50 28 84 C0 75 1A 48 8B 0B 48 85 C9 0F 84 ?? ?? ?? ?? 48 8B 01 FF 50 10 84 C0 0F 84 ?? ?? ?? ?? 48 8B 07 BA 80 00 00 00",
+  "match": "0x1442b2f70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442b2f70",
+  "kind": "func_start",
+  "names": [
+   "Vm_Create_ContainerChildNode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1442b5540",
+  "made_on_target": "0x1442b5540",
+  "twin": "made on steam-26566308; the target 0x1442b5540 is KB 0x1442b2f70: Vm_Resolve_RegistryNode (0x42b4130) and Vm_GetOrCreate_ListChild (0x42b56b0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1442b5540",
+    "target": "0x1442b5540"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b5b6c341420883e1e356393e366f8c6cdced77566ac323e53b9cc78eb94b4152"
+  }
+ ]
+}

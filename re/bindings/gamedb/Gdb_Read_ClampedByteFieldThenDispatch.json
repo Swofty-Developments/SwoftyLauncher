@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Gdb_Read_ClampedByteFieldThenDispatch",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142ea6340",
+  "level": "L1",
+  "subsystem": "gamedb",
+  "proto": "uint32_t Gdb_Read_ClampedByteFieldThenDispatch(void *self, void *node, void *arg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142ea88d0 (RacingPC lab re_groups/_decomp);xref:0x140f85aa0",
+  "notes": "Finds a child field by name (string at 0x1456381c2) in the save node; if missing returns error 0x57, if its type differs from the type desc at 0x14612bd40 returns 0x58 (both recorded in the TLS errno chain and the errno trace ring). Otherwise reads the value, clamps it to a maximum of 2, stores the byte at self+0x08 and tail-calls virtual slot +0x50(self, node, arg). Likely a save version field; Better context needed: the field name string."
+ },
+ "signature": {
+  "id": "gamedb.read_clamped_byte_field_then_dispatch",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 4C 89 C7 48 89 D3 49 89 CE",
+  "match": "0x142ea6340",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ea6340",
+  "kind": "func_start",
+  "names": [
+   "Gdb_Read_ClampedByteFieldThenDispatch"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142ea88d0",
+  "made_on_target": "0x142ea88d0",
+  "twin": "made on steam-26566308; the target 0x142ea88d0 is KB 0x142ea6340: Career_Complete_PerkTreeNode (0x2ea8570) and Ne_Container_AbortNoReturn_142ee16c0 (0x2ee3c50) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142ea88d0",
+    "target": "0x142ea88d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0cb2012a71e9f9e8ca9b9a686db74b8f27a6b8edef4901d224f78933300e21da"
+  }
+ ]
+}

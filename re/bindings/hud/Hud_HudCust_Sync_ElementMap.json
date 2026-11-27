@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Hud_HudCust_Sync_ElementMap",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14380ee80",
+  "level": "L2",
+  "subsystem": "hud",
+  "proto": "void Hud_HudCust_Sync_ElementMap(void *data, void *dst_map)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143811410 (RacingPC lab re_groups/_decomp);xref:0x143810790",
+  "notes": "Works on two robin-hood maps of 0x24-byte entries keyed by u32 element hash (source embedded at data+0x538, dst given). Pass 1 erases from dst every key missing in the source (backward-shift delete). Pass 2 walks the source: when global byte DAT_14618e698 is set and the key is not one of 14 whitelisted hashes (DAT_146104d2c..d60) it clears entry byte +0x10 (visibility), then inserts the entry into dst if absent (FUN_1438d7fc0) copying the 0x20 payload. No-op if source is empty (+0x560 == 0)."
+ },
+ "signature": {
+  "id": "hud.hud_cust_sync_element_map",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 89 4C 24 28 48 83 B9 60 05 00 00 00",
+  "match": "0x14380ee80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14380ee80",
+  "kind": "func_start",
+  "names": [
+   "Hud_HudCust_Sync_ElementMap"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143811410",
+  "made_on_target": "0x143811410",
+  "twin": "made on steam-26566308; the target 0x143811410 is KB 0x14380ee80: Game_TrackSurface_DryLineStrength (0x37cff90) and site_Game_TileListSelect_ChildStep (0x383b560) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143811410",
+    "target": "0x143811410"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "923a2ca84f1341365eb51b612927b78eb3693b2637742baf31f539321077ccfb"
+  }
+ ]
+}

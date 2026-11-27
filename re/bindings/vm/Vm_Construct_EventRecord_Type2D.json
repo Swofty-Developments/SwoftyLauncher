@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Construct_EventRecord_Type2D",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14422a360",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_Construct_EventRecord_Type2D(void *rec, void *allocator, uint32_t idA, uint32_t idB, const void *payload)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14422c930 (RacingPC lab re_groups/_decomp);xref:0x143824700,0x144225090,0x144226550",
+  "notes": "Renamed from Vm_Construct_Elem_Type2D: the object has the UI event-record header (vtable 0x14588da80, +0x08=0, +0x10 type 0x2d, +0x14 idA, +0x18 idB) and caller 0x143824700 posts it with Game_Ui_NotifyAllListeners / 0x1438f8d10. Whole body read: copies 0xa9 bytes of payload to +0x40..+0xe8, addrefs the NeStr at payload+0xb0 into +0xf0, stores allocator at +0x20/+0x28 and allocates at +0x30 a 0x20-byte vector header {alloc,begin,end,cap} with capacity payload+0x20 of 0x20-byte items; returns rec. Callers 0x143824700 (collects rows then posts), 0x144225090 (Vm_Unk_144222ac0, builds two range records) and 0x144226550 (large layout routine) all pass idA=this->vf+0x10(), allocator=g_Vm_UiSystem->vf+8() and then push 0x20-byte items into the +0x30 vector. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.construct_event_record_type2_d",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D7 48 89 CE 48 8B 44 24 70",
+  "match": "0x14422a360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14422a360",
+  "kind": "func_start",
+  "names": [
+   "Vm_Construct_EventRecord_Type2D"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14422c930",
+  "made_on_target": "0x14422c930",
+  "twin": "made on steam-26566308; the target 0x14422c930 is KB 0x14422a360: Ne_VideoPlayer_OpenFile (0x421ed20) and Ne_UIInterrupt_HandleSignal (0x4230cd0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14422c930",
+    "target": "0x14422c930"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "108ec64705ceba338a74bc9603e84e14f77d6d0fbaa4f459b97a11f005cc6e27"
+  }
+ ]
+}

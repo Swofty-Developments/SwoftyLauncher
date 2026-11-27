@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_LobbyVehicleItemNodes_InitArray3",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141e7c3a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_LobbyVehicleItemNodes_InitArray3(void *arr)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141e7dfa0 (RacingPC lab re_groups/_decomp);xref:0x141dde630",
+  "notes": "Default-constructs 3 consecutive 0x2c0-byte vehicle item node structs (22 empty typed handles each, vtables only). Matches the 3 items at +0x20,+0x2e0,+0x5a0 of the vehicle block."
+ },
+ "signature": {
+  "id": "game.lobby_vehicle_item_nodes_init_array3",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C4 C1 78 11 B6 68 08 00 00",
+  "match": "0x141dddc1a",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x141e7c3a0",
+  "kind": "call",
+  "names": [
+   "Game_LobbyVehicleItemNodes_InitArray3"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141ddf81a",
+  "made_on_target": "0x141e7dfa0",
+  "twin": "made on steam-26566308; the target 0x141e7dfa0 is KB 0x141e7c3a0: Ui_Release_RnDDriverUpgradeRowNodes (0x1e45a90) and Game_TitleScreenVM_OnScreenActivated (0x1e9f230) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141ddf81a",
+    "target": "0x141e7dfa0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "820f9a79cb59813953f6129f93ea40d96dff3c33c7acc742b0ee5e40c82153ed"
+  }
+ ]
+}

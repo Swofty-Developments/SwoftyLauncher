@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_TryEmplace_CStrKey_OwnedPtr_A",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1429f97a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_RobinHoodMap_TryEmplace_CStrKey_OwnedPtr_A(void *map, void *out_iter_inserted, const char **key, void *alloc_ptr_pair)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1429fbb60 (RacingPC lab re_groups/_decomp);xref:0x1428f7470",
+  "notes": "(lib) try_emplace on a robin-hood map with C-string key (FNV-1a 64, Ne_Crt_Strcmp on match) and value {allocator, owned ptr} moved out of param_4. Writes {slot ptr, info ptr, inserted flag} to out. Grows via first alloc of 0x166 bytes (8 buckets), info-shift halving or rehash FUN_1429fc210; shift helper FUN_1429fc090; retries up to 256 times. If the key exists the incoming owned ptr is freed."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_try_emplace_c_str_key_owned_ptr_a",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 94 24 58 01 00 00 48 85 D2",
+  "match": "0x1428f7467",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1429f97a0",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_TryEmplace_CStrKey_OwnedPtr_A"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1428f9827",
+  "made_on_target": "0x1429fbb60",
+  "twin": "made on steam-26566308; the target 0x1429fbb60 is KB 0x1429f97a0: Game_SaveSlotManager_Deserialise (0x29d8bd0) and Ne_Crt_AbortNoReturn_B (0x2a00c40) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1428f9827",
+    "target": "0x1429fbb60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ef757f107242d0d7f1a1fee30f85b4ee918c43acadc57a2697eb7be40686f4fb"
+  }
+ ]
+}

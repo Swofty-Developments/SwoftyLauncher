@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_Set_TimingPillInfoText_ByMode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14175d0a0",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "void Team_Set_TimingPillInfoText_ByMode(void *pill, uint32_t mode, float seconds, void *source)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14175e820 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14175f410,0x141763f20,0x141764820",
+  "notes": "Switch on mode: 0 sets the bool nodes pill+0x5d0 and pill+0x1e8 to false (hide); 1 clears +0x1e8, asks source vfunc +0x10 to fill pill+0x5a8, links registry node pill+0x5b0 and sets +0x5d0 true only if the string is non-empty; 2 and 3 format seconds*1000 with Ne_Time_BreakDownMicroseconds (flag 0 or 1) into the string node pill+0x5b0; 4 reads a string from source vfunc +0x18, formats it via Ui_Format_RenownText (NUM token) into +0x5b0; modes 2-4 then set +0x5d0 and +0x1e8 true. Caller 0x141763f20: per-pill gap update, passes mode 3 with ABS(time delta) or mode 0 to hide; caller 0x141764820: updates the five pill slots (stride 0x618 from +0x98), mode 2 with a lap-time value or mode 0; Team_Update_TimingPill passes mode 0 when its param_4 is 0. Batch caller 0x1417645b0 has no visible call in its decompile. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "teams.set_timing_pill_info_text_by_mode",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 50 01 00 00 C5 F8 29 B4 24 40 01 00 00",
+  "match": "0x14175d0a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14175d0a0",
+  "kind": "func_start",
+  "names": [
+   "Team_Set_TimingPillInfoText_ByMode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14175e820",
+  "made_on_target": "0x14175e820",
+  "twin": "made on steam-26566308; the target 0x14175e820 is KB 0x14175d0a0: Ui_Init_CarDriverTeamSelectors (0x175a090) and site_Team_TimingPillBadgeLabel (0x1761a8b) on either side both sit 0x1780 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14175e820",
+    "target": "0x14175e820"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "38927f5b872b7e9226d97928603200773abb5d951d82b470e501b09b6634476d"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_DecalEditor_Set_ValueTextPair",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141fee610",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_DecalEditor_Set_ValueTextPair(void *self, uint64_t unused, int32_t value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141ff0210 (RacingPC lab re_groups/_decomp);xref:0x141ff0620,0x141ff1c70,0x141ff1fc0",
+  "notes": "Formats two numbers with Ui_Format_RenownText (format block vtable 0x14565db88, flags 0x100000003) and writes them with Vm_NodeSet_String into the nodes at *(panel+0x48)+0x68 and +0x88, each only if the node is live and string-typed (type desc 0x146ca7508); the temp strings are released afterwards. Decompile shows (panel, ptr, int) but all callers pass only (editor+0x278, ptr to a 2-component value). Context from caller: Game_DecalCatalogue_PlaceOrSwap, Game_DecalEditor_ClampPlacementScale and FUN_141ff1fc0 (writes a new value for the selected decal via FUN_14142da70, then refreshes) all pass the output of Game_DecalCustomisation_GetLinkedDecalDirection for the selected decal. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.decal_editor_set_value_text_pair",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 70 48 89 D7 48 89 CE C5 FA 10 12",
+  "match": "0x141fee610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141fee610",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalEditor_Set_ValueTextPair"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141ff0210",
+  "made_on_target": "0x141ff0210",
+  "twin": "made on steam-26566308; the target 0x141ff0210 is KB 0x141fee610: Ui_SponsorLogoBinding_Build (0x1fe42f0) and Game_SponsorLoadout_BuildList (0x1ff3ba0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141ff0210",
+    "target": "0x141ff0210"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "035fcad22525c7cf00a5ca99bec31f8a25525c6c2b05ffaec2f65fa47e4f92ee"
+  }
+ ]
+}

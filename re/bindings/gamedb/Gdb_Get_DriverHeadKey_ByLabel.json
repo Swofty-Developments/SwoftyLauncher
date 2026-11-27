@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Gdb_Get_DriverHeadKey_ByLabel",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14248c790",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "proto": "void *Gdb_Get_DriverHeadKey_ByLabel(void *out_key, void *label)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14248e390 (RacingPC lab re_groups/_decomp);xref:0x14080a770,0x1414061a0",
+  "notes": "Gdb_Find_RowByLabel in table \"entrants.animation.driver_heads\" (row type \"driver_head\"), reads int field \"stat_id\" and writes a packed key {u8 0 at +0, u16 stat_id at +2} to out_key (id 0 when the row is missing)."
+ },
+ "signature": {
+  "id": "gamedb.get_driver_head_key_by_label",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 30 04 00 00 49 89 D0 48 89 CE C7 84 24 20 02 00 00 FF FF FF FF",
+  "match": "0x14248c790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14248c790",
+  "kind": "func_start",
+  "names": [
+   "Gdb_Get_DriverHeadKey_ByLabel"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14248e390",
+  "made_on_target": "0x14248e390",
+  "twin": "made on steam-26566308; the target 0x14248e390 is KB 0x14248c790: Ent_EntrantsSystem_ReplaceVehicle (0x2478370) and Ai_DriverConfig_InitDefault (0x249c0f0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14248e390",
+    "target": "0x14248e390"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9073e6e7b0edd67b311b11172f8f04d6efd8f2686bcf1d67a39fcf8e8e0a4257"
+  }
+ ]
+}

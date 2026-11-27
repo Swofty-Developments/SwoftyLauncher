@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_StdString_ReallocGrowAppend_140319220",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140319220",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_StdString_ReallocGrowAppend_140319220(void *str, uint64_t grow, void *unused, const char *src, uint64_t src_len)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140319220 (RacingPC lab re_groups/_decomp);xref:0x140610980,0x140611c70",
+  "notes": "(lib) MSVC std::string reallocating append: checks max size (throws string too long), computes new capacity 1.5x or (len+grow)|0xf, allocates through global allocator DAT_14618d130 (aligned path for >=0x1000), copies old contents plus src[src_len], null terminates, frees old buffer, sets size +0x10 and capacity +0x18. Context from caller: used to build AI data file names."
+ },
+ "signature": {
+  "id": "core.std_string_realloc_grow_append_140319220",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 BD FF FF FF FF FF FF FF 7F",
+  "match": "0x140319220",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140319220",
+  "kind": "func_start",
+  "names": [
+   "Ne_StdString_ReallocGrowAppend_140319220"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140319220",
+  "made_on_target": "0x140319220",
+  "twin": "made on steam-26566308; the target 0x140319220 is KB 0x140319220: Ne_Vector16_PushBack (0x317be0) and Ne_Std_ThrowVectorTooLongC (0x31c450) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140319220",
+    "target": "0x140319220"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "36d4053d593efd9fd5770fcdd91f49b8942ce95b703b8571a2384bd97ce29acc"
+  }
+ ]
+}

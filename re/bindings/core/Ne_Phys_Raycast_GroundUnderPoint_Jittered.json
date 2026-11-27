@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Phys_Raycast_GroundUnderPoint_Jittered",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1446b8480",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "bool Phys_Raycast_GroundUnderPoint_Jittered(void **owner, const float *pos, float *out_hit)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1446bacf0 (RacingPC lab re_groups/_decomp);xref:0x14467b150",
+  "notes": "Casts a vertical ray from pos.y+2.0 to pos.y-2.0 through Ne_PhysWorld_RaycastClosest (world = *(*(*owner+0xd8)+0xe8)+0x20, mask 3). On a miss it retries shifted +0.02 on X, then +0.02 on Z. Writes the hit point (start + dir*fraction) to out_hit, or the input pos if all three miss; returns true only if the first unshifted ray hit. Hook point for wheel-on-tarmac ground probes."
+ },
+ "signature": {
+  "id": "core.phys_raycast_ground_under_point_jittered",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 C5 F8 29 BC 24 00 01 00 00 C5 F8 29 B4 24 F0 00 00 00 4C 89 C6 48 89 D3 48 8B 01",
+  "match": "0x1446b8480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446b8480",
+  "kind": "func_start",
+  "names": [
+   "Ne_Phys_Raycast_GroundUnderPoint_Jittered"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1446bacf0",
+  "made_on_target": "0x1446bacf0",
+  "twin": "made on steam-26566308; the target 0x1446bacf0 is KB 0x1446b8480: Car_Tyre_UpdateWear (0x46ba260) and Car_Read_F1Aero (0x46cadd0) on either side both sit 0x2870 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1446bacf0",
+    "target": "0x1446bacf0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "94d1a36d916bbc392d2ffc41734c179b62bd29153ad816d125cdf2d1a956516a"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbort_Thunk_142cb87d0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142cb6240",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbort_Thunk_142cb87d0(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142cb87d0 (RacingPC lab re_groups/_decomp);xref:0x142beaf10",
+  "notes": "(thunk) Calls Ne_Crt_InvalidParameterAbort then int3. Overflow failure path of the rehash at 0x142cb8930."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_thunk_142cb87d0",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 28 38 1C C7",
+  "match": "0x142cb6240",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142cb6240",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_InvalidParameterAbort_Thunk_142cb87d0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142cb87d0",
+  "made_on_target": "0x142cb87d0",
+  "twin": "made on steam-26566308; the target 0x142cb87d0 is KB 0x142cb6240: Ne_UIPCOptions_PopulateOutputMonitors (0x2c99650) and Ne_Post_BusMessageQueued_FlashbackUsed (0x2cb96c0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142cb87d0",
+    "target": "0x142cb87d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9804abc5e3b37a9198662338d571640382222e7f150a98bbe8eb0ebd50bd32d6"
+  }
+ ]
+}

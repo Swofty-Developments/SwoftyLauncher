@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Network_TestEntryMaskBit_ByEntityName",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14078db00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint32_t Game_Network_TestEntryMaskBit_ByEntityName(void *self, uint32_t entity_handle, void *peer)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14078db40 (RacingPC lab re_groups/_decomp);xref:0x14310e760,0x14310fba0,0x143111dd0",
+  "notes": "Looks up peer in the container at self+0x100 (0x143068da0); not found -> returns 1. Takes the bit index from record+0x63, resolves entity_handle with Sess_ResolveEntityHandle(self+0x58), then scans the pointer list at (self+0x5d8)+0x88..+0x90: each item's name comes from the chunked string table at 0x1460c0900 (index u16 item+0x44, 0x78 per chunk) and is strcmp'd with entity+0x68; on match returns (item+0x28 >> bit) & 1. Default 1. Callers (Game_NetworkEntrants_PlayerTeamTeamPositionCarNumber; 0x14310fba0 finds an entrant for a peer; 0x143111dd0 collects entrants for a peer) call it only when peer+0x4b bit 0x10 is set, passing entrant+0x5c, and skip the entrant when it returns 0. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.network_test_entry_mask_bit_by_entity_name",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 30 89 D7 48 89 CE 48 8B 89 00 01 00 00",
+  "match": "0x14078db00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14078db00",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_TestEntryMaskBit_ByEntityName"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14078db40",
+  "made_on_target": "0x14078db40",
+  "twin": "made on steam-26566308; the target 0x14078db40 is KB 0x14078db00: Sess_Entrant_IsTeamDriverMatch (0x78d910) and Game_CareerWizard_StartsInF1 (0x78de10) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14078db40",
+    "target": "0x14078db40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "33b81a433240742b6ee05d1868a10fa84d2cb5f9a3a3c87845e741d25273efed"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_ContextBinding_SetPath_ResolveNode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14417c750",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_ContextBinding_SetPath_ResolveNode(void *binding, void **path_str, void **ctx_node)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14417ed20 (RacingPC lab re_groups/_decomp);xref:0x1437f46a0,0x143815d80,0x1438239c0",
+  "notes": "Assigns the refcounted string *path_str to binding+0x20; if flag bit 2 of +0xa was set it clears the hashed name (+0x10/+0x18), relinks the node handle +0x30 (intrusive list +0x38/+0x40) to k_Vm_EmptyNodeHandle and zeroes the u16 index +0x8. If the path starts with the 7-char prefix at 0x145611ac5 it sets flag 2 and stores Ne_HashedName_FromString(path) at +0x10; otherwise sets flag 1 and, when ctx_node is given, follows up to 0x62 redirect links (vt+0x30 / +0x58 vt+0x38), relinks +0x30 to that node, and if the node's parent (+0x30) is a list finds the child index (Career_Ui_FindChildIndex), formats the parent name (+0x80) into a hashed name at +0x10 and stores the index at +0x8; a second path resolves a string-typed node through Vm_Resolve_RegistryNode. Always ends with 0x14417f410(binding). Context from caller: callers pass the component returned by 0x144209fa0 plus override paths such as \"#overrides.osd.timer_pill_highlights.black_highlight\" and \"overrides.minimap.car_marker_outlines\" with a registry node. Caller 0x143815d80: OSD timer-pill / race-flags panel setup; caller 0x1438239c0: scroll/list entry update that binds per-entry nodes. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.context_binding_set_path_resolve_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 40 02 00 00 4C 89 C7",
+  "match": "0x14417c750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14417c750",
+  "kind": "func_start",
+  "names": [
+   "Vm_ContextBinding_SetPath_ResolveNode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14417ed20",
+  "made_on_target": "0x14417ed20",
+  "twin": "made on steam-26566308; the target 0x14417ed20 is KB 0x14417c750: Ne_EventBus_Unsubscribe (0x417e580) and Ne_UIAction_C_closeScreenId (0x4185c30) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14417ed20",
+    "target": "0x14417ed20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5ccf4f2e61da36f66a9cc7644677f35a22ae7e206085a20f3b56da3b427f5782"
+  }
+ ]
+}

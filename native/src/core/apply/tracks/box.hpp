@@ -26,6 +26,7 @@ struct Active {
 };
 
 const Facts &facts();
+bool any_track_video();
 BoxInfo box_info(registry::Store &store, const std::string &package, const std::string &entrant_list);
 Entries box_entries(registry::Store &store, const std::vector<std::string> &chain);
 List box_list(registry::Store &store, const BoxInfo &box, Mode mode, const Entries &entries);

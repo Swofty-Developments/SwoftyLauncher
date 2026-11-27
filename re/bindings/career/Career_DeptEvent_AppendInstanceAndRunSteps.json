@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_DeptEvent_AppendInstanceAndRunSteps",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140cb1d30",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint32_t Career_DeptEvent_AppendInstanceAndRunSteps(void *def, void *ctx, void *teamData, uint32_t arg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140cb27f0 (RacingPC lab re_groups/_decomp);xref:0x140cb2690",
+  "notes": "Returns 0x16 if any of teamData +0x62/+0x66/+0x6a is 0x3fff. Otherwise appends a 0xd0-byte instance to the vector at teamData+0x78..+0x88: 128-char name copied from def+0x20, success byte (+0x98)=1, step count byte (+0x99), and a per-step byte vector. For each 16-byte step entry in def+0xc8..+0xd0 it calls step virtual +0x30 (check, with teamData+0x68/+0x60/+0x64 and ctx+0xd9), records pass/fail, calls virtual +0x48 (apply) on pass or clears the success byte on fail. Returns 0 when all steps passed, else 0x16."
+ },
+ "signature": {
+  "id": "career.dept_event_append_instance_and_run_steps",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 C5 F8 29 B4 24 40 01 00 00 48 89 CD 41 0F B7 48 62",
+  "match": "0x140cb1d30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cb1d30",
+  "kind": "func_start",
+  "names": [
+   "Career_DeptEvent_AppendInstanceAndRunSteps"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140cb27f0",
+  "made_on_target": "0x140cb27f0",
+  "twin": "made on steam-26566308; the target 0x140cb27f0 is KB 0x140cb1d30: Career_DeptEvent_LookupOrAllocate (0xcb18f0) and Career_DeptEvent_SimulateOutcomeInsert (0xcb4960) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140cb27f0",
+    "target": "0x140cb27f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "80c0d73d6e9fa423024846afba8ef1b59e3c6722faf84339c843edd3930d1959"
+  }
+ ]
+}

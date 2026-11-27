@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Vfx_Build_NodeTree_14345b690",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143459110",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_Vfx_Build_NodeTree_14345b690(void *self, void *allocator, uint32_t id)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14345b690 (RacingPC lab re_groups/_decomp);xref:0x1433893d0",
+  "notes": "Constructor-style builder: stores allocator at self+8 and allocates (allocator vfunc +0x18) a fixed tree of small nodes {u32 state=0; allocator +8; u32 id +0x10; child pointers} into slots self+0x40..+0x58, sets id at +0x38, +0x3c=-1, and one-time fills a static u16 offset table (DAT_1460fa268..). No gameplay values. Context from caller: tyre kickup VFX."
+ },
+ "signature": {
+  "id": "game.vfx_build_node_tree_14345b690",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 C5 F8 29 74 24 20 44 89 C7 48 89 D0 48 89 CE 48 89 51 08 4C 8B 0A BA 18 00 00 00 41 B8 08 00 00 00 48 89 C1 41 FF 51 18 C5 C8 57 F6 C5 F8 11 30 48 C7 40 10 00 00 00 00 48 89 46 58 48 8B 4E 08 48 89 48 08 89 78 10 C7 00 00 00 00 00 48 8B 4E 08 48 8B 01 BA 18 00 00 00",
+  "match": "0x143459110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143459110",
+  "kind": "func_start",
+  "names": [
+   "Game_Vfx_Build_NodeTree_14345b690"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14345b690",
+  "made_on_target": "0x14345b690",
+  "twin": "made on steam-26566308; the target 0x14345b690 is KB 0x143459110: Game_F1os_CreateTask_ReconcileUserEntitlements (0x3453bf0) and Game_PitLane_GetDistanceToBox (0x34b72b0) on either side both sit 0x2580 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14345b690",
+    "target": "0x14345b690"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "58221295572b49896f7d041dd552449668d7acb8d52f765530f5488996c533b5"
+  }
+ ]
+}

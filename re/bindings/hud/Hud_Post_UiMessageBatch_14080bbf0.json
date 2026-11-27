@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Hud_Post_UiMessageBatch_14080bbf0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14080bba0",
+  "level": "L2",
+  "subsystem": "hud",
+  "proto": "void Hud_Post_UiMessageBatch_14080bbf0(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14080bbf0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14111f190,0x1414b4670,0x142a3db60",
+  "notes": "Nine times in a row: gets the UI root via vcall +0x58 on [self+0x108]+0x10, logs on channel UI_MESSAGE ('%s()(%s).', hash 0x5cfa8e6d) and calls the sink at root+0x378 vcall +0x38 with (name, 1, 0) for nine fixed message-name strings (0x14566046e, 0x14565ee41, 0x14565c955, 0x14565ee78, 0x14564aca0, 0x14565da29, 0x14565da4a, 0x14565da70, 0x14565da8b). No state is written in self. Context from caller: called by Game_SessionHud_OnSessionExit, by Game_FadeRequests_OnLocalHumanEnteredGarage at entry, and by Caller 0x14111f190: validates the mid-session save and restores the replay state, then posts this batch. Better context needed: the nine string values would say which HUD elements the batch closes or resets. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "hud.post_ui_message_batch_14080bbf0",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 89 08 01 00 00",
+  "match": "0x14080bba0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14080bba0",
+  "kind": "func_start",
+  "names": [
+   "Hud_Post_UiMessageBatch_14080bbf0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14080bbf0",
+  "made_on_target": "0x14080bbf0",
+  "twin": "made on steam-26566308; the target 0x14080bbf0 is KB 0x14080bba0: Sess_Register_RaceRecordables (0x802e10) and Sess_RedFlagSimulate_ResetEntries (0x814cd0) on either side both sit 0x50 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14080bbf0",
+    "target": "0x14080bbf0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3b17afa684e1e3b31e34a9623ba9d5599ea16de26bb78bd8a977f58baad430f0"
+  }
+ ]
+}

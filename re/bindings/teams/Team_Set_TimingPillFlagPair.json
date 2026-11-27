@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_Set_TimingPillFlagPair",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1417fb690",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "void Team_Set_TimingPillFlagPair(void *block, uint8_t flag_a, uint8_t flag_b, uint8_t use_alt)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1417fce70 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141479c20,0x14175f410",
+  "notes": "Picks the node set block+0x8 with handle block+0x88 (use_alt=0) or block+0xa8 with handle block+0x128 (use_alt=1), resolves the handle to a temporary node, reads the current bools of set+0x28 and set+0x48, and only when they differ from (flag_a, flag_b) writes temp node = flag_a AND NOT flag_b, set+0x28 = flag_a, set+0x48 = flag_b; then releases the temp node with Vm_Release_Node. Callers: 0x141479c20: computes both pairs with Team_Unk_1417fd170 on obj+0x318 and applies primary then alt (alt only if primary flag_a is 0, else Team_Clear_TimingPillAltFlagPair); Team_Update_TimingPill does the same on pill+0x348. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "teams.set_timing_pill_flag_pair",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 48 44 89 C3 89 D6",
+  "match": "0x1417fb690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417fb690",
+  "kind": "func_start",
+  "names": [
+   "Team_Set_TimingPillFlagPair"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1417fce70",
+  "made_on_target": "0x1417fce70",
+  "twin": "made on steam-26566308; the target 0x1417fce70 is KB 0x1417fb690: site_Career_UpgradeCardDeptIcon (0x17f9f8f) and Game_EventObjectives_ShowTargetPosition (0x17fdf50) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1417fce70",
+    "target": "0x1417fce70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f2062dcbf04a6431b9c4ca33a782b0ce631fef405d24c516664ca10294c217be"
+  }
+ ]
+}

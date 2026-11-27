@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Parse_DbFieldEntry_CreateNode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1442b8e50",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint32_t Vm_Parse_DbFieldEntry_CreateNode(void *ctx, void *alloc, uint32_t tag, void *desc, void **nodeAlloc, void **parentHandle, void **pathStr)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442bb420 (RacingPC lab re_groups/_decomp);xref:0x1441daf70,0x1442b8fd0,0x1442b9ef0",
+  "notes": "Leaf case of the descriptor walk. Reads name (key 0x0fe07306), extends pathStr \"%s.%s\", reads type string (0x051897aa) and flag 0x47b0fbf7. For ordinary types creates a value object from the table's own type factory and reads key 0xd147f96a into it; for two special type names (0x145a72035, 0x145a71f54) packs the name into 16 bytes and takes the factory from the global list at 0x14612b950. Finds the child of *parentHandle by djb2(name); if missing creates it with FUN_1442b5760(alloc, parent, hash, flag, &value) and registers via FUN_1442b6740, else sets the value with func 0x1442133f0(handle, value, 5). Callback ctx+0x28 (user ctx+0x30) gets (handle, path). For the first special type it queues a deferred entry on *ctx (FUN_1443928b0) with the string value. Returns 0 or error (0x16, 3). Called from the three dispatch sites (Vm_Parse_DbTypeDescriptor, 0x1442b8fd0, 0x1442b9ef0) when the type string equals 0x145a71f42. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.parse_db_field_entry_create_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 48 8B B4 24 E0 01 00 00",
+  "match": "0x1442b8e50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442b8e50",
+  "kind": "func_start",
+  "names": [
+   "Vm_Parse_DbFieldEntry_CreateNode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1442bb420",
+  "made_on_target": "0x1442bb420",
+  "twin": "made on steam-26566308; the target 0x1442bb420 is KB 0x1442b8e50: Vm_Release_Node (0x42b6340) and Ne_Variant_FormatToString (0x42bc680) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1442bb420",
+    "target": "0x1442bb420"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "659da1a341c7cb3c741db5559a1d02c66c7eca930e10ea652dee0c1aa5dda8e6"
+  }
+ ]
+}

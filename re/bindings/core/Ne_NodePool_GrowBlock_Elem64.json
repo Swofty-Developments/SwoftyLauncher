@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_NodePool_GrowBlock_Elem64",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143ed7970",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_NodePool_GrowBlock_Elem64(void *pool)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ed9f40 (RacingPC lab re_groups/_decomp);xref:0x143c0c6d0",
+  "notes": "(lib) Bulk node pool grow: block size doubles with the number of blocks already chained at pool+8 (4 up to 0x4000 nodes of 0x40 bytes), allocs via allocator at pool+0x10 (vtable +0x10, tag 0x145614f08), links the block into the block list and threads all nodes onto the free list head at pool+0. Returns the first free node."
+ },
+ "signature": {
+  "id": "core.node_pool_grow_block_elem64",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 89 C7 49 8D 46 10",
+  "match": "0x143c0ae8b",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x143ed7970",
+  "kind": "call",
+  "names": [
+   "Ne_NodePool_GrowBlock_Elem64"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c0d45b",
+  "made_on_target": "0x143ed9f40",
+  "twin": "made on steam-26566308; the target 0x143ed9f40 is KB 0x143ed7970: Ne_Container_GrowVectorChecked (0x3ed7790) and Ne_HashMap_FatalStub_Particles (0x3ee5200) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c0d45b",
+    "target": "0x143ed9f40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "515560cf309bc6595614acc4d070e0fa33990f55058987814e8b81b1339a8301"
+  }
+ ]
+}

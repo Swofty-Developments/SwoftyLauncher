@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamSetup_Assign_DriverCustomisation",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1420572d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_MyTeamSetup_Assign_DriverCustomisation(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142058ed0 (RacingPC lab re_groups/_decomp);xref:0x142057170",
+  "notes": "Driver counterpart of 0x1420589d0: if the stored driver customisation key (0x14606f424) is invalid it gets the driver customisation via FUN_1416e7570 and Wear_Get_DriverCustomisation_Thunk and reads the key at +0xc540, else reuses the stored key. Writes g_FeTile_DriverCustomisationKey, records it by team id and entity id in the map at (self+0x2b8)+0x70 and posts the same bus message (vtable 0x1456e7c20)."
+ },
+ "signature": {
+  "id": "game.my_team_setup_assign_driver_customisation",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE 8B 05",
+  "match": "0x1420572d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1420572d0",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamSetup_Assign_DriverCustomisation"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142058ed0",
+  "made_on_target": "0x142058ed0",
+  "twin": "made on steam-26566308; the target 0x142058ed0 is KB 0x1420572d0: Game_MyTeamSetup_FlowMain (0x2057170) and Career_Build_MyTeamSetupSummaryPage (0x20592b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142058ed0",
+    "target": "0x142058ed0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1ff006c5a6280f791cfdd5adb27244fe4c1abf81c1f8bfd0be32fbc82274123e"
+  }
+ ]
+}

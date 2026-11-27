@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Get_QueueLength",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1442a5470",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "int32_t Vm_Get_QueueLength(void *element)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442a7a40 (RacingPC lab re_groups/_decomp);xref:0x1442a66b0",
+  "notes": "Finds the component of type 0x146ca59b0 in the element's component vector (+0x30/+0x38), takes its VM node handle at +0xb0 (empty handle if flag 0x20 at +0xf8 is set), resolves the child node \"queue_length\" with Vm_Resolve_RegistryNode and returns its value when the node's type equals the type desc at 0x14612bf38, else 0."
+ },
+ "signature": {
+  "id": "vm.get_queue_length",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 8B 3D",
+  "match": "0x1442a5470",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442a5470",
+  "kind": "func_start",
+  "names": [
+   "Vm_Get_QueueLength"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1442a7a40",
+  "made_on_target": "0x1442a7a40",
+  "twin": "made on steam-26566308; the target 0x1442a7a40 is KB 0x1442a5470: Ui_DataDrivenMessage_Init (0x42a5640) and Ne_ListenerHandle_Assign (0x42acc90) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1442a7a40",
+    "target": "0x1442a7a40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1f4a92f107a2d66872240af5887ffcdcc7b90518296715d6b04ab2d4a2ef053f"
+  }
+ ]
+}

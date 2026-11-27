@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Harfbuzz_Buffer_Message",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14486f330",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "uint8_t Ne_Harfbuzz_Buffer_Message(void *buffer)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144871cf0 (RacingPC lab re_groups/_decomp);xref:0x144890140,0x1448c7b70,0x1448c8c30,0x1448ca310,0x1448cbae0",
+  "notes": "(lib) Returns 1 when buffer+0xc0 (message callback) is null, otherwise returns FUN_144877c40() (the message implementation). Matches HarfBuzz hb_buffer_t::message as called from GSUB/GPOS table application and Indic/Khmer reordering; identification is by pattern, not by a string."
+ },
+ "signature": {
+  "id": "core.harfbuzz_buffer_message",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 4C 89 4C 24 48 B0 01 48 83 B9 C0 00 00 00 00",
+  "match": "0x14486f330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14486f330",
+  "kind": "func_start",
+  "names": [
+   "Ne_Harfbuzz_Buffer_Message"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144871cf0",
+  "made_on_target": "0x144871cf0",
+  "twin": "made on steam-26566308; the target 0x144871cf0 is KB 0x14486f330: Ne_CloudUploader_Upload (0x47c8580) and Ne_Format_HresultUnknownFacility (0x49349e0) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144871cf0",
+    "target": "0x144871cf0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "daf2ea948a9270c4dd833c573e4edf7cf8a30b0a621a1d5e137abc341776ea0e"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Add_NewSlotEntry_IfBelowSix",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142048710",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Add_NewSlotEntry_IfBelowSix(void *screen)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14204a310 (RacingPC lab re_groups/_decomp);xref:0x142045a00",
+  "notes": "If the slot vector (+0x270..+0x278, element 0x148) holds fewer than 6 entries: constructs a slot VM named new_slot under the list node +0x290 via FUN_14204b200, sets its is_new_slot bool node (temp+0xc8) to true with Vm_NodeSet_Bool, pushes it into the vector object at +0x268 via FUN_142158980, then releases the ten temporary node handles. Constant 6 is the slot cap; hook to raise the number of slots."
+ },
+ "signature": {
+  "id": "ui.add_new_slot_entry_if_below_six",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 70 01 00 00 48 89 CE 48 8B 81 78 02 00 00",
+  "match": "0x142048710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142048710",
+  "kind": "func_start",
+  "names": [
+   "Ui_Add_NewSlotEntry_IfBelowSix"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14204a310",
+  "made_on_target": "0x14204a310",
+  "twin": "made on steam-26566308; the target 0x14204a310 is KB 0x142048710: Game_CarCustomisation_ApplyAllCustomisation (0x2013fb0) and Career_MyTeamSetup_AdvanceFadeOut (0x20557b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14204a310",
+    "target": "0x14204a310"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "271c9fbbb3b798ef72d1d33e484ab5db8d2d4e68023e52d0d1df0c823187af6b"
+  }
+ ]
+}

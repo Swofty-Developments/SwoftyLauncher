@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Range_Destroy_Elem72_RefPtrPair",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143ee6f10",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Range_Destroy_Elem72_RefPtrPair(void *first, int64_t count)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ee94e0 (RacingPC lab re_groups/_decomp)",
+  "notes": "(lib) Destroys count elements of 0x48 bytes: zeroes the header fields and releases two shared_ptr-style control blocks at elem+0x30 and elem+0x40 (strong count at +8, weak at +0xc, vfn0 dispose, vfn1 delete). Called twice from the large render function 0x143c697b0."
+ },
+ "signature": {
+  "id": "core.range_destroy_elem72_ref_ptr_pair",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 C5 F8 29 74 24 20 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 D6 48 89 CF 48 83 C7 40",
+  "match": "0x143ee6f10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ee6f10",
+  "kind": "func_start",
+  "names": [
+   "Ne_Range_Destroy_Elem72_RefPtrPair"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143ee94e0",
+  "made_on_target": "0x143ee94e0",
+  "twin": "made on steam-26566308; the target 0x143ee94e0 is KB 0x143ee6f10: Ne_HashMap_FatalStub_Particles (0x3ee5200) and Ne_Sort_Introsort_Elem48 (0x3ee9cf0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143ee94e0",
+    "target": "0x143ee94e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b62c9a21ab619e29ed3bf9b05a8795e277b8e6b4cf3052e42330f55fbd3384c1"
+  }
+ ]
+}

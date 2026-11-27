@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Release_PageNodeHandlesAndOwnedItems",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141989960",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Release_PageNodeHandlesAndOwnedItems(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14198b140 (RacingPC lab re_groups/_decomp);xref:0x142327de0",
+  "notes": "Teardown: removes the callback FUN_141991770 from the node at self+0x68, clears the node at +0x48, destroys and frees the {allocator, object} pairs in the vector at +0x108, then unlinks and releases the seven VM node handles at +0xe8, +0xc8, +0xa8, +0x88, +0x68, +0x48 and +0x28 via Vm_Release_Node."
+ },
+ "signature": {
+  "id": "vm.release_page_node_handles_and_owned_items",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 89 4C 24 30 48 8D 59 68",
+  "match": "0x141989960",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141989960",
+  "kind": "func_start",
+  "names": [
+   "Vm_Release_PageNodeHandlesAndOwnedItems"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14198b140",
+  "made_on_target": "0x14198b140",
+  "twin": "made on steam-26566308; the target 0x14198b140 is KB 0x141989960: Career_Get_RenownLevelInfo (0x198adc0) and Vm_TeamHqHub_Bind (0x198b690) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14198b140",
+    "target": "0x14198b140"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "650eafa0e33de18d807f46337f8a3bc56500fbce5cbf1fb1d278f3c4274f32f3"
+  }
+ ]
+}

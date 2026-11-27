@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Binding_ResolveAndSubscribe",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1441f10d0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Binding_ResolveAndSubscribe(void *binding)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1441f36a0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14148ab00,0x1414f2540,0x14150f2d0",
+  "notes": "No-op without g_Vm_Registry. Drops the old subscription (0x1441f3490), sets flags +0xe0 = (flags & 0xeb) | 0x10, then walks the +0x78 path segments (8 bytes each: hash u32, is-index byte at +4) from the source node +0x80 or the registry root (+0x79 = absolute), following aliases up to 0x62 hops, and stores the result in the target handle +0x98 (bit 0x20 = unresolved). With a target it subscribes handler 0x1442be5e0 via Ne_BusMessage_SubscribeHandlerUnique and sends an initial change message to it; without one it inserts the binding into the registry pending hash set (+0x78..+0xcc) and sets bit 1. Context from caller: Game_Register_DriverSuitScreens uses it after parsing \"settings.current_settings.tt_weather.value\"; 0x14150f2d0 (HUD view model setup) for \"#settings.current_settings.real_time_delta.value\"; 0x1414f2540 right after Vm_Binding_SetSourceAndResolve on +0x328. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.binding_resolve_and_subscribe",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 83 3D ?? ?? ?? ?? 00",
+  "match": "0x1441f10d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441f10d0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Binding_ResolveAndSubscribe"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1441f36a0",
+  "made_on_target": "0x1441f36a0",
+  "twin": "made on steam-26566308; the target 0x1441f36a0 is KB 0x1441f10d0: Ne_Time_BreakDownMicroseconds (0x41f15f0) and Vm_Node_Clear (0x420f330) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1441f36a0",
+    "target": "0x1441f36a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8e5756209a858a777a2eb669e2dc7d7b488a110090da724697c615d25313a4fc"
+  }
+ ]
+}

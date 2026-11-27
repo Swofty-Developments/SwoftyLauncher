@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Set_TrackNodeRefByName_14182ebd0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14182d3f0",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "void Vm_Set_TrackNodeRefByName_14182ebd0(void *ctx, void *parent_node, const char *name)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14182ebd0 (RacingPC lab re_groups/_decomp);xref:0x141bc8880",
+  "notes": "When ctx[0] is nonzero: takes the track data service at (ctx+8 obj)+0xf58 and the track ref at (ctx+0x10)+0x30, calls Game_TrackData_GetTrack with the id block from obj vfunc +200, and sets the node-ref child called name under parent_node (+8) to the track's node (+0x10) via Vm_Set_NodeRef."
+ },
+ "signature": {
+  "id": "vm.set_track_node_ref_by_name_14182ebd0",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 90 00 00 00 80 39 00",
+  "match": "0x14182d3f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14182d3f0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Set_TrackNodeRefByName_14182ebd0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14182ebd0",
+  "made_on_target": "0x14182ebd0",
+  "twin": "made on steam-26566308; the target 0x14182ebd0 is KB 0x14182d3f0: Vm_Resolve_PrefixedNodeByIndex (0x182e7a0) and Sess_EntrantFilterSet_CopyCtor (0x1831d60) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14182ebd0",
+    "target": "0x14182ebd0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "33dcc0a9f9637806ec0f07ba462c45aa493ba73caa9859c1ce533734eeb00178"
+  }
+ ]
+}

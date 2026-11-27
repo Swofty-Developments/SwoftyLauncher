@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_ResourcePoints_GetDriverExperienceScalar",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143507380",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "float Career_ResourcePoints_GetDriverExperienceScalar(void **ctx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143509910 (RacingPC lab re_groups/_decomp);xref:0x143509280",
+  "notes": "Finds a named stat in the DriverStatistics component (16-byte list +0x2d0..+0x2d8, strcmp against 0x14570eb42), evaluates it through vfunc +0x280 with career progress fraction (days elapsed / career length, clamped to 1) and returns (stat/100) * (gamedb \"resource_points.practice_programme_overrides.per_team_mode.driver_experience_scalar\" / 100), or per_driver_mode when component byte +0x4a0 is 0. Returns 0 if the stat is missing."
+ },
+ "signature": {
+  "id": "career.resource_points_get_driver_experience_scalar",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 90 01 00 00 C5 F8 29 BC 24 80 01 00 00",
+  "match": "0x143507380",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143507380",
+  "kind": "func_start",
+  "names": [
+   "Career_ResourcePoints_GetDriverExperienceScalar"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143509910",
+  "made_on_target": "0x143509910",
+  "twin": "made on steam-26566308; the target 0x143509910 is KB 0x143507380: Career_ResourcePointsAward_ReadSaveData (0x35058a0) and Career_Adjust_RpTeamWallet (0x350aad0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143509910",
+    "target": "0x143509910"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "37e83ede200c4402ed5bf190520f00ef5d5fb6bf3b9a26f8df4aea42b4bb06ea"
+  }
+ ]
+}

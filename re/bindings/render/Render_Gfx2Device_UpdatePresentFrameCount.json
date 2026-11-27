@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_UpdatePresentFrameCount",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1439cb190",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_Gfx2Device_UpdatePresentFrameCount(void *device)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439cd760 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1439be870,0x1439f6720",
+  "notes": "Writes device+0x2658 (frames presented by the last Present, min 1). If device+0x39a1 is set it first sets device+0x39c4 = max(1, value) from the SDK query 0x14618d748 over 4 entries at device+0x3a00 (step 0x28). Then: device+0x39ec != 0 takes +0x2658 from the same query; else device+0x5070 uses swap chain (device+0xa50) vt+0x88 (GetLastPresentCount) and stores the delta to device+0x5080; else device+0x5084 uses 0x145381b40(device+0x5088); else 1. Callers: Render_Gfx2Device_Initialise calls it once at the end of init; Render_Gfx2Device_PresentFrame calls it every frame after the present. Useful read point for frame generation multipliers. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.gfx2_device_update_present_frame_count",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 F8 29 B4 24 E0 00 00 00 48 89 CE 80 B9 A1 39 00 00 00",
+  "match": "0x1439cb190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439cb190",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_UpdatePresentFrameCount"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1439cd760",
+  "made_on_target": "0x1439cd760",
+  "twin": "made on steam-26566308; the target 0x1439cd760 is KB 0x1439cb190: Render_OnRaytracingValidationMsg (0x39ca490) and Ne_Gfx2CommandQueue_FlushResourceBarriers (0x39d63f0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1439cd760",
+    "target": "0x1439cd760"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "18012d6ee5cc7e2d434e77d66e6f21c3bd7027d3108632332087b00367a7d48a"
+  }
+ ]
+}

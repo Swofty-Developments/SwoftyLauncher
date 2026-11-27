@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ai_Car_Compute_SteerLimitIntersectPoints",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140607ca0",
+  "level": "L1",
+  "subsystem": "ai",
+  "proto": "void Ai_Car_Compute_SteerLimitIntersectPoints(void *state, void *car)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140607ce0 (RacingPC lab re_groups/_decomp);xref:0x1405ee6a0",
+  "notes": "Reads speed at state+0x3c, normalises with table from **(car+0x4c8) (+0x14 offset, +0x10 scale), samples a 64-entry byte curve at +0x2c (scale +0x18, bias +0x24, fallback +0x1c) and multiplies by min(abs(+0x328),abs(+0x32c)) to get an angle. Rotates the XZ direction between points +0x2c0/+0x2d0 by +angle and -angle (inline sin/cos polynomials), intersects the resulting lines with the line through +0x2a0/+0x2b0 (2D line-line, 1e7 fallback when parallel) and stores the two points at +0x170 and +0x180 plus their distances to +0x100 and +0xf0 in +0xc4 and +0xc8. Looks like left/right turning-circle centres and radii at the speed-limited steer angle. Context from caller: Ai_Car_CaptureVehicleState."
+ },
+ "signature": {
+  "id": "ai.car_compute_steer_limit_intersect_points",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC F8 00 00 00 C5 78 29 BC 24 E0 00 00 00",
+  "match": "0x140607ca0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140607ca0",
+  "kind": "func_start",
+  "names": [
+   "Ai_Car_Compute_SteerLimitIntersectPoints"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140607ce0",
+  "made_on_target": "0x140607ce0",
+  "twin": "made on steam-26566308; the target 0x140607ce0 is KB 0x140607ca0: Ai_TestGraph_EvalAtSpeed (0x607000) and Ai_Car_ComputeLateralLimitMargins (0x60a4c0) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140607ce0",
+    "target": "0x140607ce0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0b9e079fb6c38d39f5e3c7179998262bd52fb7dc9d19592e5c283e0287c279f6"
+  }
+ ]
+}

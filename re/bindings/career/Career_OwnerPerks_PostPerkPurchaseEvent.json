@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_OwnerPerks_PostPerkPurchaseEvent",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14100c550",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_OwnerPerks_PostPerkPurchaseEvent(void *self, uint8_t perkCategory, void *perkWeakPtr, uint32_t cost, uint32_t balanceAfter)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14100d210 (RacingPC lab re_groups/_decomp);xref:0x14100c3f0",
+  "notes": "Locks the perk weak_ptr, then gathers strings: category name (table 0x1456bd940[perkCategory]), perk +0x70 and +0x78 names, effect type name (table 0x1456b3110 indexed by effect +0x38 from the first entry of perk +0x60 list) and effect description; looks up a u16 at +0x12 of the gamedb row matching perk +0x5a; reads self+0x3cc and career day = CareerTime +0x2b0 / 1440. If all strings fit (32/64/64/32/128 chars) it fills a bus message (vtable 0x14565b6e0) with those fields plus cost/balance and calls Ne_Post_BusMessage on g_Game_MessageBus. Telemetry/event only, no gameplay state is changed here; hook to observe owner-perk purchases."
+ },
+ "signature": {
+  "id": "career.owner_perks_post_perk_purchase_event",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 04 00 00 49 89 CF",
+  "match": "0x14100c550",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14100c550",
+  "kind": "func_start",
+  "names": [
+   "Career_OwnerPerks_PostPerkPurchaseEvent"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14100d210",
+  "made_on_target": "0x14100d210",
+  "twin": "made on steam-26566308; the target 0x14100d210 is KB 0x14100c550: Career_OnlineNegotiationsB_ProcessContractRecv (0x10037f0) and Career_Get_BackgroundOutcomeField (0x1016bd0) on either side both sit 0xcc0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14100d210",
+    "target": "0x14100d210"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5561094d5ae1cb32f7f258ac6796a742344ecfeb84207c82326c38346f9fa537"
+  }
+ ]
+}

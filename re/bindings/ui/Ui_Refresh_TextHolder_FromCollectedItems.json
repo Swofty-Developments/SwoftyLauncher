@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Refresh_TextHolder_FromCollectedItems",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141546790",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Refresh_TextHolder_FromCollectedItems(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141547d80 (RacingPC lab re_groups/_decomp);xref:0x141d1b9e0",
+  "notes": "If the cached shared pointer at self+0xcd0/+0xcd8 is empty, scans the hash set at self+0xcc8 (slots +0x48, info +0x50, count +0x58) for entries whose object at +0x38 passes func_0x142a83880, takes the last match and stores the result of func_0x14161a410(obj+0x40) in self+0xcd0. Then collects the 0x10-byte elements of (cached+0x78)+0x28..+0x30 with FUN_14274c820; if any were collected and flag self+0xcf8 is set it writes string 0x1456f9a6d to the text holder at self+0x630, otherwise (nothing collected or no cached object) it writes string 0x1456f959b when the flag is set. Context from caller: FeInput_Panel_OnInputModeMessage calls it at the end of its input-mode refresh branch. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.refresh_text_holder_from_collected_items",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE 48 8B 81 D0 0C 00 00",
+  "match": "0x141546790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141546790",
+  "kind": "func_start",
+  "names": [
+   "Ui_Refresh_TextHolder_FromCollectedItems"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141547d80",
+  "made_on_target": "0x141547d80",
+  "twin": "made on steam-26566308; the target 0x141547d80 is KB 0x141546790: Game_Mfd_FuelMixUp (0x1534960) and Game_LeaderboardRowVM_Populate (0x156ed60) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141547d80",
+    "target": "0x141547d80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "27a8ad7517a784cd6d19f95c39b74819bcb125c6b2e431d3a642f9427f3ec077"
+  }
+ ]
+}

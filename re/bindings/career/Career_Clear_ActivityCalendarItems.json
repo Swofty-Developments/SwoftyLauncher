@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Clear_ActivityCalendarItems",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1423204d0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Clear_ActivityCalendarItems(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1423220d0 (RacingPC lab re_groups/_decomp);xref:0x142317600,0x142319ff0",
+  "notes": "For the list object at self+0x410: releases every shared pointer in the vector +0x130..+0x138 and resets the end pointer, then clears the Vm container node at +0x30 (array pop loop, or map child removal with callbacks Ne_CallbackList_InvokeReverse and Vm_Release_Node). Returns nonzero when something was removed."
+ },
+ "signature": {
+  "id": "career.clear_activity_calendar_items",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 C5 F8 29 74 24 20 4C 8B B1 10 04 00 00",
+  "match": "0x1423204d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423204d0",
+  "kind": "func_start",
+  "names": [
+   "Career_Clear_ActivityCalendarItems"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1423220d0",
+  "made_on_target": "0x1423220d0",
+  "twin": "made on steam-26566308; the target 0x1423220d0 is KB 0x1423204d0: Career_MyTeamActivities_UpdateSlot (0x23211e0) and Career_MyTeamActivities_SetPanelFlagNodes (0x23221e0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1423220d0",
+    "target": "0x1423220d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3aa7fe8ecdd11394155bd8ae819151c5bd0a39ed446c49f2f99ef579dbc57509"
+  }
+ ]
+}

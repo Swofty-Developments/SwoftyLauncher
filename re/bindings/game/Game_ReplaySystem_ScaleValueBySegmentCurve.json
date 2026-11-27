@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_ReplaySystem_ScaleValueBySegmentCurve",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1445c9790",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_ReplaySystem_ScaleValueBySegmentCurve(void *sys, float *value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1445cc000 (RacingPC lab re_groups/_decomp);xref:0x1445d88b0",
+  "notes": "Only when +0x60==1 and (+0x48)->+0x20 is 2 or 8: picks segment (+0x70 vector, 0x1c0 each, index +0x88) and key +0x90 (0x18-byte keys from +0x34); if key has a curve, normalises stream time ((+0x48)->+0x98->+0xd8) into the key span, Career_Eval_Curve and remaps by curve +0x1c..+0x20, else uses constant +0x38; multiplies *value. Likely playback speed scaling. Better context needed: what value UpdateFromModule passes."
+ },
+ "signature": {
+  "id": "game.replay_system_scale_value_by_segment_curve",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 83 79 60 01 0F 85",
+  "match": "0x1445c9790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445c9790",
+  "kind": "func_start",
+  "names": [
+   "Game_ReplaySystem_ScaleValueBySegmentCurve"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1445cc000",
+  "made_on_target": "0x1445cc000",
+  "twin": "made on steam-26566308; the target 0x1445cc000 is KB 0x1445c9790: Game_ReplayFile_ReadFooter (0x45c83e0) and Sess_Recordable_Register (0x45cf6f0) on either side both sit 0x2870 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1445cc000",
+    "target": "0x1445cc000"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "aeda76715ec6cb3560e1c637b631b2c9c547ad208d57c231e6165150b17de522"
+  }
+ ]
+}

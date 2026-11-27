@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Map_CopyAssign_Elem8",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140ce4c90",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Map_CopyAssign_Elem8(void *dst_map, const void *src_map)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140ce5750 (RacingPC lab re_groups/_decomp);xref:0x140c64400,0x140c704a0",
+  "notes": "(lib) Hash map copy assignment for 8-byte elements: if the source is empty resets dst to the inline sentinel dst+0x30, otherwise reallocates (cap+overflow)*9+8 bytes when bucket counts differ, copies header fields +8..+0x44 and memcpys slots plus distance bytes. Returns dst."
+ },
+ "signature": {
+  "id": "core.map_copy_assign_elem8",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C5 FA 10 44 24 68 C5 FA 11 87 90 00 00 00 4C 89 F1",
+  "match": "0x140c63b90",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x140ce4c90",
+  "kind": "call",
+  "names": [
+   "Ne_Map_CopyAssign_Elem8"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140c64650",
+  "made_on_target": "0x140ce5750",
+  "twin": "made on steam-26566308; the target 0x140ce5750 is KB 0x140ce4c90: Career_SetupDataConfig_CopyConstruct (0xce4810) and Game_F1os_LogLargePayload_GetActiveChallengeCareer (0xcf3e10) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140c64650",
+    "target": "0x140ce5750"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "57d6d10e93f026ada063e5fb7b881e72b9a0ee75348c41a5dcae8c850a7457e7"
+  }
+ ]
+}

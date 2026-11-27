@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_EventQueue_Post_Item_AndSignal",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141e5e130",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_EventQueue_Post_Item_AndSignal(void *queue, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141e5fd30 (RacingPC lab re_groups/_decomp);xref:0x141c45db0",
+  "notes": "If queue+0x68 (running flag) is 0 it records errno 0x58 in the errno trace ring and returns. Else locks critical section +0x98, allocates a 0x10 node from allocator +0x70 (errno 0xc on failure), stores vtable 0x145753988 and src+8 payload, appends to the singly linked list head +0x58 / tail +0x60, unlocks and SetEvent(+0x90); returns 0 or mapped OS error. Context from caller: Ui_Rnd_BackFromDepartments posts a deferred item here."
+ },
+ "signature": {
+  "id": "core.event_queue_post_item_and_signal",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 D9 BA E9 CD 01 68",
+  "match": "0x141c4479b",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x141e5e130",
+  "kind": "call",
+  "names": [
+   "Ne_EventQueue_Post_Item_AndSignal"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141c4639b",
+  "made_on_target": "0x141e5fd30",
+  "twin": "made on steam-26566308; the target 0x141e5fd30 is KB 0x141e5e130: Ui_Release_RnDDriverUpgradeRowNodes (0x1e45a90) and Game_TitleScreenVM_OnScreenActivated (0x1e9f230) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141c4639b",
+    "target": "0x141e5fd30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "505cdafd548eba38578cf5da7d82eb579b55f9c07b789581df39df07a7a35e6d"
+  }
+ ]
+}

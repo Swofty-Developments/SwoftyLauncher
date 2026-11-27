@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Node_PropagateEvent_ToChildrenAndParent",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1442492f0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Node_PropagateEvent_ToChildrenAndParent(void *node, void **event)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14424b8c0 (RacingPC lab re_groups/_decomp);xref:0x143806420,0x143806930,0x143807010,0x14417bec0,0x14417c300,0x144184c30,0x144185c30,0x1441dd740",
+  "notes": "Reads routing flags from byte (*event)+1: bit1 = send to every child in node+0x18 (vector +8..+0x10), bit0 = send to parent node+0x20, bit2 = recurse when the receiver's vfunc +0x158 returns 0. Each receiver gets vfunc +0x158(event) then vfunc +0x160(event). Good hook point to observe UI event routing between nodes."
+ },
+ "signature": {
+  "id": "vm.node_propagate_event_to_children_and_parent",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D6 48 89 CF 48 8B 02 0F B6 40 01",
+  "match": "0x1442492f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442492f0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Node_PropagateEvent_ToChildrenAndParent"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14424b8c0",
+  "made_on_target": "0x14424b8c0",
+  "twin": "made on steam-26566308; the target 0x14424b8c0 is KB 0x1442492f0: Ne_UINodeBase_SetElementVisibility (0x4249e10) and Ne_UINodeBase_OnVMSetDataContext (0x424b9b0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14424b8c0",
+    "target": "0x14424b8c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "458d907ed5b209981ad7fbf1d0a109343113fa5723033e91c18d09dd1330b648"
+  }
+ ]
+}

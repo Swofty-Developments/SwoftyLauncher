@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Phys_Realloc_SolverWorkBuffers",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1440f48d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Phys_Realloc_SolverWorkBuffers(void *solver, uint32_t bodyCount, uint32_t constraintCount)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1440f6ea0 (RacingPC lab re_groups/_decomp);xref:0x144106ee0",
+  "notes": "Frees the ten buffers at solver+0xa0..+0xe8 through the allocator at world(solver+0x80)+0x118, then allocates per-body buffers (32, 64, 4 and 8 bytes per body at +0xa0/+0xa8/+0xb0/+0xc0) and per-constraint buffers (five 8-byte arrays at +0xc8..+0xe8 plus constraintCount*6 rows of 0xd0 bytes at +0xb8). Stores counts at +0x8c, +0x90 and row count +0x94, then calls vfunc +0x18 when bodyCount is non zero."
+ },
+ "signature": {
+  "id": "core.phys_realloc_solver_work_buffers",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 44 89 C3 89 D7 48 89 CE",
+  "match": "0x1440f48d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440f48d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Phys_Realloc_SolverWorkBuffers"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1440f6ea0",
+  "made_on_target": "0x1440f6ea0",
+  "twin": "made on steam-26566308; the target 0x1440f6ea0 is KB 0x1440f48d0: Ne_PhysCollision_FreeIntersectionUnits (0x40f42b0) and Ne_Phys_SolveRowsIterate (0x40f73b0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1440f6ea0",
+    "target": "0x1440f6ea0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "13c8ae1e008ef761b469f4f4235425b57dcb8428b3e49fe617441c47d9517617"
+  }
+ ]
+}

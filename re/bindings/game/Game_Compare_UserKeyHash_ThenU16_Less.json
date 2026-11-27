@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Compare_UserKeyHash_ThenU16_Less",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143211760",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_Compare_UserKeyHash_ThenU16_Less(void *a, void *b)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143213cf0 (RacingPC lab re_groups/_decomp);xref:0x143142d60,0x143146900,0x143146e70,0x1431478e0,0x143147eb0,0x1431486f0",
+  "notes": "Strict-weak ordering: computes the 0x9e3779b9-combined hash of each key (id qwords at +0x18..+0x30 when flag 0x10000000 at +0x50, type +0x58, u16 +0x5a); returns 1 if hash(a) < hash(b), 0 if greater, and on equal hashes returns u16 a+0x60 < u16 b+0x60. Used as the std::map comparator of the vehicle customisation replication manager."
+ },
+ "signature": {
+  "id": "game.compare_user_key_hash_then_u16_less",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 44 8B 41 50 41 F7 C0 00 00 00 10",
+  "match": "0x143211760",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143211760",
+  "kind": "func_start",
+  "names": [
+   "Game_Compare_UserKeyHash_ThenU16_Less"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143213cf0",
+  "made_on_target": "0x143213cf0",
+  "twin": "made on steam-26566308; the target 0x143213cf0 is KB 0x143211760: Game_F1os_LogLargePayload_SessionBrowserGetSessionByID (0x31eaf70) and Game_NetworkReady_OnUnreadyMessage (0x3228a20) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143213cf0",
+    "target": "0x143213cf0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "110a825ec7679a2539d8625dc6621e5a82bc4f51093c1fe7efd4ea602f086e61"
+  }
+ ]
+}

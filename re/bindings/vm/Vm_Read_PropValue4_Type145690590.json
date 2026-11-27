@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_Read_PropValue4_Type145690590",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14420c0a0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint32_t Vm_Read_PropValue4_Type145690590(void *pkgRef, uint32_t *key, uint32_t *out)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14420e670 (RacingPC lab re_groups/_decomp);xref:0x14423fb80,0x14425b980",
+  "notes": "Same lookup as 0x1442084c0 (key scan, nested object redirected to key 0x425ed3ca, Ne_PackedTable_ReadValueById) but with value type vtable 0x145690590; writes the 4-byte result to *out and returns 0, or 3 when missing. Better context needed: whether this type is int32 or an enum."
+ },
+ "signature": {
+  "id": "vm.read_prop_value4_type145690590",
+  "section": ".xtls",
+  "pattern": "4C 89 FA E8 ?? ?? ?? ?? 85 C0 75 10",
+  "match": "0x14423d99f",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x14420c0a0",
+  "kind": "call",
+  "names": [
+   "Vm_Read_PropValue4_Type145690590"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14423ff6f",
+  "made_on_target": "0x14420e670",
+  "twin": "made on steam-26566308; the target 0x14420e670 is KB 0x14420c0a0: Ne_Time_BreakDownMicroseconds (0x41f15f0) and Vm_Node_Clear (0x420f330) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14423ff6f",
+    "target": "0x14420e670"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c882628c64874f291fa3126b5133e02203f03b875c2d7e3438bb32e7bfef69d3"
+  }
+ ]
+}

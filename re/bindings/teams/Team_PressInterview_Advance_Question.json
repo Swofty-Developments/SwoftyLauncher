@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_PressInterview_Advance_Question",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141d3a340",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "void Team_PressInterview_Advance_Question(void *panel)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141d3bf40 (RacingPC lab re_groups/_decomp);xref:0x141d3a470",
+  "notes": "Requires the interview manager at +0x298. Builds the local player identity from g_Game_Manager (+0x140 -> +0x198 -> +0x1c0 vfunc +0x38), finds the matching entrant in the mode entrant list (+0x2e0..+0x2e8) via Sess_Match_EntrantIdentity_Thunk and takes its id (default 0x3fff0000). If the entrant interview queue (func_0x141048c60) has more than +0x2a8 entries it fetches the next question (FUN_1410483b0 -> +0x2a0) and shows it (FUN_141d3e680); otherwise finishes the panel (0x141d3e520) or sets the deferred flag +0x101e when +0x1028/+0x1030 is non-empty."
+ },
+ "signature": {
+  "id": "teams.press_interview_advance_question",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC B0 00 00 00 48 83 B9 98 02 00 00 00",
+  "match": "0x141d3a340",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d3a340",
+  "kind": "func_start",
+  "names": [
+   "Team_PressInterview_Advance_Question"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141d3bf40",
+  "made_on_target": "0x141d3bf40",
+  "twin": "made on steam-26566308; the target 0x141d3bf40 is KB 0x141d3a340: Game_ResultsContainerVM_OnDeactivate (0x1d37280) and Game_ProLeaguesVM_OnExit (0x1d466b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141d3bf40",
+    "target": "0x141d3bf40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2bab7047a0edcb93b4808ead84d7c7a906dcf3fc7bd732b505a38bce88843a78"
+  }
+ ]
+}

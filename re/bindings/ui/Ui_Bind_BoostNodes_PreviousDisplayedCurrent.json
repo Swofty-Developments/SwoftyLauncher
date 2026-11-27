@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Bind_BoostNodes_PreviousDisplayedCurrent",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1416951d0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Bind_BoostNodes_PreviousDisplayedCurrent(void *out, void *arg, void *vm_parent)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1416967c0 (RacingPC lab re_groups/_decomp);xref:0x141696c20",
+  "notes": "Constructs VM node bindings under the parent node handle: two int token nodes (names at 0x1456f8e5f, 0x14570cbbb) at out+0x0/+0x20, string nodes \"previous_boost\" +0x40, \"displayed_boost\" +0x60, \"current_boost\" +0x80 (all default \"\"), then a nested binding block at +0xa0 built by the function KB-named Ui_Get_AcclaimIsIncreasing. Context from caller: acclaim value view-model."
+ },
+ "signature": {
+  "id": "ui.bind_boost_nodes_previous_displayed_current",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 4C 89 C7 48 89 54 24 38 48 89 CE C7 44 24 30 00 00 00 00",
+  "match": "0x1416951d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416951d0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Bind_BoostNodes_PreviousDisplayedCurrent"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1416967c0",
+  "made_on_target": "0x1416967c0",
+  "twin": "made on steam-26566308; the target 0x1416967c0 is KB 0x1416951d0: Ui_Get_AcclaimIsIncreasing (0x1696000) and Ui_Get_AcclaimValue (0x1696c20) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1416967c0",
+    "target": "0x1416967c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "46636f0c08cfff1ed8ce80872d95f2d7226cebdab87a89caf8a534d003c6fdac"
+  }
+ ]
+}

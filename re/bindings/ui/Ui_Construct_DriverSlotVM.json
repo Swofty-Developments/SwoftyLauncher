@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Construct_DriverSlotVM",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142049600",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Construct_DriverSlotVM(void *self, void **parentHandle, void *name)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14204b200 (RacingPC lab re_groups/_decomp);xref:0x142045a00",
+  "notes": "Constructor of the 0x148-byte slot view-model: calls base ctor 0x144241240, then creates and binds child nodes under self+8: strings display_name (+0x20), audio_name (+0x40), name_code (+0x60), car_number (+0x80), node ref nationality (+0xa0), bool is_new_slot (+0xc0), int display_index (+0xe0), bool is_equipped (+0x100), string loadout_name (+0x120); sets id at +0x140 to 0x3fff0000 (invalid). Returns self. Decompiler shows one parameter but the caller passes three."
+ },
+ "signature": {
+  "id": "ui.construct_driver_slot_vm",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 60 C5 F8 29 74 24 50 48 89 CE 49 8B 00 48 8D 48 09",
+  "match": "0x142049600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142049600",
+  "kind": "func_start",
+  "names": [
+   "Ui_Construct_DriverSlotVM"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14204b200",
+  "made_on_target": "0x14204b200",
+  "twin": "made on steam-26566308; the target 0x14204b200 is KB 0x142049600: Game_CarCustomisation_ApplyAllCustomisation (0x2013fb0) and Career_MyTeamSetup_AdvanceFadeOut (0x20557b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14204b200",
+    "target": "0x14204b200"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "695321834611cd09ae007d3465af84369a8ad72495bd393a46a6e8e24858686a"
+  }
+ ]
+}

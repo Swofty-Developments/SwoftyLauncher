@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Flush_ElementParamsToRenderProxy",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144304fd0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t Ui_Flush_ElementParamsToRenderProxy(void *element)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1443075a0 (RacingPC lab re_groups/_decomp);xref:0x144169bf0,0x144304080,0x144306b20",
+  "notes": "Returns 0 if proxy +0x180 is null. Writes commands through the global queue 0x146c641e0 (vcall +0x20 alloc(proxy+0x68, type, size), +0x30 commit): type 5 with byte +0x70 when +0x73 bit1 is set; type 3 (Md5 name hash + 16 bytes) for +0x10, +0x20, +0x30 when +0x71 & 0x18, for +0x40 when +0x71 & 0x20, and one per entry of table 0x146c64880 (count 0x146c64940, name built with Ne_StrBuf_Printf from +0x50) when +0x71 & 0x40; type 4 with 16 bytes from +0x60. Also updates proxy +0x108 (from FUN_144308540(+0x10)) and proxy +0x19b (effective byte from +0x70/+0x72), marking proxy +0x188 = 2 and +0x18c |= 0x10, and mirrors a changed bit into bit 43 of *(+0x1a8). Callers: Ui_LayoutTree_Walk calls it when node +0x73 & 0x44 or node flag bit 43 is set; 0x144304080 and 0x144306b20 are element setup/rebuild paths that set +0x73 |= 0x42 (or 0xc2) and then flush. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.flush_element_params_to_render_proxy",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 48 8B 81 80 01 00 00",
+  "match": "0x144304fd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144304fd0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Flush_ElementParamsToRenderProxy"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1443075a0",
+  "made_on_target": "0x1443075a0",
+  "twin": "made on steam-26566308; the target 0x1443075a0 is KB 0x144304fd0: Ne_UIElementBase_HandleCommunicationMessage (0x42fe860) and Ne_UITextElement_SetText (0x430e310) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1443075a0",
+    "target": "0x1443075a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "639f381b21b2648d4bfc8d6a8c155502a26c5ef744e416c87601572fd813e407"
+  }
+ ]
+}

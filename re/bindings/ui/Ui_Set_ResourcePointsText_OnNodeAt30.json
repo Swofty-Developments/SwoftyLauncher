@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Set_ResourcePointsText_OnNodeAt30",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141999a90",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t Ui_Set_ResourcePointsText_OnNodeAt30(void *self, int amount)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14199b270 (RacingPC lab re_groups/_decomp);xref:0x141ffa390,0x141fffaf0,0x142000620",
+  "notes": "Formats amount with Ui_Format_ResourcePointsAmountText (format flags 2,0x903) and, if the VM node at +0x30 is a valid string-typed node, writes it with Vm_NodeSet_String; releases the temp NeStr. Context from caller: decal delete cost/refund label."
+ },
+ "signature": {
+  "id": "ui.set_resource_points_text_on_node_at30",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 68 41 89 D0 48 89 CE",
+  "match": "0x141999a90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141999a90",
+  "kind": "func_start",
+  "names": [
+   "Ui_Set_ResourcePointsText_OnNodeAt30"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14199b270",
+  "made_on_target": "0x14199b270",
+  "twin": "made on steam-26566308; the target 0x14199b270 is KB 0x141999a90: Game_MyTeamHq_SetupSceneForState (0x199a560) and Vm_Sponsor_FormatWeeksRemainingLabel (0x199b5b0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14199b270",
+    "target": "0x14199b270"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a97174e715acc516d37915ea58f57f5c77d9e104454b91c0b46047b64f0f76b6"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_InstantRace_Start_GrandPrix",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140ba5250",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_InstantRace_Start_GrandPrix(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140ba5230 (RacingPC lab re_groups/_decomp);xref:0x141c2db00",
+  "notes": "Finds the game mode satisfying Game_GameMode_IsGrandPrix via Career_Find_CareerSaveByPredicate (self+0x4c8); returns if none. Otherwise runs Game_InstantRace_Launch, Game_InstantRace_Apply_SetupMode, Game_InstantRace_SetupTrackList, FUN_140ba3360, Game_Settings_ResetWeatherTimeOfDayOverrides, applies the static entrants UI selection state, stops a pending async job, makes the mode current with Game_Game_SetCurrentGameMode if it is not already and calls its vtable +0xe8 and +0x60."
+ },
+ "signature": {
+  "id": "game.instant_race_start_grand_prix",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 70 48 89 CF 48 8B 89 C8 04 00 00",
+  "match": "0x140ba5250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ba5250",
+  "kind": "func_start",
+  "names": [
+   "Game_InstantRace_Start_GrandPrix"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140ba5230",
+  "made_on_target": "0x140ba5230",
+  "twin": "made on steam-26566308; the target 0x140ba5230 is KB 0x140ba5250: Sess_Build_ChampionshipEntrantSelection (0xba4370) and Sess_EntrantVec_PushBack (0xbacc40) on either side both sit -0x20 below their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140ba5230",
+    "target": "0x140ba5230"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "08df6bcb4ee76523c269370ae40cded73ce5dd991078de7b2bf1ae9c5dff2375"
+  }
+ ]
+}

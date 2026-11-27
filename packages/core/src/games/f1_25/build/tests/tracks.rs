@@ -1,13 +1,7 @@
 use super::*;
 
-#[test]
-fn a_track_record_places_the_files_only_and_the_build_writes_the_track_files() {
+fn record_track_game(root: &Path) -> Game {
     use swofty_formats::gvdb::Record;
-    if loader_dir().is_some() {
-        return;
-    }
-    let root = std::env::temp_dir().join(format!("swofty-build-trackrecord-{}", std::process::id()));
-    std::fs::remove_dir_all(&root).ok();
     let dir = root.join("game");
     std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
     std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
@@ -49,11 +43,21 @@ fn a_track_record_places_the_files_only_and_the_build_writes_the_track_files() {
         ),
     ];
     std::fs::write(dir.join(GVDB), Gvdb::new(records).to_bytes()).unwrap();
-    let game = Game {
+    Game {
         identity: Identity::detect(&dir, Some(1)).unwrap(),
         dir: dir.clone(),
         user_reg: None,
-    };
+    }
+}
+
+#[test]
+fn a_track_record_places_the_files_only_and_the_build_writes_the_track_files() {
+    if loader_dir().is_some() {
+        return;
+    }
+    let root = std::env::temp_dir().join(format!("swofty-build-trackrecord-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let game = record_track_game(&root);
     let store = Store::new(root.join("data"));
     let install = |id: &str, code: &str, name: &str, ops: bool, record: Option<&str>| {
         let src = root.join("src").join(id);
@@ -1440,5 +1444,143 @@ fn the_track_check_never_starts_an_addon_program_and_still_finds_the_limit() {
     let limit = check.limit.expect("7 tracks past the room for 21");
     assert_eq!(limit.names, codes[21..].to_vec());
     assert_eq!(limit.addons.len(), 7);
+    std::fs::remove_dir_all(&root).ok();
+}
+
+fn record_addon_with_video(store: &Store, root: &Path, id: &str, code: &str, video: Option<(&str, &[u8])>) {
+    let src = root.join("src").join(id);
+    std::fs::create_dir_all(src.join("track")).unwrap();
+    std::fs::create_dir_all(src.join("registry")).unwrap();
+    std::fs::write(
+        src.join("swofty.json"),
+        format!(
+            r#"{{ "schema_version": 1, "id": "{id}", "name": "{code}", "version": "1.0.0", "author": "t",
+                 "compat": {{ "game": "f1_25" }}, "operations": {{}} }}"#
+        ),
+    )
+    .unwrap();
+    let field = match video {
+        Some((rel, bytes)) => {
+            let at = src.join(rel);
+            std::fs::create_dir_all(at.parent().unwrap()).unwrap();
+            std::fs::write(at, bytes).unwrap();
+            format!(r#", "video": "{rel}""#)
+        }
+        None => String::new(),
+    };
+    std::fs::write(
+        src.join("registry/track.json"),
+        format!(
+            r#"{{ "track": {{ "{code}": {{ "code": "{code}", "base": "game/melbourne", "files": "track/"{field} }} }} }}"#
+        ),
+    )
+    .unwrap();
+    let world = format!("eaid://environment_package/tracks/{code}/wep/{code}_common.wep");
+    std::fs::write(
+        src.join(format!("track/{code}.erp")),
+        archive_of("WEP", &[&world], 0),
+    )
+    .unwrap();
+    store.install_addon(&src).unwrap();
+    store
+        .update_profile("default", |p| p.set_enabled(id, true))
+        .unwrap();
+}
+
+#[test]
+fn a_track_record_s_circuit_intro_is_placed_under_videos_and_named_in_the_track_facts() {
+    if loader_dir().is_some() {
+        return;
+    }
+    let root = std::env::temp_dir().join(format!("swofty-build-trackvideo-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let game = record_track_game(&root);
+    let store = Store::new(root.join("data"));
+    let mut bink = b"KB2j".to_vec();
+    bink.extend([0u8; 64]);
+    record_addon_with_video(
+        &store,
+        &root,
+        "mod.vid",
+        "vidring",
+        Some(("videos/vidring.bk2", &bink)),
+    );
+    record_addon_with_video(&store, &root, "mod.plain", "plainring", None);
+    record_addon_with_video(
+        &store,
+        &root,
+        "mod.fake",
+        "fakering",
+        Some(("videos/fake.bk2", b"BIK1 not bink 2")),
+    );
+    record_addon_with_video(&store, &root, "mod.gone", "gonering", None);
+    let gone = root.join("src/mod.gone/registry/track.json");
+    std::fs::write(
+        &gone,
+        std::fs::read_to_string(&gone)
+            .unwrap()
+            .replace("\"files\"", "\"video\": \"videos/none.bk2\", \"files\""),
+    )
+    .unwrap();
+    store.install_addon(&root.join("src/mod.gone")).unwrap();
+
+    let built = build(&store, "default", &game).unwrap();
+    let placed = "videos/track_map/swofty/mod.vid/vidring.bk2";
+    assert_eq!(
+        built.plan.added[placed],
+        store.addons_dir().join("mod.vid/videos/vidring.bk2")
+    );
+    assert_eq!(
+        built
+            .plan
+            .added
+            .keys()
+            .filter(|k| k.starts_with("videos/track_map/"))
+            .count(),
+        1,
+        "{:?}",
+        built.plan.added.keys().collect::<Vec<_>>()
+    );
+    assert!(
+        built
+            .lines
+            .iter()
+            .any(|l| l.starts_with("vidring: circuit intro ") && l.ends_with(&format!("goes in {placed}"))),
+        "{:?}",
+        built.lines
+    );
+    for (id, why) in [
+        ("mod.fake/fakering", "is not a Bink 2 file"),
+        ("mod.gone/gonering", "is not in the addon"),
+    ] {
+        let line = built
+            .warnings
+            .iter()
+            .find(|w| w.starts_with(&format!("track {id}: video ")))
+            .unwrap_or_else(|| panic!("{:?}", built.warnings));
+        assert!(
+            line.contains(why) && line.ends_with("it plays its base track's intro"),
+            "{line}"
+        );
+    }
+    assert!(
+        !built
+            .warnings
+            .iter()
+            .any(|w| w.starts_with("track mod.plain/") || w.starts_with("track mod.vid/")),
+        "{:?}",
+        built.warnings
+    );
+    let facts = crate::activation::facts::read(&store.root).unwrap();
+    let video = |code: &str| facts.tracks[code].video.clone();
+    assert_eq!(
+        video("vidring").as_deref(),
+        Some("track_map/swofty/mod.vid/vidring.bk2")
+    );
+    for code in ["plainring", "fakering", "gonering"] {
+        assert_eq!(video(code), None, "{code}");
+    }
+    let again = build(&store, "default", &game).unwrap();
+    assert_eq!(again.buildhash, built.buildhash);
     std::fs::remove_dir_all(&root).ok();
 }

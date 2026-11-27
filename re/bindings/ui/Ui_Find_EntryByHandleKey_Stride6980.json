@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Find_EntryByHandleKey_Stride6980",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141969a40",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Find_EntryByHandleKey_Stride6980(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14196b220 (RacingPC lab re_groups/_decomp);xref:0x141bfef90,0x141c01df0",
+  "notes": "std::map lower_bound at +0x70 keyed by the 16-bit packed handle built from self+0x120 (type<<14) and self+0x122 (index); on a hit returns vector base node+0x30 plus node+0x50 index times 0x6980 (bounds checked against node+0x38), else 0. Context from caller: solo team select / custom MyTeam flow, entry is likely the per-team vehicle spawn descriptor."
+ },
+ "signature": {
+  "id": "ui.find_entry_by_handle_key_stride6980",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 4C 8B 41 70 49 8B 40 08",
+  "match": "0x141969a40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141969a40",
+  "kind": "func_start",
+  "names": [
+   "Ui_Find_EntryByHandleKey_Stride6980"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14196b220",
+  "made_on_target": "0x14196b220",
+  "twin": "made on steam-26566308; the target 0x14196b220 is KB 0x141969a40: Ne_Std_ThrowVectorSubscriptError (0x1952cb0) and Ui_Play_FacilityStageCutsceneByIndex (0x19707c0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14196b220",
+    "target": "0x14196b220"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "456d1d3ab0d0f54ba7a47b087c7a0023edc3b0c72d5880e5325fef902f9bef09"
+  }
+ ]
+}

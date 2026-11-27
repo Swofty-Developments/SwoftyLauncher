@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_YoungDriversVM_AddDriverRow",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1419c9570",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_YoungDriversVM_AddDriverRow(void *list_vm, void *entry)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1419cad50 (RacingPC lab re_groups/_decomp);xref:0x1423fc800,0x1423fda20",
+  "notes": "Formats a child node name from format string +0x68 and counter +0x90 (djb2 hash -> Vm_GetOrCreate_ChildNode), appends a 0xff0-byte row to the vector at +0x30/+0x38/+0x40 (grow x1.5), writes entry+0x50 driver id to row+0x1c0, builds a nested 0xe00 slot at row+0x1d0 with the career mode ptr and entry+0x50/+0x54 ids, then calls Ui_TeamHq_Leverage_Refresh on it. Row field meanings beyond the driver id are inferred."
+ },
+ "signature": {
+  "id": "career.young_drivers_vm_add_driver_row",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 48 89 D7 48 89 CE 44 8B 89 90 00 00 00",
+  "match": "0x1419c9570",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419c9570",
+  "kind": "func_start",
+  "names": [
+   "Career_YoungDriversVM_AddDriverRow"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1419cad50",
+  "made_on_target": "0x1419cad50",
+  "twin": "made on steam-26566308; the target 0x1419cad50 is KB 0x1419c9570: Vm_TeamHqAdvanceCard_BindNodeRefs (0x19ca1d0) and Ui_Copy_ListElementOrEmpty (0x19cd7e0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1419cad50",
+    "target": "0x1419cad50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9fd282c556354e4c2745963eadd2e921fb353d927af4ecd9ab87b79290c84c8f"
+  }
+ ]
+}

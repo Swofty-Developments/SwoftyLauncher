@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbort_Thunk_140b50450",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140b50400",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbort_Thunk_140b50450(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140b50450 (RacingPC lab re_groups/_decomp);xref:0x1409f4ff0",
+  "notes": "(thunk) Calls Ne_Crt_InvalidParameterAbort then int3. Overflow failure path of the rehash at 0x140b50460."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_thunk_140b50450",
+  "section": ".xtls",
+  "pattern": "A8 04 0F 85 ?? ?? ?? ?? E9 ?? ?? ?? ?? E8 ?? ?? ?? ?? E8",
+  "match": "0x1409f9b7d",
+  "anchor": "0xe",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xd"
+  },
+  "target": "0x140b50400",
+  "kind": "call",
+  "names": [
+   "Ne_Crt_InvalidParameterAbort_Thunk_140b50450"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1409f9bcd",
+  "made_on_target": "0x140b50450",
+  "twin": "made on steam-26566308; the target 0x140b50450 is KB 0x140b50400: Ne_Rng_Mt19937_Refill (0xb4f7a0) and Career_Get_FacilityNodeList (0xb537f0) on either side both sit 0x50 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1409f9bcd",
+    "target": "0x140b50450"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9b7d3c04b3e2fe95a65e258e2bf435a6a720c2795e7514fca7834b917669c838"
+  }
+ ]
+}

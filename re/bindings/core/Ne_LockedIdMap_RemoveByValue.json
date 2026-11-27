@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_LockedIdMap_RemoveByValue",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14418d120",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_LockedIdMap_RemoveByValue(void *map, void *value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14418f6f0 (RacingPC lab re_groups/_decomp);xref:0x1441d8580",
+  "notes": "Takes the lock at +0x58, scans every occupied robin-hood slot (slots +0x28, info bytes +0x30, count +0x38) for a node whose +8 equals value, returns the node to the free list at +8, backward-shift erases the slot and decrements the count. Returns 0 on removal, 3 if not found, 0x16 if value is null."
+ },
+ "signature": {
+  "id": "core.locked_id_map_remove_by_value",
+  "section": ".xtls",
+  "pattern": "49 8B 4E 20 48 89 C2 E8 ?? ?? ?? ?? 89 C7",
+  "match": "0x1437ef067",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x7"
+  },
+  "target": "0x14418d120",
+  "kind": "call",
+  "names": [
+   "Ne_LockedIdMap_RemoveByValue"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1437f15f7",
+  "made_on_target": "0x14418f6f0",
+  "twin": "made on steam-26566308; the target 0x14418f6f0 is KB 0x14418d120: Vm_Run_Route (0x418a940) and Ne_Make_StrFromCStr (0x4199ab0) on either side both sit 0x25d0 above their KB addresses; the match 0x1437f15f7 is KB 0x1437ef067: Game_TrackSurface_DryLineStrength (0x37cff90) and site_Game_TileListSelect_ChildStep (0x383b560) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1437f15f7",
+    "target": "0x14418f6f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "301ed19acae091592f524ed8e9114229c9d857566de311b4632468f74336ee0a"
+  }
+ ]
+}

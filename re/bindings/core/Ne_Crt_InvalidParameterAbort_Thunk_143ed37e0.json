@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbort_Thunk_143ed37e0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143ed1210",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbort_Thunk_143ed37e0(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ed37e0 (RacingPC lab re_groups/_decomp)",
+  "notes": "(thunk) Noreturn stub: calls Ne_Crt_InvalidParameterAbort then int3. Overflow-abort tail of the adjacent robin-hood map code."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_thunk_143ed37e0",
+  "section": ".xtls",
+  "pattern": "75 29 E8 ?? ?? ?? ?? 48 8B 44 24 20",
+  "match": "0x143bdfb83",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x2"
+  },
+  "target": "0x143ed1210",
+  "kind": "call",
+  "names": [
+   "Ne_Crt_InvalidParameterAbort_Thunk_143ed37e0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143be2153",
+  "made_on_target": "0x143ed37e0",
+  "twin": "made on steam-26566308; the target 0x143ed37e0 is KB 0x143ed1210: Ne_Vector_GrowEmplace_Elem384 (0x3ecf690) and Ne_PoolList_Resize_B (0x3ed46c0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143be2153",
+    "target": "0x143ed37e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4d584209cf6e9188cf47280b3ffea3b222afe5406b7b39e2f71d54ed59fb8f84"
+  }
+ ]
+}

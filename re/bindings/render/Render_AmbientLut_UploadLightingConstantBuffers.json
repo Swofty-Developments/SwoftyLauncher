@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_AmbientLut_UploadLightingConstantBuffers",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143ca5290",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "void Render_AmbientLut_UploadLightingConstantBuffers(void *self, void *frameCtx, void *view, uint8_t rebuild)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ca7860 (RacingPC lab re_groups/_decomp);xref:0x143eebfd0",
+  "notes": "Per-frame fill of several GPU constant/structured buffers (self+0x198,+0x1A0,+0x1A8,+0x1B0,+0x1B8,+0x1C0) allocated with Render_Gfx2Heap_BumpAllocPlacedResource and registered at frameCtx+0x16F0/+0x16F4. First block writes resolution (from self+0x160 +0x20/+0x24 clamped to globals 0x145f9908c/90), 16px tile counts, inverse sizes and many tuning globals (0x145f99088..c8, 0x1464d5128..3d). When rebuild!=0 it copies up to 32 volume records (0x40 stride, count +0x810), 128 records (count +0x2820) and 1024 records of 0x90 bytes (count +0x26830) from the source at *(self+0x288)+0x10, keeps a 40-frame history ring per volume (0x130-byte entries in statics 0x1464d5150..), copies large static LUT tables (0x1459c2c40.., 8x12x64 entries of 0x1E0 bytes), writes counts to self+0x240/+0x244, then calls view+0x200 vtable+0x1E0. Exact feature (volumetric/probe lighting) is inferred, not proven by strings."
+ },
+ "signature": {
+  "id": "render.ambient_lut_upload_lighting_constant_buffers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 0C 00 00 C5 78 29 BC 24 F0 0B 00 00",
+  "match": "0x143ca5290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ca5290",
+  "kind": "func_start",
+  "names": [
+   "Render_AmbientLut_UploadLightingConstantBuffers"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143ca7860",
+  "made_on_target": "0x143ca7860",
+  "twin": "made on steam-26566308; the target 0x143ca7860 is KB 0x143ca5290: site_Ne_HwInt_VolFogMapHeight (0x3ca776a) and Render_GroundCoverPlugin_Render (0x3cde400) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143ca7860",
+    "target": "0x143ca7860"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6861755ce11c54e0258c8b077d765f865e03f29db59069a3a2b2948de168f6a6"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Career_Bank_SortRecordPtrsByKey28_A",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d42ed0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_Bank_SortRecordPtrsByKey28_A(void **first, void **last, uint64_t depth_budget)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d43a50 (RacingPC lab re_groups/_decomp);xref:0x140c5f830",
+  "notes": "Introsort (insertion sort under 33 elems, heapsort fallback, ninther pivot) over an array of record pointers. Ascending key is a 16-bit value built from the int at record+0x28: (v << 14) | (v >> 16) truncated to u16. Better context needed: the record type whose +0x28 packed field is the sort key."
+ },
+ "signature": {
+  "id": "career.bank_sort_record_ptrs_by_key28_a",
+  "section": ".xtls",
+  "pattern": "4C 89 E2 E8 ?? ?? ?? ?? 48 8B 74 24 68",
+  "match": "0x140c5f4fd",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x140d42ed0",
+  "kind": "call",
+  "names": [
+   "Career_Bank_SortRecordPtrsByKey28_A"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140c5ffbd",
+  "made_on_target": "0x140d43a50",
+  "twin": "made on steam-26566308; the target 0x140d43a50 is KB 0x140d42ed0: Ne_Vector24_PushBackMove (0xd34330) and Career_DeptEvent_CheckStoredUpgradeForDriver (0xd6d5c0) on either side both sit 0xb80 above their KB addresses; the match 0x140c5ffbd is KB 0x140c5f4fd: Career_Bank_WriteSaveData (0xc5f830) and Career_Bank_UnregisterMessageHandlers (0xc65560) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140c5ffbd",
+    "target": "0x140d43a50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "57b6f40bedcf29e9abc9edf3911104369214deefa1c03d69e2d3efc5db4d78df"
+  }
+ ]
+}

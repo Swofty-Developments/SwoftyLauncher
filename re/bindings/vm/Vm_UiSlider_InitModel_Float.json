@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_UiSlider_InitModel_Float",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14425b160",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "int32_t Vm_UiSlider_InitModel_Float(void *slider, void *props)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14425d730 (RacingPC lab re_groups/_decomp);xref:0x14425b980",
+  "notes": "Float twin of 0x14425cfe0: 0x48-byte model (vtable 0x145a86720, defaults 0/1.0) at slider+0x50, properties read with 0x1442084c0 into the same offsets (+0xc lower, +0x10 upper, +0x14, +0x18, +8 value clamped, +0x1c, bool +0x22) and bindings registered through FUN_1438f22e0. Good hook to change slider ranges."
+ },
+ "signature": {
+  "id": "vm.ui_slider_init_model_float",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 48 89 D6 48 89 CB 48 8B 0D ?? ?? ?? ?? 48 8B 01 FF 50 08 4C 8B 08 BA 48 00 00 00 41 B8 08 00 00 00 48 89 C1 41 FF 51 18 48 89 C7 48 85 C0 74 6B 48 8D 05",
+  "match": "0x14425b160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14425b160",
+  "kind": "func_start",
+  "names": [
+   "Vm_UiSlider_InitModel_Float"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14425d730",
+  "made_on_target": "0x14425d730",
+  "twin": "made on steam-26566308; the target 0x14425d730 is KB 0x14425b160: Ne_Property_ResolveBindingChain (0x4255480) and Game_ProfanityFilter_FilterText (0x426f500) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14425d730",
+    "target": "0x14425d730"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a6ac4a3d8dcc35f7bbb45bbe36cef0c3e11cc2bbb67c101a8b451cf5711bd71e"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneCar_IsSpawnedAndIdle",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1428c6130",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "bool Game_FrontendSceneCar_IsSpawnedAndIdle(void *sceneCar)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1428c84f0 (RacingPC lab re_groups/_decomp);xref:0x1417e8520,0x141998fc0,0x14254b890,0x1427b4430,0x1428cb420,0x142ab0d00",
+  "notes": "Returns 0 if byte +0x6981 is clear. Otherwise looks up u16 id +0xc0 in the owner (+0x98) hash map at +0xf78..+0xfac; returns 1 if the id is absent, else 1 only when the entry object bytes +0x94 and +0x95 are both 0. Meaning of the two busy bytes is inferred (pending load/change). Useful poll to know a frontend car is safe to respawn."
+ },
+ "signature": {
+  "id": "game.frontend_scene_car_is_spawned_and_idle",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 80 B9 81 69 00 00 00 0F 84",
+  "match": "0x1428c6130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428c6130",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneCar_IsSpawnedAndIdle"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1428c84f0",
+  "made_on_target": "0x1428c84f0",
+  "twin": "made on steam-26566308; the target 0x1428c84f0 is KB 0x1428c6130: Game_MyTeamCustomisation_PlayVideoWallVideo (0x28c1110) and Game_FrontendSceneManager_ProcessPendingDriverChanges (0x28d02f0) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1428c84f0",
+    "target": "0x1428c84f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5d844298808e6207551f5ecba45a8423c28040a86b94ab11b80a33bf0319e441"
+  }
+ ]
+}

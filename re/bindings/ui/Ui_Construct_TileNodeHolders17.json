@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ui_Construct_TileNodeHolders17",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142141f90",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Construct_TileNodeHolders17(void *self, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142143b90 (RacingPC lab re_groups/_decomp);xref:0x141fbb8e0",
+  "notes": "Copy-constructs a 17-holder VM node bundle: base vtable 0x1456fa7a8 with 6 typed holders bound from src node handles at src+0x10,+0x30,..+0xb0, then vtable 0x14576dec0 with 11 more from src+0xd0..+0x210 (string, bool, token and ref holder types), and copies the u32 at src+0x228 to self+0x228. Returns self. Context from caller: challenge career episode tile."
+ },
+ "signature": {
+  "id": "ui.construct_tile_node_holders17",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 81 85 98 04 00 00 30 02 00 00",
+  "match": "0x141fbc373",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x142141f90",
+  "kind": "call",
+  "names": [
+   "Ui_Construct_TileNodeHolders17"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141fbdf73",
+  "made_on_target": "0x142143b90",
+  "twin": "made on steam-26566308; the target 0x142143b90 is KB 0x142141f90: Vm_FinancePeriod_Bind (0x212df10) and site_Career_RnDPerfViewModelSlotDtor (0x2172bd1) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141fbdf73",
+    "target": "0x142143b90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7041eafbbcddf3ed9663b9aa09d96812c2fd5dab18739c9922fafbf565996c4c"
+  }
+ ]
+}

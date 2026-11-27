@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Check_MaskedEntriesVehiclesReady",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1435b2990",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "uint8_t Game_Check_MaskedEntriesVehiclesReady(void *self, uint32_t mask)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1435b4f20 (RacingPC lab re_groups/_decomp);xref:0x14362bf80",
+  "notes": "Returns 0 if 0x14358b300(+0x60) is false. Iterates rb-tree +0x50; for each node entry (0x28 stride, +0x30..+0x38) whose bit index +1 is in mask and whose byte +0x25 is 0, resolves the node vehicle index (+0x20) in (+0x40)->+0xa0[idx] (lazy lookup by +0x18->+0x58->+0xe8) and requires flag 0x40 in its +0x32; returns 0 on the first miss, else 1. Context from caller: NetSafetyCarCinematic start gate."
+ },
+ "signature": {
+  "id": "game.check_masked_entries_vehicles_ready",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 89 D6",
+  "match": "0x1435b2990",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435b2990",
+  "kind": "func_start",
+  "names": [
+   "Game_Check_MaskedEntriesVehiclesReady"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1435b4f20",
+  "made_on_target": "0x1435b4f20",
+  "twin": "made on steam-26566308; the target 0x1435b4f20 is KB 0x1435b2990: Sess_Misconduct_GetWatchState (0x35b43e0) and Sess_Rules_ReadBlueFlagRules (0x35b6bd0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1435b4f20",
+    "target": "0x1435b4f20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a1df832bb1d4923648e9540c1e1bb95b3f5dce1c9abab6b7a72e10865b382a72"
+  }
+ ]
+}

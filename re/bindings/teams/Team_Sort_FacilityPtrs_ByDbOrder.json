@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_Sort_FacilityPtrs_ByDbOrder",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140e1b750",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "void Team_Sort_FacilityPtrs_ByDbOrder(void *first, void *last, int64_t depth_budget, void *cmp_ctx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140e1c2d0 (RacingPC lab re_groups/_decomp);xref:0x140dea820",
+  "notes": "Introsort (insertion sort under 33 elems, median-of-3/ninther partition, heapsort via 0x140e1d2e0 when depth budget hits 0, recursive on smaller half) over 16-byte owning elements {allocator, facility_ptr}; swaps destroy displaced objects via vt+8 and free via allocator vt+0x38. Comparator: takes facility+0x238 (int16 facility id), looks it up in cmp_ctx+8..+0x10 (16-byte entries, entry[1]->+0x120 int16 id) and orders ascending by the matched record +0x124 (uint32 sort index). Decides the order of MyTeam facilities after Team_Load_Facilities."
+ },
+ "signature": {
+  "id": "teams.sort_facility_ptrs_by_db_order",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 49 89 D4 49 89 CD",
+  "match": "0x140e1b750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140e1b750",
+  "kind": "func_start",
+  "names": [
+   "Team_Sort_FacilityPtrs_ByDbOrder"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140e1c2d0",
+  "made_on_target": "0x140e1c2d0",
+  "twin": "made on steam-26566308; the target 0x140e1c2d0 is KB 0x140e1b750: Ne_Crt_InvalidParameterAbortStub_140e0fd20 (0xe108a0) and Career_Condition_FacilityUpgradeType_Ctor (0xe3f620) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140e1c2d0",
+    "target": "0x140e1c2d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4707c928940343394bdaac08fd12818213d7fdf75dcb4f8f78eca853a2894d4e"
+  }
+ ]
+}

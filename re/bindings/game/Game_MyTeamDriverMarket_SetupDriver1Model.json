@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamDriverMarket_SetupDriver1Model",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142302540",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_MyTeamDriverMarket_SetupDriver1Model(void *screen)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142304140 (RacingPC lab re_groups/_decomp);xref:0x142301ef0,0x142308150,0x14230b380",
+  "notes": "Builds the first 3D driver model of the MyTeam driver market / contract comparison screen. Gets the entrant pointer list through vfunc +0x1c8 of (+0x6b8)+0x1030, keeps entrants whose team id (+0x58 byte, +0x5a short) matches the screen team id at +0x6c0, sorts with Ne_Std_IntroSort_PtrsByOptByte80 and trims to 2, then picks index 0 or (when +0x2dc0 is set) the int at +0x2a78. Fills a custom-driver descriptor from entrant +0x50/+0x54/+0x58 with a random name string (LCG on (+0x2d70)+0x188), allocates slot +0x2d46 via Game_FrontendSceneManager_FindOrCreateNewCustomDriver(+0x2d58). If +0x2dc0==0 it uses scene node Driver1 with pose_07_idle (kind 4) through Ui_Setup_DriverFrontendForPerkAcclaim, else DriverMarketDriver1 with pose_07_idle (kind 3/7) through Game_FrontendSceneManager_SetupCustomDriver. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "game.my_team_driver_market_setup_driver1_model",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 0C 00 00 48 89 CF",
+  "match": "0x142302540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142302540",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamDriverMarket_SetupDriver1Model"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142304140",
+  "made_on_target": "0x142304140",
+  "twin": "made on steam-26566308; the target 0x142304140 is KB 0x142302540: Game_MyTeamDriverMarket_Open (0x2301ef0) and Game_MyTeamDriverMarket_Close (0x23072e0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142304140",
+    "target": "0x142304140"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9deef01f744764e939c457a59f3fea2d83cbafb9c560bfd4e847fd6af02dcdd2"
+  }
+ ]
+}

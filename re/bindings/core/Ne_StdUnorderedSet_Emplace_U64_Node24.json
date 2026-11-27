@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_StdUnorderedSet_Emplace_U64_Node24",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140b42920",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_StdUnorderedSet_Emplace_U64_Node24(void *set, void *outPair, const uint64_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140b42970 (RacingPC lab re_groups/_decomp);xref:0x143c7a400",
+  "notes": "(lib) MSVC std::unordered_set<uint64> emplace: FNV-1a over 8 key bytes, bucket lookup, allocates 0x18 node from allocator +8, rehash through 0x140b42c10 when load factor exceeded, returns {node, inserted}."
+ },
+ "signature": {
+  "id": "core.std_unordered_set_emplace_u64_node24",
+  "section": ".xtls",
+  "pattern": "4C 8D 44 24 40 E8 ?? ?? ?? ?? 31 C0",
+  "match": "0x143c77fe0",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x140b42920",
+  "kind": "call",
+  "names": [
+   "Ne_StdUnorderedSet_Emplace_U64_Node24"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c7a5b0",
+  "made_on_target": "0x140b42970",
+  "twin": "made on steam-26566308; the target 0x140b42970 is KB 0x140b42920: Ai_CannedEvents_PushQueueMessage (0xb3fde0) and Ne_Crt_FatalTrapC (0xb43600) on either side both sit 0x50 above their KB addresses; the match 0x143c7a5b0 is KB 0x143c77fe0: Ne_DecalsSetProxy_Dtor (0x3c79520) and Ne_CustomisationDecalsSetPlugin_CloseConnection (0x3c7b5a0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c7a5b0",
+    "target": "0x140b42970"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d77fea9612c1c7e97a881aabe9ab6b5dca6254f1540087824b0c130000c8b629"
+  }
+ ]
+}

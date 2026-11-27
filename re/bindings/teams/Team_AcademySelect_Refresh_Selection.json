@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_AcademySelect_Refresh_Selection",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141a74290",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "void Team_AcademySelect_Refresh_Selection(void *screen)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141a75a70 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141a731e0,0x141a760e0",
+  "notes": "Walks the std::map at screen+0x340 and calls func_0x1428edbf0(screen+0x298, u16 node+0x24, 0) for every node, then takes the current index from FUN_141a75c80. If it is inside the 16-byte array at *(screen+0x2a0)+0x298 it posts a bus message (vtable 0x145615558, kind 0, first u32 of the entry list) and for up to 3 ids of the entry list (+0x10..+0x18) finds the map node with the same key (byte +0x20, word +0x22) and calls func_0x1428edbf0(.., id, 1); otherwise it posts kind 6 with id 0x3fff0000. Both callers reach it by a tail jump (the body is merged into their decompile): Team_Build_AcademySelect at the end of the screen build, and 0x141a760e0, the screen event handler, on event hash 0x70d928ee. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "teams.academy_select_refresh_selection",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 48 89 CE 48 8B B9 A0 02 00 00",
+  "match": "0x141a74290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a74290",
+  "kind": "func_start",
+  "names": [
+   "Team_AcademySelect_Refresh_Selection"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141a75a70",
+  "made_on_target": "0x141a75a70",
+  "twin": "made on steam-26566308; the target 0x141a75a70 is KB 0x141a74290: site_FeTile_EraTilesBuilt (0x1a70f08) and Game_F1WorldActivityContainer_OnExit (0x1a78b20) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141a75a70",
+    "target": "0x141a75a70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9f46d91767220c925d36389771ab708e2a86733b1efcb2c514c150a5a70e0e59"
+  }
+ ]
+}

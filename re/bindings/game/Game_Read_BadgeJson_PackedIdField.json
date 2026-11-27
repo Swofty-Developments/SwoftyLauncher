@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Read_BadgeJson_PackedIdField",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14248ea80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_Read_BadgeJson_PackedIdField(void *json_obj, void *out)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142490680 (RacingPC lab re_groups/_decomp);xref:0x14248f420",
+  "notes": "Finds the member keyed by the string at 0x14578e13f with Ne_StringPool_FindObjectByCStr; missing -> errno 0x57, wrong type (not the desc at 0x14612be68) -> errno 0x58. On success reads a uint16 via vtbl+0x30 and writes *(uint32_t*)(out+8) = (value << 16) | 7, i.e. a packed key with category 7, and returns 0. Caller Game_Read_BadgeInfoJson calls it only when the field exists, with out = badge+0x108, and stores the result as its error code. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.read_badge_json_packed_id_field",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 D6 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 4C 48 89 C7",
+  "match": "0x14248ea80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14248ea80",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_BadgeJson_PackedIdField"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142490680",
+  "made_on_target": "0x142490680",
+  "twin": "made on steam-26566308; the target 0x142490680 is KB 0x14248ea80: Ent_EntrantsSystem_ReplaceVehicle (0x2478370) and Ai_DriverConfig_InitDefault (0x249c0f0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142490680",
+    "target": "0x142490680"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "dabc8647547b5c069567e909c61c0eab04352e54de2abf47c64a178d2e35febb"
+  }
+ ]
+}

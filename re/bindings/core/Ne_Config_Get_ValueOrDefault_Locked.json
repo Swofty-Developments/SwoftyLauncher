@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Config_Get_ValueOrDefault_Locked",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143a43880",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_Config_Get_U64SizeOrDefault_Locked(void *cfg, const char *name, uint64_t *out, uint64_t def)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a45e50 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141c359a0,0x142f3cb60,0x143043330",
+  "notes": "Renamed from Ne_Config_Get_ValueOrDefault_Locked: the value is parsed by FUN_14391c260 into a uint64 (0x hex and K/G size suffixes), so the type is known. Locks cfg+0x10, looks name up in the FNV-1a name table at cfg+8 (Ne_NameTable_FindByFnv1a_B, 16-byte entries from +0x18, end +0x20), parses entry+8 into *out and returns 0; if the table or key is missing writes def and returns 2, on parse failure writes def and returns 0x21; error codes also go to the TLS errno chain and g_Ne_ErrnoTraceRing; unlocks. Callers: Game_Read_GameConfig_5 reads the u64 at +0xf0 (key 0x1457fa13f), Game_Read_NetworkConfig uses it for var type 6, 0x141c359a0 (a constructor) reads two 0x80-default limits into +0x1430/+0x1438. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "core.config_get_value_or_default_locked",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 4C 89 CF 4C 89 C3 49 89 CE 48 89 54 24 30 48 8D 71 10 48 89 F1 E8 ?? ?? ?? ?? 4D 8B 76 08 4D 85 F6 0F 84",
+  "match": "0x143a43880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a43880",
+  "kind": "func_start",
+  "names": [
+   "Ne_Config_Get_ValueOrDefault_Locked"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143a45e50",
+  "made_on_target": "0x143a45e50",
+  "twin": "made on steam-26566308; the target 0x143a45e50 is KB 0x143a43880: Ne_Get_SettingU32 (0x3a45810) and Ne_Get_SettingBool (0x3a46160) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a45e50",
+    "target": "0x143a45e50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "dd34b238e36222c0de09cc94e9680ca02642b3220740af459b786282a6b66f7d"
+  }
+ ]
+}

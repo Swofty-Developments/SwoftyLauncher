@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_Destroy_OptionalNodeHandleArray9",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14191e220",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Destroy_OptionalNodeHandleArray9(void *handles)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14191fa00 (RacingPC lab re_groups/_decomp);xref:0x141fd6980,0x141fd8350,0x142030cd0,0x14204e8e0",
+  "notes": "If engaged flag at +0x120 is set, walks 9 node handles (0x20 bytes each, +0x100 down to +0x00), resets vtable to 0x145614e48, unlinks each from its node's handle list (+0x28) and calls Vm_Release_Node, zeroing the handle. Does not clear the flag."
+ },
+ "signature": {
+  "id": "vm.destroy_optional_node_handle_array9",
+  "section": ".xtls",
+  "pattern": "48 89 F9 E8 ?? ?? ?? ?? 48 8B 5E 10",
+  "match": "0x1417ee990",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x14191e220",
+  "kind": "call",
+  "names": [
+   "Vm_Destroy_OptionalNodeHandleArray9"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1417f0170",
+  "made_on_target": "0x14191fa00",
+  "twin": "made on steam-26566308; the target 0x14191fa00 is KB 0x14191e220: Ui_Purchase_SelectTierButton (0x18e10c0) and Ui_Rnd_SetUpgradeRewards (0x1921af0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1417f0170",
+    "target": "0x14191fa00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5ed700d4ca9bfb1f019788c369998df603b23aae70259a78d6f873241040a8b6"
+  }
+ ]
+}

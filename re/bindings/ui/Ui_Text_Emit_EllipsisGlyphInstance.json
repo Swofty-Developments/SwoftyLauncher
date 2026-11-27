@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ui_Text_Emit_EllipsisGlyphInstance",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14431b940",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Text_Emit_EllipsisGlyphInstance(void *elem, float *matrix, void *pen, void *style, void *out, void *p6)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14431df10 (RacingPC lab re_groups/_decomp);xref:0x14431c610,0x14431cf40",
+  "notes": "Static code point 0x2026 (ellipsis, TLS guard 0x146ca7200) is looked up in the font glyph map (*(style+0x48)+0x870, falls back to default glyph at font+0x40 -> +8), glyph metrics come from FUN_144342d90 / FUN_1442c8820. Position = pen+0x10 + glyph offset * (1/font scale), transformed by the 4x4 matrix; writes one 0x40-byte glyph instance at *(out+0x20) (pos, size +0x20/+0x24, UVs +0x10..+0x1c, page +0x30, glyph id +0x34, normalised coords +0x38/+0x3c from style+100 mode and elem+0x100/+0x110 bounds) and advances out+0x20 by 0x40. Both callers (Ui_Text_LayoutUtf8Run and Caller 0x14431c610: a sibling glyph-run layout with the same trailing args) call it once at the end when their truncate flag p8 is set. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.text_emit_ellipsis_glyph_instance",
+  "section": ".xtls",
+  "pattern": "49 89 E9 E8 ?? ?? ?? ?? C5 F8 28 B4 24 F0 00 00 00",
+  "match": "0x14431a8f2",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x14431b940",
+  "kind": "call",
+  "names": [
+   "Ui_Text_Emit_EllipsisGlyphInstance"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14431cec2",
+  "made_on_target": "0x14431df10",
+  "twin": "made on steam-26566308; the target 0x14431df10 is KB 0x14431b940: Ne_UITextElement_UpdateDocument (0x431ad00) and Ui_Build_TeamHqMyTeamTabViewModels (0x431fcf0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14431cec2",
+    "target": "0x14431df10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "33462035396c11b0aebe694de736d0d673299a0a3956146c07ee353bcc9acf11"
+  }
+ ]
+}

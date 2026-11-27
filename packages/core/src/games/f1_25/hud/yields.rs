@@ -51,6 +51,10 @@ pub const NOTIFICATIONS_SCENE: &str =
     "eaid://ui_package/art/osd/components/message_system/message_system.idf";
 pub const TIMER_SCENE: &str = "eaid://ui_package/art/osd/components/session_timer/q_session_timer.idf";
 pub const MINIMAP_SCENE: &str = "eaid://ui_package/art/osd/components/minimap/minimap_combined.idf";
+const MINI_MAP_SCENE: &str = "eaid://ui_package/art/osd/components/minimap/minimap.idf";
+const TRACK_MAP_SCENE: &str = "eaid://ui_package/art/osd/components/full_track_map/full_track_map.idf";
+const RACE_CONTROL_SCENE: &str =
+    "eaid://ui_package/art/osd/components/spectator_mode/spec_race_control_message.idf";
 const FLAG_PARENT: &str =
     "hud_left_notification_dynamic.osd_visibility_option.left_notification.left_message";
 const FLAG_PARENT_P2: &str =
@@ -62,12 +66,37 @@ const NOTIFICATIONS_PARENT_P2: &str =
 const TIMER_PARENT: &str = "hud_session_timer_dynamic.session_timer";
 const MINIMAP_PARENT: &str = "hud_dynamic_minimap.osd_visibility_option.map";
 const REPLAY_CONTROLS: &str = "replay_interface";
+const SPECT_FLAG_VIA: [&str; 2] = [screens::SPECT_PREFIX, "race_condition_flag_message"];
+const SPECT_RACE_CONTROL_VIA: [&str; 2] = [screens::SPECT_PREFIX, "race_control_message"];
+const SPECT_MINI_MAP_VIA: [&str; 2] = [screens::SPECT_PREFIX, "mini_map"];
+const SPECT_TRACK_MAP_VIA: [&str; 2] = [screens::SPECT_PREFIX, "track_map"];
+const SPECT_TABLE_VIA: [&str; 2] = [screens::SPECT_PREFIX, screens::SPECT_TABLE_EL];
+const SPECT_SCREEN_VIA: [&str; 1] = [screens::SPECT_PREFIX];
 
 const fn race(parent: &'static str) -> Hook {
     Hook {
         template: dials::TEMPLATE,
         parent,
         via: &[],
+    }
+}
+
+/// A node of the spectator screen's template that reaches the scene through `via`.
+const fn spectator(via: &'static [&'static str]) -> Hook {
+    Hook {
+        template: screens::SPECT_UI,
+        parent: screens::SPECT_PARENT,
+        via,
+    }
+}
+
+/// A spot around everything in the root of a component scene the spectator screen instances.
+const fn spectator_component(scene: &'static str, hooks: &'static [Hook]) -> Spot {
+    Spot {
+        scene,
+        inside: screens::SCENE_ROOT,
+        take: Take::All,
+        hooks,
     }
 }
 
@@ -152,25 +181,12 @@ pub const PARTS: &[Part] = &[
     Part {
         key: "spectator",
         spots: &[
-            Spot {
-                scene: screens::SPECT_TABLE,
-                inside: screens::SCENE_ROOT,
-                take: Take::All,
-                hooks: &[Hook {
-                    template: screens::SPECT_UI,
-                    parent: screens::SPECT_PARENT,
-                    via: &[screens::SPECT_PREFIX, screens::SPECT_TABLE_EL],
-                }],
-            },
+            spectator_component(screens::SPECT_TABLE, &[spectator(&SPECT_TABLE_VIA)]),
             Spot {
                 scene: screens::SPECT_SCREEN,
                 inside: screens::SCENE_ROOT,
                 take: Take::Only(&[screens::SPECT_HEADER_EL]),
-                hooks: &[Hook {
-                    template: screens::SPECT_UI,
-                    parent: screens::SPECT_PARENT,
-                    via: &[screens::SPECT_PREFIX],
-                }],
+                hooks: &[spectator(&SPECT_SCREEN_VIA)],
             },
         ],
     },
@@ -189,17 +205,24 @@ pub const PARTS: &[Part] = &[
             scene: FLAG_SCENE,
             inside: "boundless",
             take: Take::All,
-            hooks: &[race(FLAG_PARENT), race(FLAG_PARENT_P2)],
+            hooks: &[
+                race(FLAG_PARENT),
+                race(FLAG_PARENT_P2),
+                spectator(&SPECT_FLAG_VIA),
+            ],
         }],
     },
     Part {
         key: "notifications",
-        spots: &[Spot {
-            scene: NOTIFICATIONS_SCENE,
-            inside: screens::SCENE_ROOT,
-            take: Take::All,
-            hooks: &[race(NOTIFICATIONS_PARENT), race(NOTIFICATIONS_PARENT_P2)],
-        }],
+        spots: &[
+            Spot {
+                scene: NOTIFICATIONS_SCENE,
+                inside: screens::SCENE_ROOT,
+                take: Take::All,
+                hooks: &[race(NOTIFICATIONS_PARENT), race(NOTIFICATIONS_PARENT_P2)],
+            },
+            spectator_component(RACE_CONTROL_SCENE, &[spectator(&SPECT_RACE_CONTROL_VIA)]),
+        ],
     },
     Part {
         key: "session_timer",
@@ -212,12 +235,16 @@ pub const PARTS: &[Part] = &[
     },
     Part {
         key: "minimap",
-        spots: &[Spot {
-            scene: MINIMAP_SCENE,
-            inside: screens::SCENE_ROOT,
-            take: Take::All,
-            hooks: &[race(MINIMAP_PARENT)],
-        }],
+        spots: &[
+            Spot {
+                scene: MINIMAP_SCENE,
+                inside: screens::SCENE_ROOT,
+                take: Take::All,
+                hooks: &[race(MINIMAP_PARENT)],
+            },
+            spectator_component(MINI_MAP_SCENE, &[spectator(&SPECT_MINI_MAP_VIA)]),
+            spectator_component(TRACK_MAP_SCENE, &[spectator(&SPECT_TRACK_MAP_VIA)]),
+        ],
     },
 ];
 

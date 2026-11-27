@@ -24,7 +24,7 @@ What 1.6.5 ships:
 - **The four registries,** in code and in data files, with their schemas in `packages/sdk/std/registries/`.
 - **The stock tracks as records.** Every `tracks.Track` row with assets is `game/<code>` with `time_trial` true, each real circuit is `venue/<key>`, and each stock data block is `game/<code>/<data set>`.
 - **Tracks made for 1.5** (`track.add` in `ops/`) as records `<addon id>/<code>`. The launcher keeps adding their rows and files, and reports them to the core.
-- **A track record** (`registry/track.json`, or `tracks::tracks.add`): the core adds its rows at boot, and the launcher places its files. An added track runs normal weekends in every data set, whatever its base runs; the record's `sprint` (in code, `extra["sprint"]`) lists the data sets in which it runs sprint weekends, such as `["f1_2026"]`.
+- **A track record** (`registry/track.json`, or `tracks::tracks.add`): the core adds its rows at boot, and the launcher places its files. An added track runs normal weekends in every data set, whatever its base runs; the record's `sprint` (in code, `extra["sprint"]`) lists the data sets in which it runs sprint weekends, such as `["f1_2026"]`. The record's `video` (in code, `extra["video"]`) is the track's own [circuit intro video](#circuit-intro-video).
 - **Each box's track list** in the log and in `catalog.json`, and a guard on the track select screen that stops a track the box can't run.
 - **The venues table,** `packages/sdk/std/data/venues.json`: the 39 venues the core seeds, with the names a track made for 1.5 is matched against.
 - **Real calendars in Classic Seasons:** each season from 2016 to 2024 registers its calendar as `career.calendar` `f1_<year>`, and its package names it.
@@ -69,7 +69,7 @@ struct Pit { int speed_limit = 0; float stop_time_dry = 0, stop_time_wet = 0; };
 struct Date { int day = 0, month = 0; };                                       // weekend_day, weekend_month
 
 struct Track {                                     // track: a tracks.Track row, its files, its rows in every data set
-    static constexpr Version version{1, 0};
+    static constexpr Version version{1, 2};
     std::string code;                              // its folder and row label, [a-z0-9_]+
     std::string name;                              // shown in logs and the conflicts report
     Ref<Track> base;                               // the track its rows are cloned from, in every data set
@@ -716,6 +716,45 @@ Two addons claiming one stock slot is a provider clash. The second is refused at
 
 Two tracks that provide the same venue both stay in the base. The venue, and every calendar round that names it, goes to the one later in load order.
 
+## Circuit intro video
+
+The game plays a circuit intro before a session: the track's map with its corners and DRS zones. It is a pre-rendered Bink 2 video, not a live drawing, so an added track shows its base track's layout unless it brings its own.
+
+A track record's `video` names a `.bk2` file in the addon:
+
+```json
+{ "track": { "okayama": { "code": "okayama", "base": "game/melbourne", "files": "track/", "video": "videos/okayama.bk2" } } }
+```
+
+In code, set `extra["video"]` the same way. The path is relative to the addon's folder and is not a `Path` field, so only the build places the file. The video:
+
+- is a Bink 2 file: its name ends in `.bk2` and it starts with `KB2`. The game's own are 1920x1080, 30 fps, about 16 s and have no audio, about 19 MB each. A shorter one works.
+- is at most 256 MB.
+- is encoded with RAD Video Tools; [Make a startup video](/make/startup-video#_3-encode-bink-2) has the `radvideo64 binkc` recipe. Render the map, corner numbers and DRS zones yourself.
+
+The build puts the file in the game folder at `videos/track_map/swofty/<addon id>/<code>.bk2`, with the other files it adds, so it is rolled back with them and never replaces a stock video. The core sets the track's `TrackVideo_N.value`, the row the game reads the file from, to `track_map/swofty/<addon id>/<code>.bk2` in the same step that clones the track's rows at boot, and logs one line for the track:
+
+```text
+[tracks] track mod.okayama/okayama: okayama: circuit intro track_map/swofty/mod.okayama/okayama.bk2 (the track row's TrackVideo was track_map/melbourne.bk2)
+```
+
+Every time the game opens a circuit intro, the core logs the path it opened, while any enabled track has a video:
+
+```text
+[videos] circuit intro opened: track_map/swofty/mod.okayama/okayama.bk2 (an added track's own)
+```
+
+Without a `video`, nothing changes: the track keeps its base's `TrackVideo` value and plays its base's intro. A video the build can't use is a build warning and the track keeps its base's intro; the track itself is still added:
+
+```text
+track mod.okayama/okayama: video videos/okayama.bk2 is not in the addon; it plays its base track's intro
+track mod.okayama/okayama: video videos/okayama.mp4 is not a .bk2 file; it plays its base track's intro
+track mod.okayama/okayama: video videos/okayama.bk2 is not a Bink 2 file (it does not start with KB2); it plays its base track's intro
+track mod.okayama/okayama: video videos/okayama.bk2 is 300 MB, over the 256 MB a circuit intro may be; it plays its base track's intro
+```
+
+The `video` field is in the `track` schema from 1.2.
+
 ## Worlds, slots and AI lines
 
 Not in 1.6.5: `track.layer`, `track.slots` and `track.ai_line` have no registry yet. This section is the design.
@@ -798,7 +837,7 @@ tracks::set_data(tracks::tracks["game/monaco"], [](tracks::TrackData &d) { d.lap
 - **Time Trial:** record tracks have `time_trial` false unless their record sets it. Tracks made for 1.5 run Time Trial unless their facts say `time_trial: false` (`time_trial_why`: none of their files holds a world the track layers load).
 - **Stat ids:** the game stores each track record at its stat id and tolerates holes, so a record track's id from 254 down is safe there. Weekends and track data records hold stat ids as one byte, with 0xff for none.
 - **Stock slots without assets:** `paul_ricard`, `portimao`, `sochi`, `hanoi`, `texas_nat`, `suzuka_east`, `bahrain_pad`, `silverstone_int`. `bahrain24` is empty.
-- **Stack-built keys:** a new track must carry `CareerHubFirstVisit_N`, `CareerHubLastVisit_N`, `TrackHighlights_N` and `TrackVideo_N` (`tools/track_keys.py`).
+- **Stack-built keys:** a new track must carry `CareerHubFirstVisit_N`, `CareerHubLastVisit_N`, `TrackHighlights_N` and `TrackVideo_N` (`tools/track_keys.py`). `TrackVideo_N.value` is the circuit intro's path below `videos/`; a record's `video` replaces the base's value ([circuit intro video](#circuit-intro-video)).
 - **Track data is found by mode mask,** and sub-tables inherit from the parent set one table at a time. A session's query names the setup mode and the box's season; with no season, the first set listing the mode wins.
 - **AI packs** are per car folder (`ai_package_folder/asset_filename`). A car package with its own AI data, such as F1 1990's `f1_1990`, has an `ai_track_difficulties.<package folder>` key only on the tracks it was made for. A missing key reads the miss sentinel, not null.
 - **Worlds:** `_f1_26` worlds have 22 grid slots and 11 garages, `_myteam` 24 and 12, and `_f1` 10 garages. An 11-team box crashed on `_f1` worlds in `Sess_Assign_GarageSlotsByPreference`. Classic Seasons fixed it with a layer copy of `f1_26` for `swofty_f1`.

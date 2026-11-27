@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Sort_IntrosortPtr8_Cmp_1412c7460",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1412c6560",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Sort_IntrosortPtr8_Cmp_1412c7460(void **first, void **last, int64_t depth, void *cmp_ctx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1412c6ba0 (RacingPC lab re_groups/_decomp);xref:0x141286fc0,0x141288010",
+  "notes": "(lib) std::sort style introsort over 8-byte elements with comparator FUN_1412c7460(ctx, a, b): median-of-three or ninther pivot, fat partition, heapsort fallback when depth budget hits 0, insertion sort below 33 elements (0x108 bytes)."
+ },
+ "signature": {
+  "id": "core.sort_introsort_ptr8_cmp_1412c7460",
+  "section": ".xtls",
+  "pattern": "4D 89 E9 E8 ?? ?? ?? ?? 49 8B 5D 38",
+  "match": "0x1412875cd",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x1412c6560",
+  "kind": "call",
+  "names": [
+   "Ne_Sort_IntrosortPtr8_Cmp_1412c7460"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141287c0d",
+  "made_on_target": "0x1412c6ba0",
+  "twin": "made on steam-26566308; the target 0x1412c6ba0 is KB 0x1412c6560: Ne_Crt_FatalNoReturn (0x12a1830) and Ne_Bitset_ThrowInvalidPosition_C (0x12ca820) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141287c0d",
+    "target": "0x1412c6ba0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "bf9adeb083e85b19713173c7f1b26a4f3cf5f73e0cf806925a108cc6a2a37dca"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Construct_CardVM_TitleHighlighted",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14234d330",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Construct_CardVM_TitleHighlighted(void *self, void *arg, void *parentVm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14234ef30 (RacingPC lab re_groups/_decomp);xref:0x14234ca30",
+  "notes": "Constructor: takes a node handle from parentVm+8 into self+0..0x18, gets or creates child node with hash 0x10614a14 and constructs the sub view-model at self+0x20 with func 0x14167dc00(self+0x20,arg), then binds string node title_loctag at self+0xe20 (default empty) and bool node highlighted at self+0xe40 (default false). Returns self."
+ },
+ "signature": {
+  "id": "ui.construct_card_vm_title_highlighted",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 4C 89 CB 4C 89 C7 49 89 D6",
+  "match": "0x14234d330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14234d330",
+  "kind": "func_start",
+  "names": [
+   "Ui_Construct_CardVM_TitleHighlighted"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14234ef30",
+  "made_on_target": "0x14234ef30",
+  "twin": "made on steam-26566308; the target 0x14234ef30 is KB 0x14234d330: Ui_MyTeamDriverSelect_Enter (0x234ca30) and Career_Enter_EngineeringTopLevel (0x234f560) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14234ef30",
+    "target": "0x14234ef30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b8be1e5c98abb1ae4de00d120d86dece26db217e85d83afa75aaae9d48923b22"
+  }
+ ]
+}

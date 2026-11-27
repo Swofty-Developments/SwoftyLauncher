@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Mfd_Downforce_UpdateValues",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14178baa0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Mfd_Downforce_UpdateMinMaxNodes(void *entry)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14178d220 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141541560,0x14178c4c0",
+  "notes": "Renamed from Game_Mfd_Downforce_UpdateValues: it only rewrites the two limit nodes, not the value. Walks the pointer list +0x40..+0x48 of [entry+0xc0]+0x290 (or [entry+200]+0x260) for the item whose dword +0x20 matches the key (byte entry+0xf0, short entry+0xf2); on a match converts the floats at [*0x14605c578]+8 and [*0x14605c428]+8 to int and writes them to the int VM nodes entry+0x148 (min_value) and entry+0x168 (max_value) via 0x140971ea0 after a type check against 0x14612bf38. Game_Mfd_Downforce_BindNodes calls it after binding the nodes; caller 0x141541560: on a vehicle change copies the per-vehicle record field +0x50 into the embedded entry key (param+0x3d8) and refreshes the entry at param+0x2e8. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.mfd_downforce_update_values",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8B 89 C0 00 00 00 48 85 C9",
+  "match": "0x14178baa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14178baa0",
+  "kind": "func_start",
+  "names": [
+   "Game_Mfd_Downforce_UpdateValues"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14178d220",
+  "made_on_target": "0x14178d220",
+  "twin": "made on steam-26566308; the target 0x14178d220 is KB 0x14178baa0: site_Game_Mfd_FuelMixMaxRaceGate (0x178a420) and Game_PitLane_SetDoPracticePitStop (0x1795240) on either side both sit 0x1780 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14178d220",
+    "target": "0x14178d220"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c4685ec98b8abbf76725a07c3d2c8b610ac59793289bb2386592199ec06274b6"
+  }
+ ]
+}

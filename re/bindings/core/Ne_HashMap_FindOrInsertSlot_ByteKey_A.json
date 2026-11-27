@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_FindOrInsertSlot_ByteKey_A",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1435e6cb0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_HashMap_FindOrInsertSlot_ByteKey_A(void *map, uint64_t *out_slot_status, uint8_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1435e9240 (RacingPC lab re_groups/_decomp);xref:0x143541110",
+  "notes": "(lib) Robin-hood hash map probe for a 1-byte key (hash multiplier +0x20, slots +0x28, info bytes +0x30, count +0x38, mask +0x40, max load +0x48, info inc/shift +0x50/+0x54): returns slot index and status 1 found, 2/3 inserted with shift-up, 0 overflow; grows or rehashes through FUN_1435e9990 at 80 percent load."
+ },
+ "signature": {
+  "id": "core.hash_map_find_or_insert_slot_byte_key_a",
+  "section": ".xtls",
+  "pattern": "4C 89 C9 4D 89 E0 E8 ?? ?? ?? ?? 8B 44 24 40",
+  "match": "0x143513072",
+  "anchor": "0x7",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x6"
+  },
+  "target": "0x1435e6cb0",
+  "kind": "call",
+  "names": [
+   "Ne_HashMap_FindOrInsertSlot_ByteKey_A"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143515602",
+  "made_on_target": "0x1435e9240",
+  "twin": "made on steam-26566308; the target 0x1435e9240 is KB 0x1435e6cb0: Ne_HashMap_U64_Grow (0x35dc140) and Career_Upgrades_FindOrCreateRecommendedState (0x35ebbd0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143515602",
+    "target": "0x1435e9240"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d276eeb37ad104c4ecf8798028a40d98b6df1c06f61e1b39381b3644b2ff9715"
+  }
+ ]
+}

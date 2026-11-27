@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_RnDList_UpdateSelectedItemFlags",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141904090",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_RnDList_UpdateSelectedItemFlags(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141905870 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141900b20",
+  "notes": "No-op unless self+0x1a8 is set. Resolves the selected node from the holder at self+0x110 (follows node refs up to 0x62 deep), finds its child index under the list node self+0xd0 with Career_Ui_FindChildIndex and picks the item VM (tile vector self+0xf0 entry+0xe8 when self+0x61, else array self+0x170 stride 0x3f0). Reads the item's bool nodes at +0x28 and +0x48, gates the result on 0x14077c7d0(obj,1), on whether the object at ctx(+0x10)->+0x88->+0x260 derives from type 0x14612bca8 and on byte +0x750 of *(self+0x20)+0xd8, writes it to the bool node self+0x130 and then mirrors that node's value into the bool node self+0x150. Caller 0x141900b20: list populate, calls it last after subscribing the selection handler. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "career.rn_d_list_update_selected_item_flags",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 80 B9 A8 01 00 00 00",
+  "match": "0x141904090",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141904090",
+  "kind": "func_start",
+  "names": [
+   "Career_RnDList_UpdateSelectedItemFlags"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141905870",
+  "made_on_target": "0x141905870",
+  "twin": "made on steam-26566308; the target 0x141905870 is KB 0x141904090: Ui_Purchase_SelectTierButton (0x18e10c0) and Ui_Rnd_SetUpgradeRewards (0x1921af0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141905870",
+    "target": "0x141905870"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fa260a58785871ef1fe584cc94b42e3bb96382dd2bb3343d77cc7ae3d2f341ca"
+  }
+ ]
+}

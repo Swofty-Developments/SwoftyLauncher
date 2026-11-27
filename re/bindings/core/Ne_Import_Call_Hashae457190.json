@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Import_Call_Hashae457190",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140002a50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint32_t Ne_Import_Call_Hashae457190(void *a1, void *a2)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140002a50 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1439cc700",
+  "notes": "Same lazy-resolve stub shape: counter 0x145fba734, Ne_Import_ResolveSlotWithRetry, cached pointer 0x145fbac30 resolved by 0x145fba758(0xae457190), pre/post hooks, returns callee status or 0xfffffffd. Context from caller: 0x1439cc700 (graphics device setup, NVIDIA branch) passes the output's device name converted to ASCII with WideCharToMultiByte and a pointer to an int display id preset to -1, then matches that id against enumerated displays; fits NVAPI id 0xAE457190 (get display id by display name). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "core.import_call_hashae457190",
+  "section": ".xtls",
+  "pattern": "48 89 74 24 10 57 48 83 EC 20 48 8B FA 48 8B F1 F0 83 05 ?? ?? ?? ?? 01 33 D2 33 C9 E8 ?? ?? ?? ?? 85 C0 0F 85 ?? ?? ?? ?? 48 89 5C 24 30 48 8B 1D ?? ?? ?? ?? 48 85 DB 75 29 48 8B 05 ?? ?? ?? ?? 48 85 C0 74 16 B9 90 71 45 AE",
+  "match": "0x140002a50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140002a50",
+  "kind": "func_start",
+  "names": [
+   "Ne_Import_Call_Hashae457190"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140002a50",
+  "made_on_target": "0x140002a50",
+  "twin": "made on steam-26566308; the target 0x140002a50 is KB 0x140002a50: Ne_Import_ResolveSlotWithRetry (0x2190) and Ne_Thunk_ExternalCall (0x2f90) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140002a50",
+    "target": "0x140002a50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d0679264fbe9cb886b03bb828424d43e708ab3f45461b82aa76446674e377ea0"
+  }
+ ]
+}

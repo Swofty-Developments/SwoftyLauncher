@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Reset_AndConstruct_ExpiryPanelSlot",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1419e67e0",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void *Ui_Reset_AndConstruct_ExpiryPanelSlot(void *slots, void *node_handle, void *alloc, uint8_t *flag_a, uint8_t *flag_b)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1419e7fc0 (RacingPC lab re_groups/_decomp);xref:0x1419e0950",
+  "notes": "Whole body read: destroys all existing 0x530-byte elements of an inline array (count at +0x530; per element 3 optionals at +0x68/+0x200/+0x398 with flags +0x1f8/+0x390/+0x528 and node handles at +0/+0x30), zeroes count, then constructs element 0: node handle from *(node_handle+8), +0x20=alloc, +0x28=*flag_a, +0x29=*flag_b, sets VM bool \"visible\" = !(*(0x146050a28)+0x38) and keeps that handle at +0x30, calls 0x1419d1dc0, count=1. Context from caller: Ui_ShopItem_Bind uses vm+0x1be0 with child node hash 0x4052e0ca (flags 0,1) then calls 0x1419d1f40(slot, vm+0xf38, vm+0xf40); Caller 0x141f66c80: binds a second VM the same way at +0x360 with the same node hash (flags 0,1). Kept at L1 because the noun ExpiryPanel is not confirmed by anything in the body or the call sites (only \"visible\" is). Better context needed: string at 0x1456fa756 / hash 0x4052e0ca. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.reset_and_construct_expiry_panel_slot",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 4D 89 CE 4C 89 C3 48 89 D7 48 89 CE 48 8B 81 30 05 00 00",
+  "match": "0x1419e67e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419e67e0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Reset_AndConstruct_ExpiryPanelSlot"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1419e7fc0",
+  "made_on_target": "0x1419e7fc0",
+  "twin": "made on steam-26566308; the target 0x1419e7fc0 is KB 0x1419e67e0: Ui_PurchaseMessage_ApplySelectedTier (0x19e61f0) and Game_BroadcastViewVehicleVM_OnActivate (0x19fe850) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1419e7fc0",
+    "target": "0x1419e7fc0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cad51b8a6cd8ffe9fd9e9cac053ce676e43e68e57d72e7c1f7588eee5d2cdc6d"
+  }
+ ]
+}

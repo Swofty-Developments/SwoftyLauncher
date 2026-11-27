@@ -109,6 +109,20 @@ fn reads_an_attach_line_with_a_clobbered_start() {
 }
 
 #[test]
+fn reads_a_loader_log_whose_attach_line_the_stub_overwrote() {
+    let overwritten = "19:15:32.054 [stub] [offline] game image at 0x140000000, patching\r\r\n\
+                       19:15:32.054 [stub] [offline] guard bypassed: 0x178508 0x74 -> 0xEB\r\r\n\
+                       (batched, crash lines flush at once; SWOFTY_LOG_SYNC=1 writes each line synchronously)\r\n\
+                       2026-11-26 19:15:32.054 [20740] host: C:\\Program Files (x86)\\Steam\\F1_25.exe\r\n\
+                       2026-11-26 19:15:32.054 [20740] forwards: 17 of 17 resolved\r\n";
+    assert_eq!(attached(overwritten), Some(true));
+    let core_only = "19:15:32.054 [stub] [offline] game image at 0x140000000, patching\r\r\n\
+                     2026-11-26 19:15:33.001 [20740] [core] frame 1\r\n";
+    assert_eq!(attached(core_only), Some(true));
+    assert_eq!(attached(STUB), Some(false));
+}
+
+#[test]
 fn misses_the_loader_a_while_after_the_stub_patched_the_game() {
     let dir = temp("watch-miss");
     let log = dir.join("loader.log");

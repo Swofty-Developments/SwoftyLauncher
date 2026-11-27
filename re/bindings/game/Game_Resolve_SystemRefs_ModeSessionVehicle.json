@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_Resolve_SystemRefs_ModeSessionVehicle",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142ab4790",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_Resolve_SystemRefs_ModeSessionVehicle(void *self, void *unused, void *systemMap)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142ab6b50 (RacingPC lab re_groups/_decomp);xref:0x1412fa340,0x141315a60,0x141376170,0x1413774a0,0x141384ae0",
+  "notes": "Looks up 6 keys in a U64-keyed robin-hood map (0x146046990, GameModeSystem key, SessionSystem key, 0x146081160, VehicleHelperSystem key, VehicleLapTimesSystem key) and stores the found pointers at +0x8,+0x10,+0x18,+0x20,+0x28,+0x30. Returns 0 if all are non-null, else zeroes the missing slot, sets errno 0x16 and returns 0x16. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "game.resolve_system_refs_mode_session_vehicle",
+  "section": ".xtls",
+  "pattern": "4C 89 89 90 00 00 00 E8 ?? ?? ?? ?? 89 C7 85 C0 0F 85",
+  "match": "0x14131542d",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x7"
+  },
+  "target": "0x142ab4790",
+  "kind": "call",
+  "names": [
+   "Game_Resolve_SystemRefs_ModeSessionVehicle"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141315a6d",
+  "made_on_target": "0x142ab6b50",
+  "twin": "made on steam-26566308; the target 0x142ab6b50 is KB 0x142ab4790: Game_TrackModelComponent_Initialise (0x2aa26f0) and Game_FakeOption_SetValue (0x2ac04e0) on either side both sit 0x23c0 above their KB addresses; the match 0x141315a6d is KB 0x14131542d: Game_Objective_CheckFinishPosition (0x12f9080) and Sess_Garage_HasPendingName (0x1331a90) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141315a6d",
+    "target": "0x142ab6b50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "51538b16be80efe8fce7bea51bc852df0c7bd634bd745807e99864fc2d97e0c6"
+  }
+ ]
+}

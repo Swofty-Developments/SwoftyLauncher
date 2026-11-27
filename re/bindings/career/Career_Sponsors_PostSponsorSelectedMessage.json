@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Sponsors_PostSponsorSelectedMessage",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141105270",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Sponsors_PostSponsorSelectedMessage(void *sponsors, void *sponsor, void *modifier_sp, uint64_t team_key, uint8_t flag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141105cb0 (RacingPC lab re_groups/_decomp);xref:0x141105660",
+  "notes": "Builds and posts a bus message (vtable 0x14565b818) through Ne_Post_BusMessage(g_Game_MessageBus+8) describing a sponsor pick: sponsor name string (sponsor+0x08/+0x10), goal name from Career_SponsorGoal_SelectGoalListByModifier, sponsor type name from table 0x1456c8918 indexed by sponsor+0xe0 (0..3), sponsors+0x6a8, bonus percent = int(clamp(modifier type 9 value + 1) * 100), bool same-as-current (sponsor+0x28 vs the team's active sponsor +0x28 found via sponsors+0x298 team table stride 0x88 and sponsor rows stride 0x160 with +0xd8==0 and +0x158!=0), current and new tier indices derived from tier arrays +0x98 (stride 0x78, threshold +4) against level +0x114, and flag. Also calls Career_SponsorGoal_GetScaledRewardD4/D0. Looks like telemetry or UI notification; it does not change sponsor state itself. Independent re-check (lab blind verifier 2026-11-27): partial, better name Career_Sponsors_BuildAndPostSponsorGoalMessage: It builds a message of strings (goal list via Career_SponsorGoal_SelectGoalListByModifier, scaled rewards D0/D4, a type-name string) and calls Ne_Post_BusMessage, but nothing in the code shows the message means selected."
+ },
+ "signature": {
+  "id": "career.sponsors_post_sponsor_selected_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 02 00 00 C5 F8 29 B4 24 80 02 00 00 44 89 CD 4C 89 C6",
+  "match": "0x141105270",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141105270",
+  "kind": "func_start",
+  "names": [
+   "Career_Sponsors_PostSponsorSelectedMessage"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141105cb0",
+  "made_on_target": "0x141105cb0",
+  "twin": "made on steam-26566308; the target 0x141105cb0 is KB 0x141105270: Career_Load_SponsorDecalIncomeTiers (0x1101ce0) and Career_SponsorGoal_GetScaledRewardD4 (0x1106b30) on either side both sit 0xa40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141105cb0",
+    "target": "0x141105cb0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "46f0b1050c83dec088a3a36b535aab68d72166028c74df6934fd13790f63d9cb"
+  }
+ ]
+}

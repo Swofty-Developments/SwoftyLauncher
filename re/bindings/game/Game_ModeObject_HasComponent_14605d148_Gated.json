@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_ModeObject_HasComponent_14605d148_Gated",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1407c6640",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint8_t Game_ModeObject_HasComponent_14605d148_Gated(void *mode_obj)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1407c6680 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141dd36f0",
+  "notes": "Returns 0 unless gate 0x14077c7d0(obj,1) is true. Then gets the type desc via vtable+0x28, walks the parent chain (+0x10 links) and requires the object to derive from type 0x146050c60; if so queries the component container at obj+0x1030 (vtable+0x10) for desc 0x14605d148 and returns found!=0. Context from caller: Game_SettingsTabbingBaseViewModel_ApplyFilterRebuildCategories calls it (with sibling HasComponent_146064fc0) on the current mode object to decide which settings categories to keep when rebuilding the filtered list. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.mode_object_has_component_14605d148_gated",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 28 48 89 CE B2 01 E8 ?? ?? ?? ?? 84 C0 0F 84",
+  "match": "0x1407c6640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407c6640",
+  "kind": "func_start",
+  "names": [
+   "Game_ModeObject_HasComponent_14605d148_Gated"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1407c6680",
+  "made_on_target": "0x1407c6680",
+  "twin": "made on steam-26566308; the target 0x1407c6680 is KB 0x1407c6640: Sess_Weather_CheckTrackWorldComponents (0x7c6150) and Game_GameModes_BuildMode (0x7caec0) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1407c6680",
+    "target": "0x1407c6680"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "327b5fa3f7c7736a708ab15522c97f2e4b05825f2b11b51714e2a036e1b8766f"
+  }
+ ]
+}

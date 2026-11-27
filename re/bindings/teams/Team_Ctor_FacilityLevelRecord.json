@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_Ctor_FacilityLevelRecord",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140df3320",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "void *Team_Ctor_FacilityLevelRecord(void *self, void *owner, void *row)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140df3ea0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140dea820",
+  "notes": "Takes the row name from Gdb_FindMetadata(row) (lazy XOR decode with k_Gdb_StringXorKey) and the int field 'development_level', then builds the record: vtable 0x145697f90, inline 256-char string at +8 (chars at +0x20) with the name, owner pointer at +0x120, development_level at +0x128. Returns self. Caller Team_Load_Facilities builds it as the base part of each row of the facility sub-tables (it then reads stat_id, running_cost or facility_shut_down from the same row). Hook here to see or change the level of every loaded facility row. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "teams.ctor_facility_level_record",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 4C 89 C7",
+  "match": "0x140df3320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140df3320",
+  "kind": "func_start",
+  "names": [
+   "Team_Ctor_FacilityLevelRecord"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140df3ea0",
+  "made_on_target": "0x140df3ea0",
+  "twin": "made on steam-26566308; the target 0x140df3ea0 is KB 0x140df3320: Career_TeamHqFacilities_CameraCycleStep (0xdf3500) and Career_TeamHqFacilities_ReadFacilitiesSelectionConfig (0xdf41e0) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140df3ea0",
+    "target": "0x140df3ea0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "12219bfa997c750c6a9853ae4abdebb2ba9b141191c149c1ec63af57cb5590f5"
+  }
+ ]
+}

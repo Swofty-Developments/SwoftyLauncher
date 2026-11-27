@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_RtDenoisePass_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143d5d160",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "void *Render_RtDenoisePass_Ctor(void *self, void *allocator, void *gfx, void *props)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143d5f730 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140104f70",
+  "notes": "Render_GeometryPass_Ctor with 0x18 slots, vtable 0x1459b5060, shared material once (refcount 0x146545a58). Binds props inGbufferDepth/Albedo/Normal/Surface/Surface2/Extended1..4, inShadow, inAoHit, outAoHit, inSpecHit, inSpecAlphaHit, outSpecHit, outSpecAlphaHit, inDiffHit, outDiffHit, inTranslucency, outShadowTranslucency, validation, outNormalRoughness, outObjectMotion to slots 1..0x17; allocates a 0x3f0-byte state (vtable 0x1459b4d50) into +0x550 and writes denoiser default globals at 0x145f99684.. (0.002, 0.05). 'Denoise' is inferred from the in/out hit-signal pairs, not from a string. Caller Render_Gfx_BuildConfigObject decompile timed out. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.rt_denoise_pass_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 4C 89 CF 4C 89 C3 48 89 CE C7 44 24 20 18 00 00 00",
+  "match": "0x143d5d160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d5d160",
+  "kind": "func_start",
+  "names": [
+   "Render_RtDenoisePass_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143d5f730",
+  "made_on_target": "0x143d5f730",
+  "twin": "made on steam-26566308; the target 0x143d5f730 is KB 0x143d5d160: Render_Batch_Submit (0x3d4de90) and Render_RainFile_ParseMaterials (0x3d6f4f0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143d5f730",
+    "target": "0x143d5f730"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3e273d923181067a4b82ab53e3f4b1ad4eef8b1b4485177fe8d226af2ff648ed"
+  }
+ ]
+}

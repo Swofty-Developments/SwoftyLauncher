@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Post_CustomisationArraysMsg_1456e7a60",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141430380",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Post_CustomisationArraysMsg_1456e7a60(void *customisation)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141430b60 (RacingPC lab re_groups/_decomp);xref:0x141fdc8b0",
+  "notes": "Reads self+0x488 (u64) and seven u32 at +0x490..+0x4a8 plus three optional vectors (u32 at +0x4b0 flag +0x4d0, u32 at +0x4d8 flag +0x4f8, u64 at +0x500 flag +0x520), deep-copies them through the object's allocators (vt+0x18 alloc, vt+0x38 free), builds a bus message with vtable 0x1456e7a60 and posts it with Ne_Post_BusMessage(g_Game_MessageBus+8), then frees all temporaries; self is not modified. Caller Game_CustomisationCarAreaVM_HandleCommand calls it on vm+0x4d0 after firing route back and then zeroes +0x488..+0x4a8 and resets the three optionals, and on the to_decal_menu path only when +0x488 != 0, so it flushes a pending change record. Good hook point to observe the posted payload. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.post_customisation_arrays_msg_1456e7a60",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 C5 F8 29 BC 24 50 01 00 00 C5 F8 29 B4 24 40 01 00 00 49 89 CE",
+  "match": "0x141430380",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141430380",
+  "kind": "func_start",
+  "names": [
+   "Game_Post_CustomisationArraysMsg_1456e7a60"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141430b60",
+  "made_on_target": "0x141430b60",
+  "twin": "made on steam-26566308; the target 0x141430b60 is KB 0x141430380: Game_CustomisationDecals_DeleteFiles (0x142a500) and Game_CustomisationDecals_OpenFile (0x1434060) on either side both sit 0x7e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141430b60",
+    "target": "0x141430b60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "499a0bf21874db905cab96f83f5373f7375ad9aab4aeb3405d46ba615a8a331c"
+  }
+ ]
+}

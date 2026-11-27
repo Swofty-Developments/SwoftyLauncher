@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_AsyncRequest_Set_CompletionCallback",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143f776c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_AsyncRequest_Set_CompletionCallback(void *req, void **fnAndCtx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143f79c90 (RacingPC lab re_groups/_decomp);xref:0x143f37ff0,0x143f3c3b0",
+  "notes": "Stores callback fn at req+0x60 and ctx at +0x68, atomically ORs bit 0 into the state word at +0x70; if the previous state was exactly 2 (already finished) and a callback is set, takes a ref (+8) under the global critical section, calls fn(ctx, &req, (int)req[+0x30], req[+0x58]) immediately and releases the ref (virtual dtor at vtbl+8 on zero)."
+ },
+ "signature": {
+  "id": "core.async_request_set_completion_callback",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8B 02 48 89 41 60",
+  "match": "0x143f776c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143f776c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_AsyncRequest_Set_CompletionCallback"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143f79c90",
+  "made_on_target": "0x143f79c90",
+  "twin": "made on steam-26566308; the target 0x143f79c90 is KB 0x143f776c0: Ne_PathBuf_Construct (0x3f446e0) and Ne_VideoInstance_Close (0x3f89930) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143f79c90",
+    "target": "0x143f79c90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "345f954e5c61d2a85020e56339284507108a58834b1436d880f3dfc7b1eaecc9"
+  }
+ ]
+}

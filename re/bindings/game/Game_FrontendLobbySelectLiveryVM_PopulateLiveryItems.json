@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendLobbySelectLiveryVM_PopulateLiveryItems",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14220cd00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_FrontendLobbySelectLiveryVM_PopulateLiveryItems(void *self, void *list)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14220e900 (RacingPC lab re_groups/_decomp);xref:0x14220df60",
+  "notes": "Iterates entries (stride 0x10) in list+0x28..+0x30 filling up to six item slots (stride 0x2c0 in the bundle at +0x660): sets visible (+0x48) true, +0x128 false, +0x68 from entry+0xe; fetches the vehicle customisation by id entry+4 (Ent_Get_VehicleCustomisation_Thunk on +0x638), resolves its customisation set via +0x648, binds the preview texture with Vm_Sponsor_BindTextureSet (kind 0xf) and stores the handle in the uint32 vector +0x670; sets name from cust+0x49a0 when cust+0x4a28, slot index at +0x228, subscribes Game_FrontendLobbySelectLiveryVM_ReadContractId. Remaining slots are hidden."
+ },
+ "signature": {
+  "id": "game.frontend_lobby_select_livery_vm_populate_livery_items",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 F8 4A 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 F9 7F B4 24 E0 4A 00 00",
+  "match": "0x14220cd00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14220cd00",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendLobbySelectLiveryVM_PopulateLiveryItems"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14220e900",
+  "made_on_target": "0x14220e900",
+  "twin": "made on steam-26566308; the target 0x14220e900 is KB 0x14220cd00: Game_DataGathererPlayers_Update (0x21f3000) and Career_MyTeamSetupVM_ResetStepSelection (0x22684b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14220e900",
+    "target": "0x14220e900"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "36c49dae6f951f28e0ed5c26e061edcf80a90f368fb87aaa3935444b2b8dbbc7"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_InsertSlot_U32Key_Elem32",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1438f75a0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_RobinHoodMap_InsertSlot_U32Key_Elem32(void *map, uint64_t *out_slot_status, uint32_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1438f9b30 (RacingPC lab re_groups/_decomp);xref:0x143831e70",
+  "notes": "(lib) Robin-hood hash insert-or-find for uint32 keys with 0x20-byte entries: hash multiplier at map+0x10, entries +0x18, metadata +0x20, size +0x28, mask +0x30, max load +0x38, distance inc/shift +0x40/+0x44. Returns slot index plus status (1 found, 2 inserted in empty slot, 3 inserted after shifting, 0 overflow); grows or rehashes through 0x1438fa140."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_insert_slot_u32_key_elem32",
+  "section": ".xtls",
+  "pattern": "4C 8D 44 24 3C E8 ?? ?? ?? ?? 8B 44 24 48",
+  "match": "0x14382faa4",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x1438f75a0",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_InsertSlot_U32Key_Elem32"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143832034",
+  "made_on_target": "0x1438f9b30",
+  "twin": "made on steam-26566308; the target 0x1438f9b30 is KB 0x1438f75a0: Sess_GameWeatherSystem_UpdateRandomSeed (0x38ca670) and Ne_NameTable_FindByFnv1a_B (0x3907810) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143832034",
+    "target": "0x1438f9b30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2558647665f01c93c7b26b067b7ab19f79c9d45cc89e4bca990a3f4629bea7ba"
+  }
+ ]
+}

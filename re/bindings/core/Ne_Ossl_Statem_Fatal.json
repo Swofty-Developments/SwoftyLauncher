@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_Statem_Fatal",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144c69690",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Ossl_Statem_Fatal(void *ssl, int al, int reason, const char *fmt, ...)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144c6c050 (RacingPC lab re_groups/_decomp);xref:0x144f23290,0x144f235f0,0x144f298b0,0x1450b5420",
+  "notes": "OpenSSL ossl_statem_fatal. Records an ERR_LIB_SSL (0x14) error with reason/fmt, then if not already in error sets in_init (+0x64) and statem state (+0x48) to 1 and sends a fatal alert (level 2) with al unless al==-1 or +0x7c==1."
+ },
+ "signature": {
+  "id": "core.ossl_statem_fatal",
+  "section": ".xtls",
+  "pattern": "4C 89 4C 24 20 53 57 B8 28 00 00 00",
+  "match": "0x144c69690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144c69690",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_Statem_Fatal"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144c6c050",
+  "made_on_target": "0x144c6c050",
+  "twin": "made on steam-26566308; the target 0x144c6c050 is KB 0x144c69690: Ne_Std_ThrowBadFunctionCall (0x49e4194) and Ne_Crt_Chkstk (0x4c8c190) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144c6c050",
+    "target": "0x144c6c050"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0c8e7f66b0024188e61cca9afc0dd4a458a2a7d34c79c72a13d7ea2495f82104"
+  }
+ ]
+}

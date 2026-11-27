@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Car_Visual_Compute_PartVibrationEnvelope",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1403a0c40",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "void Car_Visual_Compute_PartVibrationEnvelope(void *self, int32_t id, uint32_t partIdx, uint32_t slotIdx, uint64_t a5, float dt, float k1, float t1, float k2, float t2, float ampA, float ampB, float ampC, float edgeMid, float edgeEnd, uint32_t boneIdx, uint8_t scaleBySpeed)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1403a0c80 (RacingPC lab re_groups/_decomp);xref:0x14039f9a0",
+  "notes": "Runs only if +0x1ad4 == id. Accumulates dt into part timer +0x5d4+part*0x50, gets min/max time range from the part's track objects, and when the timer passes the end clears +0x1adc=0x1e and +0x1ad0. Otherwise builds sine-window envelopes (pow of 1-sin), writes weights to +0x600+part*0x50 and +0x1380+slot*0x48, offsets to +0x1b60..+0x1b68 or +0x1b70..+0x1b78 depending on side table +0xec8, and a clamped scale to +0x1ac4 or +0x1ac8. Reads +0xff4 as signed drive value."
+ },
+ "signature": {
+  "id": "car.visual_compute_part_vibration_envelope",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC D8 00 00 00 C5 78 29 BC 24 C0 00 00 00 C5 78 29 B4 24 B0 00 00 00 C5 78 29 AC 24 A0 00 00 00 C5 78 29 A4 24 90 00 00 00 C5 78 29 9C 24 80 00 00 00 C5 78 29 54 24 70 C5 78 29 4C 24 60 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 39 91 D4 1A 00 00",
+  "match": "0x1403a0c40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403a0c40",
+  "kind": "func_start",
+  "names": [
+   "Car_Visual_Compute_PartVibrationEnvelope"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1403a0c80",
+  "made_on_target": "0x1403a0c80",
+  "twin": "made on steam-26566308; the target 0x1403a0c80 is KB 0x1403a0c40: Car_Model_BindCockpitNodes (0x393ef0) and Game_InCarDriver_EvaluateAnimLayers (0x3a33e0) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1403a0c80",
+    "target": "0x1403a0c80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7309d48bff26c031b8cdba1471e89f991a3bb46debe37e43963cfeed7effdf38"
+  }
+ ]
+}

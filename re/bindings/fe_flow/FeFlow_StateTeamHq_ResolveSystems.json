@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "FeFlow_StateTeamHq_ResolveSystems",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142d74630",
+  "level": "L2",
+  "subsystem": "fe_flow",
+  "proto": "uint64_t FeFlow_StateTeamHq_ResolveSystems(void *state, void *services, void *systemMap)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142d76bc0 (RacingPC lab re_groups/_decomp);xref:0x143701870",
+  "notes": "After base call 0x1436b14d0, fetches services 0x146050c98 to state+0xc98 and 0x146108aa8 to +0xc88, then systems from the map: GameMode +0xca0, 0x14607e018 +0xca8, Session +0xcb0, 0x1460c0d80 +0xcb8, 0x14607e158 +0xcc0; from system 0x146068268 it picks the first object in list +0x1a8..+0x1b0 whose type derives from 0x14606a910 into +0xcd8, and caches (state+0xc88)+0x778 at +0xc80. Returns 0 or 0x16 (EINVAL) when something is missing."
+ },
+ "signature": {
+  "id": "fe_flow.state_team_hq_resolve_systems",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 89 C6 48 89 D3 48 89 CF E8",
+  "match": "0x142d74630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d74630",
+  "kind": "func_start",
+  "names": [
+   "FeFlow_StateTeamHq_ResolveSystems"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142d76bc0",
+  "made_on_target": "0x142d76bc0",
+  "twin": "made on steam-26566308; the target 0x142d76bc0 is KB 0x142d74630: Sess_NetJournalMonitorState_OnExit (0x2d76950) and Sess_State_Unpause (0x2d785e0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142d76bc0",
+    "target": "0x142d76bc0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7b2328c5ebef685e040514ee8bc0bed448025fbb8d56e2ce402556a00f2cac35"
+  }
+ ]
+}

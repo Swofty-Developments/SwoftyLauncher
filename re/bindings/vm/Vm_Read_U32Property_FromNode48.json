@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Read_U32Property_FromNode48",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142238c60",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "uint32_t Vm_Read_U32Property_FromNode48(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14223a860 (RacingPC lab re_groups/_decomp);xref:0x142237230,0x142239480",
+  "notes": "Same pattern as the bool reader but for the node handle at self+0x48 and a fixed property name string at 0x14575601e; returns the 32-bit value when the value type id equals the type object at 0x14612bd40, else 0. Better context needed: the string at 0x14575601e and whether the type is int, uint or enum."
+ },
+ "signature": {
+  "id": "vm.read_u32_property_from_node48",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 48 8B 41 48",
+  "match": "0x142238c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142238c60",
+  "kind": "func_start",
+  "names": [
+   "Vm_Read_U32Property_FromNode48"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14223a860",
+  "made_on_target": "0x14223a860",
+  "twin": "made on steam-26566308; the target 0x14223a860 is KB 0x142238c60: Game_DataGathererPlayers_Update (0x21f3000) and Career_MyTeamSetupVM_ResetStepSelection (0x22684b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14223a860",
+    "target": "0x14223a860"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4967f03526970b47288a961cd00b17a7b05e3e060251e3f4b5e263217efefffa"
+  }
+ ]
+}

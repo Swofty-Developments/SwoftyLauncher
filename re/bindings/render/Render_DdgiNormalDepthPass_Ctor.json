@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_DdgiNormalDepthPass_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143c84e10",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "void *Render_DdgiNormalDepthPass_Ctor(void *self, void *allocator, void *gfx, void *props)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c873e0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140104f70",
+  "notes": "Whole body read: Render_GeometryPass_Ctor with 4 slots, vtable 0x1458ea5d0, slot 0 = MD5-hashed lowercased literal name (0x1458e9f13), slot 2 = props 'normal', slot 1 = props 'depth', slot 3 = props 'ddgi' (each optional, empty name when key missing), all bound through binder at self+0x20 (fn +0x30). No extra state. Context from caller: Render_Gfx_BuildConfigObject (decompile timed out; KB sibling Render_Gfx_ConfigObject_InitResourceEntry shows the factory pattern: allocate pass, call ctor with allocator, gfx, resource desc) creates this pass from render config. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.ddgi_normal_depth_pass_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 90 04 00 00 4C 89 CF 48 89 CE C7 44 24 20 04 00 00 00",
+  "match": "0x143c84e10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c84e10",
+  "kind": "func_start",
+  "names": [
+   "Render_DdgiNormalDepthPass_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c873e0",
+  "made_on_target": "0x143c873e0",
+  "twin": "made on steam-26566308; the target 0x143c873e0 is KB 0x143c84e10: Render_DDGISystem_Render (0x3c7b760) and Ne_RenderViewParams_InitDefaults (0x3c9c930) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c873e0",
+    "target": "0x143c873e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2e24454bd7cd3af6d1d02c79def7add9857b8ad8e1576ccb22e197bd00204e7b"
+  }
+ ]
+}

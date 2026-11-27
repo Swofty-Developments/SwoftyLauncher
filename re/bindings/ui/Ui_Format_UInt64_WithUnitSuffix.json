@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Format_UInt64_WithUnitSuffix",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1441ed830",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void *Ui_Format_UInt64_WithUnitSuffix(void *fmt_cfg, void *out_str, uint64_t value, char flag_a, char flag_b, uint8_t unit_kind, uint32_t *compact_cfg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1441efe00 (RacingPC lab re_groups/_decomp);xref:0x1420caf30,0x1442bc680",
+  "notes": "Number-to-text formatter: plain path uses \"%0*I64u\" with width cfg+0x10, optional thousands grouping (cfg+8, value>=1000) and cfg+0xc padding chars; compact path (compact_cfg[2] byte set) scales by a power of 10 chosen from compact_cfg bytes +4/+5 and builds \"%s%s%.*s\" with the decimal separator global 0x146ca3bb8, trimming trailing zeros. Then wraps with a unit template from table 0x145a871c0 (unit_kind 1..31, mask 0xffbfffbe) via Ui_Format_NumberText_Compact, or special case kind 6. Sign/prefix string chosen from flags."
+ },
+ "signature": {
+  "id": "ui.format_u_int64_with_unit_suffix",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 C5 F9 29 BC 24 60 01 00 00 C5 F9 29 B4 24 50 01 00 00 4C 89 C3 49 89 D5 49 89 CF",
+  "match": "0x1441ed830",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441ed830",
+  "kind": "func_start",
+  "names": [
+   "Ui_Format_UInt64_WithUnitSuffix"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1441efe00",
+  "made_on_target": "0x1441efe00",
+  "twin": "made on steam-26566308; the target 0x1441efe00 is KB 0x1441ed830: Ui_Format_NumberText_KMSuffix (0x41eeb10) and Ui_Format_RenownText (0x41f0780) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1441efe00",
+    "target": "0x1441efe00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4c4f7078f87a098355d30143d78cec9b85ec97ad2bb17d2e3746cbf10a5bc1e7"
+  }
+ ]
+}

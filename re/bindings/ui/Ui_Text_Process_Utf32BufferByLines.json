@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Text_Process_Utf32BufferByLines",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1447cbd00",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Text_Process_Utf32BufferByLines(void *ctx, uint32_t *utf32, uint32_t count, int32_t mode, void *arg5, bool keep_copy)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1447ce6c0 (RacingPC lab re_groups/_decomp);xref:0x144315390",
+  "notes": "If mode==2 first calls FUN_1447ce360(ctx, utf32, count, 2, arg5). Optionally copies the buffer (allocator ctx+0x70, count*4 bytes) when keep_copy. Scans for LF (10) / CR (13) or end of buffer and calls FUN_1447ce860(ctx, utf32, start, len, copy, mode, arg5, keep_copy) for each non-empty line, at most 0x3ff lines; frees the copy. Caller Ui_TextElement_Slot47 converts the element text from UTF-8 to UTF-32 (FUN_1448fd780) and passes it here with mode = flag+1 on an object at +0x8a0 of a text-system struct, in place over the buffer (likely bidi or shaping per line; not shown here). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.text_process_utf32_buffer_by_lines",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 44 89 4C 24 44 48 89 4C 24 48",
+  "match": "0x1447cbd00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1447cbd00",
+  "kind": "func_start",
+  "names": [
+   "Ui_Text_Process_Utf32BufferByLines"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1447ce6c0",
+  "made_on_target": "0x1447ce6c0",
+  "twin": "made on steam-26566308; the target 0x1447ce6c0 is KB 0x1447cbd00: Ne_CloudUploader_Upload (0x47c8580) and Ne_Format_HresultUnknownFacility (0x49349e0) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1447ce6c0",
+    "target": "0x1447ce6c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "124db22cf0ab36469695c58def325563c87ae57fdd097212b0650d62ba90f572"
+  }
+ ]
+}

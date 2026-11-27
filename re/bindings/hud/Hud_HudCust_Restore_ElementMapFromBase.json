@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Hud_HudCust_Restore_ElementMapFromBase",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143810380",
+  "level": "L1",
+  "subsystem": "hud",
+  "proto": "void Hud_HudCust_Restore_ElementMapFromBase(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143812910 (RacingPC lab re_groups/_decomp);xref:0x143810790",
+  "notes": "With data = +0x68: copies map data+0x538 over data+0x640 (0x141e450a0) and +0x580/+0x588 to +0x688/+0x690; then searches a lazily initialised global config tree (DAT_146046710, child names UNK_14566039a / UNK_1456603a8) and parses two integers into data+0x688 and data+0x68c; clears +0x690 and +0x698, calls every listener pair in data+0x6c8..+0x6d0 with (ctx, self, -1), calls Game_HudCustomisation_ApplyData(self, -1), sets +0x99 = 1 and refreshes a child behaviour list (flags +0x41/+0x42). Whether this is a reset-to-default or a revert of unsaved edits is not provable from the body."
+ },
+ "signature": {
+  "id": "hud.hud_cust_restore_element_map_from_base",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 8B 59 68",
+  "match": "0x143810380",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143810380",
+  "kind": "func_start",
+  "names": [
+   "Hud_HudCust_Restore_ElementMapFromBase"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143812910",
+  "made_on_target": "0x143812910",
+  "twin": "made on steam-26566308; the target 0x143812910 is KB 0x143810380: Game_TrackSurface_DryLineStrength (0x37cff90) and site_Game_TileListSelect_ChildStep (0x383b560) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143812910",
+    "target": "0x143812910"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0ad84f1197cc6a383b4a637371129cb05024b9aa77e716c872979080a6fa3e4d"
+  }
+ ]
+}

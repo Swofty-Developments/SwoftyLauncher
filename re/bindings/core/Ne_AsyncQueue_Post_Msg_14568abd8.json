@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_AsyncQueue_Post_Msg_14568abd8",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140cfcac0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_AsyncQueue_Post_Msg_14568abd8(void *queue, void *msg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140cfd580 (RacingPC lab re_groups/_decomp);xref:0x142d53340",
+  "notes": "(lib) Same thread-safe post pattern as 0x142b22400 with node vtable 0x14568abd8 (0x10 node, payload msg+8), Ne_Event_Set(queue+0x88). Returns 0, 0x58 or 0xc."
+ },
+ "signature": {
+  "id": "core.async_queue_post_msg_14568abd8",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 8E D0 0D 00 00 E8",
+  "match": "0x142d516e9",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x140cfcac0",
+  "kind": "call",
+  "names": [
+   "Ne_AsyncQueue_Post_Msg_14568abd8"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142d53c79",
+  "made_on_target": "0x140cfd580",
+  "twin": "made on steam-26566308; the target 0x140cfd580 is KB 0x140cfcac0: Game_F1os_LogLargePayload_GetActiveChallengeCareer (0xcf3e10) and Game_OnlineDocumentComponent_Create (0xd03d10) on either side both sit 0xac0 above their KB addresses; the match 0x142d53c79 is KB 0x142d516e9: Ne_SharedPtr_Release (0x2d50750) and Sess_Loader_RequestCareerHubUnload (0x2d54ad0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142d53c79",
+    "target": "0x140cfd580"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "287dbdc4c51692508195f8531301f1a739e37a512b3bfa19f808f0f660a71a26"
+  }
+ ]
+}

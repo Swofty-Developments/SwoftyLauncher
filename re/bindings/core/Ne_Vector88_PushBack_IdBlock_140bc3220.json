@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector88_PushBack_IdBlock_140bc3220",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140bc3240",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_Vector88_PushBack_IdBlock_140bc3220(void *vec, void *elem)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140bc3220 (RacingPC lab re_groups/_decomp);xref:0x140bc0c00,0x1429232c0",
+  "notes": "(lib) Copy-appends a 0x58 byte element (vtable 0x145614e20, 0x40 byte id block at +8, u32 at +0x48, byte at +0x50) to a vector {allocator, begin, end, cap} with 1.5x growth and element-wise copy on reallocation. Returns 0."
+ },
+ "signature": {
+  "id": "core.vector88_push_back_id_block_140bc3220",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 FF C5 41 0F B7 46 10",
+  "match": "0x14292181e",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x140bc3240",
+  "kind": "call",
+  "names": [
+   "Ne_Vector88_PushBack_IdBlock_140bc3220"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142923bde",
+  "made_on_target": "0x140bc3220",
+  "twin": "made on steam-26566308; the target 0x140bc3220 is KB 0x140bc3240: Game_EntrantsManager_ResolveAndCloseDocument (0xbb3680) and Game_SeasonLength_PushCalendarEntry (0xbc9d60) on either side both sit -0x20 below their KB addresses; the match 0x142923bde is KB 0x14292181e: Game_Livery_SetAllowSponsorsAndBadges (0x2910620) and Game_PitDriveThrough_OnNoAnimFadeOut (0x292bf30) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142923bde",
+    "target": "0x140bc3220"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ce29359985a2c0a4336db953c421c1b38f2476520bca695082b1382f5a1aa123"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_MessageQueue_Post_Msg40_145a76790",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1443a0730",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "uint32_t Ne_MessageQueue_Post_Msg40_145a76790(void *queue, void *msg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1443a2d00 (RacingPC lab re_groups/_decomp);xref:0x14424bda0",
+  "notes": "(lib) Queue-post variant for a 0x28-byte message (vtable 0x145a76790, qword +8, qword +0x10, dword +0x18, word +0x20): lock is at +0xD8, sets pending flag +0x6B and calls SetEvent on handle +0xD0 only when the flag was clear, mapping GetLastError to errno. Returns 0x58 if queue+0x68 not running."
+ },
+ "signature": {
+  "id": "core.message_queue_post_msg40_145a76790",
+  "section": ".xtls",
+  "pattern": "EB 0A 48 8D 54 24 20 E8 ?? ?? ?? ?? 31 ED",
+  "match": "0x1442498f5",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x7"
+  },
+  "target": "0x1443a0730",
+  "kind": "call",
+  "names": [
+   "Ne_MessageQueue_Post_Msg40_145a76790"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14424bec5",
+  "made_on_target": "0x1443a2d00",
+  "twin": "made on steam-26566308; the target 0x1443a2d00 is KB 0x1443a0730: Ne_HashMap_Rehash_1443908e0 (0x4392eb0) and Ne_AnimClipResourceFactory_CreateResource (0x43b7e50) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14424bec5",
+    "target": "0x1443a2d00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "782ee3a04a1eb6c2d4d5529c726fa95eb3b9f471ef368aeeb08261067fbaea17"
+  }
+ ]
+}

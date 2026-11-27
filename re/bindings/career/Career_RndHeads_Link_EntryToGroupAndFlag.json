@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_RndHeads_Link_EntryToGroupAndFlag",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14106d870",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_RndHeads_Link_EntryToGroupAndFlag(void *mgr, uint32_t *entry_id, uint8_t *group_id)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14106e530 (RacingPC lab re_groups/_decomp);xref:0x141072f10",
+  "notes": "Looks up group_id (packed type<<14|index) in the robin-hood map at mgr+0x2a8 (24-byte elems, value object with uint32 id vector at +0x18..+0x28) and appends entry_id if not already present (found flag 1 if present, else 0). Then queries the entity list via vfunc +0x1c8 of mgr+0x270 for entry_id; if its flags byte +0x4b has bit 0x10, stores the found flag in the per-entry object of the map at mgr+0x2e8 (creating a 0x10-byte object, vtable 0x1456bff30, via FUN_1410e7d30). Id index 0x3fff means invalid. Better context needed: exact meaning of the flag object."
+ },
+ "signature": {
+  "id": "career.rnd_heads_link_entry_to_group_and_flag",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 D6 48 89 CF 0F B7 42 02",
+  "match": "0x14106d870",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14106d870",
+  "kind": "func_start",
+  "names": [
+   "Career_RndHeads_Link_EntryToGroupAndFlag"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14106e530",
+  "made_on_target": "0x14106e530",
+  "twin": "made on steam-26566308; the target 0x14106e530 is KB 0x14106d870: Career_Save_UpgradeLevelFields (0x106d190) and Career_Save_RndHeads (0x1071c80) on either side both sit 0xcc0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14106e530",
+    "target": "0x14106e530"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e70d7b30e25f5d361be36507886b1e34c4518247f933ae834bcb5bbbff02e3be"
+  }
+ ]
+}

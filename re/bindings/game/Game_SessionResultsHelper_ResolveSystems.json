@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_SessionResultsHelper_ResolveSystems",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1418fedc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_SessionResultsHelper_ResolveSystems(void **self, void *services, void *system_map)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1419005a0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141d536d0,0x1422a3b40,0x1422a9750",
+  "notes": "Fills 7 dependency pointers: self[0]=services->vfunc+0x28(0x1460ffd98), self[1]=same with 0x146cba218, then Ne_RobinHoodMap_U64_FindIndex lookups in system_map for self[2]=k_Live_GameModeSystemKey, self[4]=0x1460c0d80, self[3]=k_Live_PenaltyLogKey, self[5]=k_Live_VehicleHelperSystemKey, self[6]=0x14607bb70. Returns 0 when all are found, else 0x16 (also pushed to the errno trace ring). The known callers (OnTabActivated at vm+0xb60, 0x141d536d0 at +0x2d0, 0x1422a3b40 at +0x680; the two FUN_ callers are view-model activate handlers) reset a 0x1b8-byte helper, call this with their two system pointers and then call Game_SessionResultsStandardViewModel_BuildEntryRows on it. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.session_results_helper_resolve_systems",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 86 18 0D 00 00",
+  "match": "0x1422a80d6",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1418fedc0",
+  "kind": "call",
+  "names": [
+   "Game_SessionResultsHelper_ResolveSystems"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1422a9cd6",
+  "made_on_target": "0x1419005a0",
+  "twin": "made on steam-26566308; the target 0x1419005a0 is KB 0x1418fedc0: Ui_Purchase_SelectTierButton (0x18e10c0) and Ui_Rnd_SetUpgradeRewards (0x1921af0) on either side both sit 0x17e0 above their KB addresses; the match 0x1422a9cd6 is KB 0x1422a80d6: Game_SessionDirectorContainerViewModel_AddTabPitStopsScreen (0x22a28b0) and Vm_TeamHqMyTeam_FindBoundStatId (0x22b8430) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1422a9cd6",
+    "target": "0x1419005a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8a70148d37ee47d3ac36caec49e550b148944235c4bd958e8d68111786ee3e66"
+  }
+ ]
+}

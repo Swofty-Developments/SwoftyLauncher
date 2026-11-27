@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_PoolChunk_Alloc_Node64",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14433ac50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_PoolChunk_Alloc_Node64(void *pool)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14433d220 (RacingPC lab re_groups/_decomp);xref:0x144220620",
+  "notes": "(lib) Grows a node pool: chunk size doubles with the number of chunks already linked at pool+8 (4 up to 0x4000 nodes), allocates count*0x40+0x10 bytes from allocator pool+0x10, links the chunk, threads all 0x40-byte nodes into the free list at pool+0 and returns the first node."
+ },
+ "signature": {
+  "id": "core.pool_chunk_alloc_node64",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 4C 8D 71 08 B9 04 00 00 00 4C 89 F0 0F 1F 84 00 00 00 00 00 48 89 CF 48 81 F9 00 20 00 00 77 0C 48 8B 00 48 8D 0C 3F 48 85 C0 75 E8 48 89 FB 48 C1 E3 06 4C 8D 4B 10",
+  "match": "0x14433ac50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14433ac50",
+  "kind": "func_start",
+  "names": [
+   "Ne_PoolChunk_Alloc_Node64"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14433d220",
+  "made_on_target": "0x14433d220",
+  "twin": "made on steam-26566308; the target 0x14433d220 is KB 0x14433ac50: Ne_Make_StrFromBuffer (0x4339fc0) and Ne_StringMap_EmplaceNode (0x434aff0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14433d220",
+    "target": "0x14433d220"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "40b5b6285fa6149190a75c2bd98f575ea92388b74ab1f5ad32be546b466ea795"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Extract_RecordChannelToStream",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1437ae1d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_Extract_RecordChannelToStream(void *record, void *out_stream, uint32_t channel_mask, uint64_t key_index)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1437b0760 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142440ea0,0x1437b5740,0x1437c5460",
+  "notes": "Seeks the record stream at +0x08 (pos +0x20, high-water +0x28, size +0x18) to offset table [+0x38][key_index] and reads the 4-byte key header (bits 18..31 = channels present, low 18 bits = time in ms). If the wanted channel is present it walks the channel descriptors at +0x50..+0x58 ({mask, byte size} pairs), skipping the bytes of other present channels; on the match it resets out_stream, writes a header (channel_mask << 18 | time), copies the channel bytes from the record stream, rewinds out_stream and returns 1; else 0. Caller 0x1437b5740: binary-searches the key for a time and reads a 1-byte channel; caller 0x1437c5460: reads a 12-byte vec3 channel; caller 0x142440ea0: reads a byte channel at two keys and interpolates. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.extract_record_channel_to_stream",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 44 89 C3 48 89 D6 49 89 CE",
+  "match": "0x1437ae1d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437ae1d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Extract_RecordChannelToStream"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1437b0760",
+  "made_on_target": "0x1437b0760",
+  "twin": "made on steam-26566308; the target 0x1437b0760 is KB 0x1437ae1d0: Asset_Unk_14379dd00 (0x37a0290) and Career_ContractOutro_Destruct (0x37b65f0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1437b0760",
+    "target": "0x1437b0760"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "22980fd254dfd43c4d505d97dfc9b650362c79564daadfe86c1ee04f28813261"
+  }
+ ]
+}

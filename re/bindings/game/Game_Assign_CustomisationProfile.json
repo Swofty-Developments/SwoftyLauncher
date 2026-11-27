@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Assign_CustomisationProfile",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14248fae0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_Assign_CustomisationProfile(void *dst, const void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1424916e0 (RacingPC lab re_groups/_decomp);xref:0x142468610",
+  "notes": "Copy-assignment for a large customisation object: optional inline 128 char string (+0xa8, engaged flag +0x140), three fixed item refs (+0x18,+0x48,+0x78), scalars at +0xa0,+0x148,+0x158,+0x168,+0x178,+0x180, three 0x30 byte item arrays (+0x350 tag 1, +0x1b70 tag 3, +0x3390 tag 2; counts +0x1b50,+0x3370,+0x4b90), two 0x28 byte decal arrays (+0x190 count +0x258, +0x260 count +0x328), then Game_Assign_CustomisationItemArrays on the sub-block at +0x4ba0 and int +0x330. Context from caller: driver customisations load."
+ },
+ "signature": {
+  "id": "game.assign_customisation_profile",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D7 48 89 CE 80 BA 40 01 00 00 00",
+  "match": "0x14248fae0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14248fae0",
+  "kind": "func_start",
+  "names": [
+   "Game_Assign_CustomisationProfile"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1424916e0",
+  "made_on_target": "0x1424916e0",
+  "twin": "made on steam-26566308; the target 0x1424916e0 is KB 0x14248fae0: Ent_EntrantsSystem_ReplaceVehicle (0x2478370) and Ai_DriverConfig_InitDefault (0x249c0f0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1424916e0",
+    "target": "0x1424916e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f83b9815f71c83256efff93863b49dae7b7578d419cb9ab4cf65d533830ee23c"
+  }
+ ]
+}

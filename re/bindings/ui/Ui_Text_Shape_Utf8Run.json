@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Text_Shape_Utf8Run",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1447cc460",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Text_Shape_Utf8Run(void *shaper, const char *text, uint32_t text_len, uint32_t start, uint32_t count, uint32_t font_idx, uint32_t tag, uint32_t *out_count)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1447cee20 (RacingPC lab re_groups/_decomp);xref:0x144313230",
+  "notes": "Returns an allocated array of 32-byte glyph records and writes the count. With no shaping font at shaper+0x28[font_idx] it emits one record per byte; otherwise it creates a HarfBuzz-style buffer (calloc 0xe0, max len 0x3fffffff), adds the UTF-8 range, shapes it with the font and converts glyph infos/positions (0x14 stride) to floats scaled by shaper+0x50[font_idx], storing glyph id, decoded codepoint, advances/offsets, cluster and tag."
+ },
+ "signature": {
+  "id": "ui.text_shape_utf8_run",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 44 89 CD 49 89 D6",
+  "match": "0x1447cc460",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1447cc460",
+  "kind": "func_start",
+  "names": [
+   "Ui_Text_Shape_Utf8Run"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1447cee20",
+  "made_on_target": "0x1447cee20",
+  "twin": "made on steam-26566308; the target 0x1447cee20 is KB 0x1447cc460: Ne_CloudUploader_Upload (0x47c8580) and Ne_Format_HresultUnknownFacility (0x49349e0) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1447cee20",
+    "target": "0x1447cee20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e89c0fdda6daaf1776cadd1ece919a4e58cfea607659e8ef892052c878761ef4"
+  }
+ ]
+}

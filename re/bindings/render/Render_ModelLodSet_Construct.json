@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_ModelLodSet_Construct",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143c16a20",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void *Render_ModelLodSet_Construct(void *self, void *desc, void *allocator, uint32_t lod_count, void *lod_records, uint32_t *mode, uint32_t arg7, void *arg8, void *arg9, uint32_t index_count, uint16_t *indices, void *vec16, void *bounds32)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c18ff0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143b23dd0,0x143c19510",
+  "notes": "Whole body read: vtable 0x1459bf6d8, lod_count at +0x10, allocator +0x18; allocates lod_count pointers (+0x20) and lod_count 12-byte entries (+0x40), copies index_count u16 values (+0x60..+0x70), constructs a sub-object at +0x78 (0x143c18170), copies 16 bytes to +0xe0 and 32 bytes to +0xf0, mode to +0x110. Each entry gets two floats from the 8-byte source records and entry[i]+8 = 1/(entry[i].f1 - entry[i+1].f0), 999.99994 when the gap is below 0.001, last entry 0. Picks a function pointer for +0x120 from table 0x145a3e960 by mode (mode 3 with 8 LODs becomes 9, mode above 12 becomes 2). Caller Render_ModelResource_Parse allocates 0x130 bytes, passes the parsed LOD distance records and stores the result in the model resource [6]. Caller 0x143b23dd0: builds a default one-LOD set with +-50 bounds for an object at +0xf0. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.model_lod_set_construct",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 44 89 CF 4C 89 C3",
+  "match": "0x143c16a20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c16a20",
+  "kind": "func_start",
+  "names": [
+   "Render_ModelLodSet_Construct"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c18ff0",
+  "made_on_target": "0x143c18ff0",
+  "twin": "made on steam-26566308; the target 0x143c18ff0 is KB 0x143c16a20: Render_Material_CountResourceSlots (0x3c09e60) and Ne_TerrainResource_GetMaterialResourcel (0x3c265a0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c18ff0",
+    "target": "0x143c18ff0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e06aa3ee4a298a348bf2e030fa0a746aaf0c46369b0a7e6604a51201b9d16050"
+  }
+ ]
+}

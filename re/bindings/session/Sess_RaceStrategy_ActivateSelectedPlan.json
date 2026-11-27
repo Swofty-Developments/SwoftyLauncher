@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_RaceStrategy_ActivateSelectedPlan",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143698eb0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void *Sess_RaceStrategy_ActivateSelectedPlan(void *strategy)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14369b440 (RacingPC lab re_groups/_decomp);xref:0x143698580",
+  "notes": "Picks the plan pointer from the 3D table at +0x128 indexed by ints +0x178 (x0x20), +0x17c (x0x10), +0x180 (x8) and copies its stint vector (plan+8..+0x10, 0x38-byte stints) into the working vector at +0xd0/+0xd8/+0xe0 (allocator +0xc8). Clears flag bits in +0x268 (mask 0xfffffffdff77b07e), sets +0x230 = first stint field +0x18 (0x7fffffff if empty), +0x23c = max(stints,1)-1, +0x24c = 0, +0x1d8 = 0xffffffff00000004, then via the car tyre component (k_Sess_TyreComponentType, car index byte +0xc4, session +0x10) fits the first stint compound, stores max of the 4 wheel wear floats of the fitted set in +0x220 and stint0+0x30, and for later stints searches the per-compound tyre set lists at +0x188[compound] (0x1c-byte sets, available flag +0x19) in a preference order from tables 0x14585bbf0..c20 to select a set (tail jumps into tyre component set-select code writing +0x9c70/+0x9c78). Stint fields: +0 compound, +0x14 set age/-1 unassigned, +0x24 set index byte. Good hook to observe which AI strategy plan becomes active."
+ },
+ "signature": {
+  "id": "session.race_strategy_activate_selected_plan",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 49 B8 7E B0 77 FF FD FF FF FF",
+  "match": "0x143698eb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143698eb0",
+  "kind": "func_start",
+  "names": [
+   "Sess_RaceStrategy_ActivateSelectedPlan"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14369b440",
+  "made_on_target": "0x14369b440",
+  "twin": "made on steam-26566308; the target 0x14369b440 is KB 0x143698eb0: site_Sess_PitEvalReturnFalse (0x36946da) and Sess_RaceStrategy_SetPlanType (0x369b840) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14369b440",
+    "target": "0x14369b440"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f6f4de4948ee9c4d95a771fbdbe33115ecb6c871206425448b535687c3542643"
+  }
+ ]
+}

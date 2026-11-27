@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Hud_Mfd_Step_SetupParam_Arg18_A",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141533770",
+  "level": "L1",
+  "subsystem": "hud",
+  "proto": "uint64_t Hud_Mfd_Step_SetupParam_Arg18_A(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141534d60 (RacingPC lab re_groups/_decomp);xref:0x142a90430",
+  "notes": "Requires bool nodes +0x6c0 and +0x6e0 true; reads int node +0x780; finds the setup param whose id matches +0xb40 (byte) and +0xb42 (short) in the list at (+0x298)+0x290 or (+0x2a0)+0x260 (begin +0x40, end +0x48) and calls Car_Setup_ResetParamToZeroStep(param, 0x12); publishes message UNK_1456f8760 with id +0xb40 on g_Game_MessageBus; sets bool node +0xb68 true and state +0xb80 = 2. Byte-identical to 0x141535020; the direction or operand that distinguishes them is not visible in the decompile. Context from caller: MFD system update."
+ },
+ "signature": {
+  "id": "hud.mfd_step_setup_param_arg18_a",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 F9 48 8D 15 ?? ?? ?? ?? 41 B0 01 E8 ?? ?? ?? ?? 84 C0 74 1A 4B 8B 8C F5 00 01 00 00 E8 ?? ?? ?? ?? 4C 89 E9",
+  "match": "0x142a8ec29",
+  "anchor": "0x24",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x23"
+  },
+  "target": "0x141533770",
+  "kind": "call",
+  "names": [
+   "Hud_Mfd_Step_SetupParam_Arg18_A"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142a90fe9",
+  "made_on_target": "0x141534d60",
+  "twin": "made on steam-26566308; the target 0x141534d60 is KB 0x141533770: Game_Mfd_FuelMixUp (0x1534960) and Game_LeaderboardRowVM_Populate (0x156ed60) on either side both sit 0x15f0 above their KB addresses; the match 0x142a90fe9 is KB 0x142a8ec29: Game_GameInputModule_ApplyRebindableGameplayActionsToActionMap (0x2a7d950) and Game_CustomisationDecals_DestroySetProxy (0x2a949a0) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142a90fe9",
+    "target": "0x141534d60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "404c0d8c6dc9c7fbba38aaff78791579d31a3c58e052e8ff735ec8df06cd4458"
+  }
+ ]
+}

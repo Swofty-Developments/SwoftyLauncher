@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Remove_ListBindingSelectedItem",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1422b9ae0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint8_t Vm_Remove_ListBindingFirstItem(void *binding)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1422bb6e0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1422c8c80,0x142334450",
+  "notes": "Renamed from Vm_Remove_ListBindingSelectedItem: the code removes element index 0, no selection index is read. Returns early if the list node binding+0xe8 is null or empty (vtable+0x10 is-list -> count from +0x40..0x48, else vtable+0x28 -> count +0x80). Removes child key 0 from the node at binding+0x60 (once, or once per element of [binding+0x108]+0x48 when the bool node [binding+0x108]+0x28 is true), calls 0x1423ac5a0(binding+0x100, ..), then takes element 0 via Ne_Ref_GetListElementOrEmpty, finds it in the list node's child array (+0x40..0x48), dispatches list messages 8 (before) and 9 (after), detaches and releases the child, shifts the array down and returns 1; 0 if not found or the node is locked (+0x26 bit 0). Callers Game_TeamHQAdvanceViewModel_ShowTodayCards and Career_TeamHqMyTeamVM_ClearStopping call it when the card list count is non-zero to pop the front card before reading the new element 0. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.remove_list_binding_selected_item",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 48 89 CE 48 8B 89 E8 00 00 00",
+  "match": "0x1422b9ae0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422b9ae0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Remove_ListBindingSelectedItem"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1422bb6e0",
+  "made_on_target": "0x1422bb6e0",
+  "twin": "made on steam-26566308; the target 0x1422bb6e0 is KB 0x1422b9ae0: Vm_TeamHqTimeline_AnyDayBoolB (0x22bac60) and Vm_TeamHqAdvance_BuildTimelineBindings (0x22bbab0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1422bb6e0",
+    "target": "0x1422bb6e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "942206a7dcf576ab91b0403f33a995bf37718e3e8121140d79363ebf76eae46c"
+  }
+ ]
+}

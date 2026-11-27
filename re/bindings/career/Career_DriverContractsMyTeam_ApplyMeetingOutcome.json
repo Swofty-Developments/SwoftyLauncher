@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_DriverContractsMyTeam_ApplyMeetingOutcome",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140dbb120",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_DriverContractsMyTeam_ApplyMeetingOutcome(void *comp, void *offer)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140dbbca0 (RacingPC lab re_groups/_decomp);xref:0x140dbc7c0",
+  "notes": "Resolves player team id from entrant list (owner +0x278 -> +0x2e0..+0x2e8), stamps offer+0x5a with current day (minutes at +0x2a8->+0x2b0 /1440), posts bus msg vtable 0x145699000 with driver id offer+0x5c and team. Seeds MT19937 from vfunc+0x90(2)+packed driver id+0x1ca3; if roll < float comp+0x41c sets offer+0x67=1 and posts msg 0x145699010 for every other non-departing driver. Then binds team record (list +0x2c8, stride 0x30) into attribute set offer+0x10 (+0xa78/+0xa80), flags attribute kinds 10 and 11 (+0x70=1) and calls Career_AttributeSet_RollRandomEffects. comp+0x41c is a tunable chance."
+ },
+ "signature": {
+  "id": "career.driver_contracts_my_team_apply_meeting_outcome",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 0A 00 00 48 89 D6",
+  "match": "0x140dbb120",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140dbb120",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverContractsMyTeam_ApplyMeetingOutcome"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140dbbca0",
+  "made_on_target": "0x140dbbca0",
+  "twin": "made on steam-26566308; the target 0x140dbbca0 is KB 0x140dbb120: Career_DriverContractsMyTeam_PostApproachMessages (0xdb81e0) and Career_DriverContracts_BuildDriverContractQuote (0xdbc210) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140dbbca0",
+    "target": "0x140dbbca0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "06c794b8d9e5ab682ec13804acf73c3e98da2022e59b127a32dc8cdf3111ac6b"
+  }
+ ]
+}

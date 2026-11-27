@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_Erase_TeamSelectEntry_Elem6780",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141df2f30",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "void **Ne_Vector_Erase_Elem6780(void *vec, void **out_it, void *pos)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141df4b30 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141defc40,0x142889940",
+  "notes": "Renamed from Team_Erase_TeamSelectEntry_Elem6780: it is a generic vector erase(pos) instance and TeamSelectEntry comes from only one of the the known callers. For every element after pos (0x6780 bytes each, end at vec+0x10) it destroys the inner arrays (Game_CustomisationSet_Dtor on 0x4a50-byte items at +0x11d0 with count +0x5c20; 0x4c0-byte items at +0xd00 with count +0x11c0 that hold 0x28-byte virtual members; count +0x880) and moves the next element down with Ne_Struct_CopyConstructInlineStrings, then destroys the last element, lowers end by 0x6780 and returns pos in *out_it. Context from caller: Team_Build_TeamSelectTiles erases filtered entries from the vector at screen+0x470; 0x142889940 (keeps a bounded list) erases the first element when the size reaches the limit at +0x80. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "teams.erase_team_select_entry_elem6780",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 C7 49 89 D4 48 89 CB",
+  "match": "0x141df2f30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141df2f30",
+  "kind": "func_start",
+  "names": [
+   "Team_Erase_TeamSelectEntry_Elem6780"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141df4b30",
+  "made_on_target": "0x141df4b30",
+  "twin": "made on steam-26566308; the target 0x141df4b30 is KB 0x141df2f30: Game_Showroom_HideInfoPanel (0x1df4790) and Game_FriendsList_OnGetFriendsDone (0x1df7b70) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141df4b30",
+    "target": "0x141df4b30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a7514fd5c36147137f98a087eecd8810468501fa7c0f8639840e8fdf0e73cf32"
+  }
+ ]
+}

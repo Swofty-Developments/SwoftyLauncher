@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveRequest_Construct",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14413a340",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_SaveRequest_Construct(void *self, void *arg1, void *arg2, uint32_t kind)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14413c910 (RacingPC lab re_groups/_decomp);xref:0x14413b070,0x14413b770,0x14413cca0",
+  "notes": "Constructor of an async save request object: writes vtable 0x145a5e790 at +0x0, stores arg1 at +0x8, arg2 at +0x10, kind at +0x18, zero at +0x1c, second vtable 0x145891e60 at +0x20, a manual-reset unsignalled CreateEventW handle at +0x28, and status code 0x24 at +0x30 and +0x34 (each time also pushing 0x24 into the TLS errno chain and errno trace ring). Then inits two inline strings of capacity 0x20 at +0x38 and +0xb0 (g_Ne_InlineStrVtable), zeroes +0x70..+0xaf, sets +0xe8 to 0x800 and zeroes +0xf0..+0x10b; returns self. Not weather code; shared by save op kinds 1 and 2 and the cloud save wipe."
+ },
+ "signature": {
+  "id": "core.save_request_construct",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 89 51 08",
+  "match": "0x14413a340",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14413a340",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveRequest_Construct"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14413c910",
+  "made_on_target": "0x14413c910",
+  "twin": "made on steam-26566308; the target 0x14413c910 is KB 0x14413a340: Ne_SaveSystem_ThreadProcessRequest (0x413bc70) and Ne_SaveSystem_DeleteDirectory (0x413d240) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14413c910",
+    "target": "0x14413c910"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6899cd12e0d46c83f8404e21491c6e3495760d1149c3f518e0201b820d9de1ea"
+  }
+ ]
+}

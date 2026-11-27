@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Destroy_Model_28Handles_RowVec6",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1416def10",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Destroy_Model_28Handles_RowVec6(void *model)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1416e0500 (RacingPC lab re_groups/_decomp);xref:0x141c896f0,0x1420bcf30,0x1423ae250",
+  "notes": "Destructor of a UI view-model made only of VM node handles: calls Vm_Node_Clear(model, model+0x288), then for the vector at +0x2a8/+0x2b0 (allocator +0x2a0, elements 0xC0 bytes = 6 handles of 0x20) unlinks each handle from its node watcher list (node+0x28) and calls Vm_Release_Node, frees the buffer via allocator vtbl+0x38, then releases 7 handles at +0x2c0..+0x380 and 21 handles at +0x0..+0x280 (each reset to base vtable 0x145614e48). Shared by several unrelated callers (RnD icon strip, recognition team icon, contract row), so it is likely a folded generic destructor; not a useful hook point."
+ },
+ "signature": {
+  "id": "vm.destroy_model_28_handles_row_vec6",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 30 C5 F8 29 74 24 20 48 89 CE 48 8D B9 88 02 00 00",
+  "match": "0x1416def10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416def10",
+  "kind": "func_start",
+  "names": [
+   "Vm_Destroy_Model_28Handles_RowVec6"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1416e0500",
+  "made_on_target": "0x1416e0500",
+  "twin": "made on steam-26566308; the target 0x1416e0500 is KB 0x1416def10: Game_Career_FadeOutForSessionRequest (0x16db670) and Ui_Update_ContractHubDepartmentRow (0x16e1900) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1416e0500",
+    "target": "0x1416e0500"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "69a2be9196d44653ed596fc1c9eef077fb6430994256659aef92839070e6923f"
+  }
+ ]
+}

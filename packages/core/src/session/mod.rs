@@ -13,8 +13,8 @@ use serde::{Deserialize, Serialize};
 use crate::asset::Kind;
 
 pub use record::{
-    CORE_STOPPED_LOAD, END_FILE, Ending, LogMark, STOP_FILE, SessionEnd, SessionRecord, crash_code,
-    request_stop, written_since,
+    CORE_STOPPED_LOAD, END_FILE, Ending, LoaderLog, LogMark, STOP_FILE, SessionEnd, SessionRecord,
+    crash_code, request_stop, written_since,
 };
 
 pub const DEFAULT_WINEDEBUG: &str = "+timestamp,+pid,+tid,+loaddll,fixme-all";
@@ -679,12 +679,11 @@ pub struct LaunchRequest {
 /// the core left in the data folder.
 pub fn keep_game_logs(data: &Path, game: &Path, dir: &Path, before: Option<&LogMark>, launched: SystemTime) {
     crate::diagnostics::crash_report::keep_fallback(data, &dir.join("game-logs"), launched);
-    let loader = game.join(LOADER_LOG);
-    let fallback = data.join(LOADER_FALLBACK);
-    if LogMark::replaced(&loader, before) {
-        std::fs::copy(&loader, dir.join("loader.log")).ok();
-    } else if fallback.is_file() {
-        std::fs::copy(fallback, dir.join("loader.log")).ok();
+    let request = std::fs::read_to_string(dir.join("request_id"))
+        .ok()
+        .map(|s| s.trim().to_owned());
+    if let Some(log) = LoaderLog::new(game, before.cloned(), data, request, launched).current() {
+        std::fs::copy(log, dir.join("loader.log")).ok();
     }
     if let Some(perf) = [game.join(PERF_LOG), data.join(PERF_FALLBACK)]
         .into_iter()

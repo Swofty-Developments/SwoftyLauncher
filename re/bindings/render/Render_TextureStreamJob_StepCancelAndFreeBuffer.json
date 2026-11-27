@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_TextureStreamJob_StepCancelAndFreeBuffer",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143bfd2e0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_TextureStreamJob_StepCancelAndFreeBuffer(void *job, void *task_allocator, void *buffer_allocator, void **texture_ref)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143bff8b0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143bfe010,0x143ebc270",
+  "notes": "Whole body read: state machine on job+0x44. State 0 -> 7 (done). State 2: waits while the IO request at +8 is busy (+8 == 1 or +0x48 == 1), then sets state 7, swaps the request buffer (+0x30/+0x38) into job+0x48/+0x50, destroys and frees the request, and when a buffer or job+0x1f0 exists allocates a 0x30-byte free task (vtable 0x1458c4160) and appends it to the worker-set queue (job+0x58 -> +0xa8..+0xb8), state 6; on allocation failure logs 'Unable to push streaming job to worker set' and frees the buffer directly. State 6: when the task (+0x28) is no longer running, state 7 and the task is freed. Caller Render_TextureStreaming_ComputeDeficitStep calls it instead of StepLoadMips/StepReduceMips when the job cancel flag (job+0x30) is set. Caller 0x143ebc270: steps every job in the streaming lists (+0x300, +0x348, +0x390, +0x3d8) and unlinks jobs that reach state 7. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.texture_stream_job_step_cancel_and_free_buffer",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CE 8B 41 44 83 F8 06",
+  "match": "0x143bfd2e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bfd2e0",
+  "kind": "func_start",
+  "names": [
+   "Render_TextureStreamJob_StepCancelAndFreeBuffer"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143bff8b0",
+  "made_on_target": "0x143bff8b0",
+  "twin": "made on steam-26566308; the target 0x143bff8b0 is KB 0x143bfd2e0: Ne_PoolList_DestroyNodes (0x3bff4a0) and Render_Write_PngFile (0x3c01d00) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143bff8b0",
+    "target": "0x143bff8b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d1e9ea2f97362b27ad86451b319b1a3b322a06bfe4e1d5df57c692318d4f307c"
+  }
+ ]
+}

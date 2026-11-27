@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Flashback_UpdateTutorialKeySet",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142c14c40",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_Flashback_UpdateTutorialKeySet(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142c171d0 (RacingPC lab re_groups/_decomp);xref:0x142c06fc0",
+  "notes": "For keys \"flashbacks_onboarding_tutorial_1\", \"flashbacks_onboarding_tutorial_2\", \"flashbacks_vo_tutorial\" and \"flashbacks_terminal_damage_tutorial\": if present in the string set at ((+0x40)->+0x148)+0x228 (0x14096b100 find) calls 0x14096c240 on it; then calls 0x14096c240 unconditionally on (+0x48)+0x228 for \"flashbacks_parent_onboarding_tutorial\" and \"flashback_message_shown\". Better context needed: whether 0x14096c240 erases or marks the key."
+ },
+ "signature": {
+  "id": "game.flashback_update_tutorial_key_set",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC C8 00 00 00 48 89 CE 48 8B 79 40",
+  "match": "0x142c14c40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c14c40",
+  "kind": "func_start",
+  "names": [
+   "Game_Flashback_UpdateTutorialKeySet"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142c171d0",
+  "made_on_target": "0x142c171d0",
+  "twin": "made on steam-26566308; the target 0x142c171d0 is KB 0x142c14c40: Game_ReplaySystem_LoadSnapshotFile (0x2c16510) and Game_F1DataFeedSystem_Init (0x2c1a130) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c171d0",
+    "target": "0x142c171d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6717897bc0213295e457e60361fa4cc224c0afd46258da5a586687db9a05d4ba"
+  }
+ ]
+}

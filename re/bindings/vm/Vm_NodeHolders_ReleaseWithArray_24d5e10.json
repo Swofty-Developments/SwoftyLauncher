@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_NodeHolders_ReleaseWithArray_24d5e10",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1424d4210",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_NodeHolders_ReleaseWithArray_24d5e10(void *block)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1424d5e10 (RacingPC lab re_groups/_decomp);xref:0x1423e6b00,0x1423e8690,0x1424c7e70",
+  "notes": "Destructor body of a block of node handles: releases handles at +0x1860 and +0x1840, then for each of the count (+0x1830) inline elements of 2000 bytes starting at +0xc0 releases element handles at +0x7b0, +0x790, +0x770, +0x750, +0x730 and +0x00 and calls Vm_Init_TeamHqHubNodes(elem+0x20) (used here as the sub-block teardown), sets count to 0, then releases handles at +0xa0, +0x80, +0x60, +0x40, +0x20 and +0x00. Each release unlinks the handle from the node's handle list and calls Vm_Release_Node. Context from caller: Vm_MyTeamWorkforce_Bind calls it on vm+0x310 when the present flag vm+0x1b90 is set, then clears the flag; caller 0x1423e8690: unbind path doing the same; caller 0x1424c7e70: destructor of the owning object (vtable 0x145789090), same block at +0x310. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.node_holders_release_with_array_24d5e10",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 C5 F8 29 74 24 20 48 89 CE 48 8D 3D ?? ?? ?? ?? 48 89 B9 60 18 00 00",
+  "match": "0x1424d4210",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424d4210",
+  "kind": "func_start",
+  "names": [
+   "Vm_NodeHolders_ReleaseWithArray_24d5e10"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1424d5e10",
+  "made_on_target": "0x1424d5e10",
+  "twin": "made on steam-26566308; the target 0x1424d5e10 is KB 0x1424d4210: Vm_Despawn_UpgradeListNodes (0x24d58b0) and Vm_ContractsVM_DestroyBindings (0x24d6410) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1424d5e10",
+    "target": "0x1424d5e10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2b4969e3af02d05007716f3296ed7d150459f3e142b7562c1ba5f15a4bb94df1"
+  }
+ ]
+}

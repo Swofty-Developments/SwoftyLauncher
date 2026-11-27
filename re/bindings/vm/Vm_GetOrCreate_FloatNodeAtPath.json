@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_GetOrCreate_FloatNodeAtPath",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140b3bf10",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_GetOrCreate_FloatNodeAtPath(void **ctx, void **parent, const char *path, void *value, int overwrite)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140b3bf60 (RacingPC lab re_groups/_decomp);xref:0x140999650,0x142c05220,0x1437a1130,0x1437a23e0,0x144355e50",
+  "notes": "Resolves path under parent via Vm_Resolve_RegistryNode; if missing, allocs a 0x68 node (djb2 hash 0x1505*33 of leaf name) holding value and adds it as keyed/indexed child; if present and type matches desc 0x14612bbe0 and overwrite==1 calls Ne_VmNode_SetFloat. Returns node handle ptr or empty handle 0x146050f90. Context from caller: used by the Read_*DataConfig loaders."
+ },
+ "signature": {
+  "id": "vm.get_or_create_float_node_at_path",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 89 B5 98 01 00 00",
+  "match": "0x140999946",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x140b3bf10",
+  "kind": "call",
+  "names": [
+   "Vm_GetOrCreate_FloatNodeAtPath"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140999996",
+  "made_on_target": "0x140b3bf60",
+  "twin": "made on steam-26566308; the target 0x140b3bf60 is KB 0x140b3bf10: Game_F1os_Create_GetCCLeaderboard (0xb25110) and Ne_VmNode_SetFloat (0xb3c720) on either side both sit 0x50 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140999996",
+    "target": "0x140b3bf60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "07b7ef9b3848601e89d36f6835b28043266a917d8b9e8923a8bbd92bbf4c48c5"
+  }
+ ]
+}

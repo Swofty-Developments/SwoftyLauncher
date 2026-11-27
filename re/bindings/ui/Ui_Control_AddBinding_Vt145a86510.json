@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Control_AddBinding_Vt145a86510",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1443839f0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint32_t Ui_Control_AddBinding_Vt145a86510(void *control, const char *path, uint32_t id_hash, uint16_t user_u16, void **delegate_a, void **delegate_b)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144385fc0 (RacingPC lab re_groups/_decomp);xref:0x14425b980",
+  "notes": "Whole body read. Same flow as 0x1438eee60: find or create the binding-set component (type 0x146ca5978, 0x48 bytes, vtable 0x145a71f80) in control+0x30..+0x38, allocate a 0x130-byte binding from pool *0x146ca5990 with id_hash at +0xf4, path string at +0xf8 (built with Ne_Make_StrFromBuffer, NULL path allowed), owner at +0x100, delegates at +0x108/+0x118, replace an existing binding with the same id and delegates, append, resolve. Differences: final vtable 0x145a86510, mode byte +0xf0 fixed 0, bit 0x08 of +0xe8 cleared, and a u16 (not u32) stored at +0x128. Returns id_hash (0 if the set could not be allocated). Caller Vm_UiSlider_Init calls it 6+ times after Vm_Read_PropBinding with control = slider[5], thunk pairs 0x14438b380.. and u16 fields slider+8..+0x12 (ids 0xb889089, 0xb888f8b, 0x2dc9df67, 0x2dc9de69, 0x108d5742, 0x7c9e1a01). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.control_add_binding_vt145a86510",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 66 44 89 4C 24 2E 44 89 44 24 3C",
+  "match": "0x1443839f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443839f0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Control_AddBinding_Vt145a86510"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144385fc0",
+  "made_on_target": "0x144385fc0",
+  "twin": "made on steam-26566308; the target 0x144385fc0 is KB 0x1443839f0: Ne_Crt_ThrowOverflow_B (0x4385690) and Ne_Container_AbortNoReturn_1443908d0 (0x4392ea0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144385fc0",
+    "target": "0x144385fc0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0de956d6a99953c48e996b5a2fa155e5d148ded5f3de3e9f93883f050d44cb3a"
+  }
+ ]
+}

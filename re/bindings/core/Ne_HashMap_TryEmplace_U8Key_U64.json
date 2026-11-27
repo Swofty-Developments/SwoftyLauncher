@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_TryEmplace_U8Key_U64",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14026f360",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_HashMap_TryEmplace_U8Key_U64(void *map, void *outPair, const uint8_t *key, const uint64_t *value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14026f360 (RacingPC lab re_groups/_decomp);xref:0x14026dd90",
+  "notes": "(lib) MSVC unordered_map style emplace with a 1-byte key (FNV-1a of one byte) and a u64 value: allocates a 0x20 node first, frees it if the key exists, otherwise rehashes when above the load factor at +0x0 and links the node. Writes (node, inserted) to outPair."
+ },
+ "signature": {
+  "id": "core.hash_map_try_emplace_u8_key_u64",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4D 89 CE 4D 89 C7 48 89 D6 48 89 CB 49 BD B3 01 00 00 00 01 00 00",
+  "match": "0x14026f360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14026f360",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_TryEmplace_U8Key_U64"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14026f360",
+  "made_on_target": "0x14026f360",
+  "twin": "made on steam-26566308; the target 0x14026f360 is KB 0x14026f360: Game_RndPropScene_Spawn (0x26dd90) and Game_VendorA_Initialise (0x26fb00) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14026f360",
+    "target": "0x14026f360"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fc3e1a534ee9fb7fe28b86e9e106e4b1c12763a1ece6f2a5bfe20b2b44c52f14"
+  }
+ ]
+}

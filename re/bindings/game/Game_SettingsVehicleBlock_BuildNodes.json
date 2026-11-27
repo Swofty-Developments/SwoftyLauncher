@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_SettingsVehicleBlock_BuildNodes",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1421e9910",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_SettingsVehicleBlock_BuildNodes(void *self, void *vm_parent, const char *type_name)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1421eb510 (RacingPC lab re_groups/_decomp);xref:0x141dde630",
+  "notes": "Builds the VM nodes of one AI vehicle block (0x8e0 bytes): list child (hash 0x0fac6527) at +8, cleared, then 3 appended items built with Game_LobbyVehicleItem_BuildNodes at +0x20,+0x2e0,+0x5a0; second list (hash 0x1b9a142e) at +0x868; strings \"context_path\" (+0x888) and \"type\" (+0x8a8, = type_name); bool \"spawnable\" true (+0x8c8)."
+ },
+ "signature": {
+  "id": "game.settings_vehicle_block_build_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 4D 89 C6 48 89 D3 48 89 CE",
+  "match": "0x1421e9910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1421e9910",
+  "kind": "func_start",
+  "names": [
+   "Game_SettingsVehicleBlock_BuildNodes"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1421eb510",
+  "made_on_target": "0x1421eb510",
+  "twin": "made on steam-26566308; the target 0x1421eb510 is KB 0x1421e9910: Game_FrontendLobbyVM_OnScreenActivated (0x21d3a00) and Game_DataGathererPlayers_Update (0x21f3000) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1421eb510",
+    "target": "0x1421eb510"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b35d55758e29f42363bc215ba677f05149138aeef56bc26ab65f7b8bd2183838"
+  }
+ ]
+}

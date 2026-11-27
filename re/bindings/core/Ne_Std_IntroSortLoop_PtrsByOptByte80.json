@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Std_IntroSortLoop_PtrsByOptByte80",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1435f0650",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Std_IntroSortLoop_PtrsByOptByte80(void **first, void **last, int64_t depth_limit)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1435f2be0 (RacingPC lab re_groups/_decomp);xref:0x14352ba70",
+  "notes": "(lib) std::sort introsort body (median-of-3/9, heapsort fallback, insertion sort under 33 elems) over an array of pointers, ascending by byte at +0x80 when flag +0x81 is set, else key 99. Recursive on itself."
+ },
+ "signature": {
+  "id": "core.std_intro_sort_loop_ptrs_by_opt_byte80",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 74 24 38 48 8B 8E 58 1A 00 00",
+  "match": "0x143529661",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1435f0650",
+  "kind": "call",
+  "names": [
+   "Ne_Std_IntroSortLoop_PtrsByOptByte80"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14352bbf1",
+  "made_on_target": "0x1435f2be0",
+  "twin": "made on steam-26566308; the target 0x1435f2be0 is KB 0x1435f0650: Career_Upgrades_FindOrCreateRecommendedState (0x35ebbd0) and Sess_Misconduct_RegisterReporter (0x35f6750) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14352bbf1",
+    "target": "0x1435f2be0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e985040ec1051650b10df456ab89fc3b2212c7dc99fa28a84e6aa650a77d0561"
+  }
+ ]
+}

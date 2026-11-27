@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Bind_SelectedDriverNodes",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1416a2ad0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_Bind_SelectedDriverNodes(void *self, void *parentNode, void *ctx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1416a40c0 (RacingPC lab re_groups/_decomp);xref:0x141a668d0",
+  "notes": "Constructor of the selected-driver panel bindings: creates VM nodes selected_driver (+0x20), selected_driver_number (+0x80), show_selected_driver_number (+0xa0), selected_driver_team_logo (+0xc0), show_selected_driver_team_logo (+0xe0), show_selected_driver_icon_grade_logo (+0x100) and strings selected_driver_team_name (+0x120), _date_of_birth (+0x140), _place_of_birth (+0x160), _bio (+0x180); stores ctx at +0x40 and returns self."
+ },
+ "signature": {
+  "id": "vm.bind_selected_driver_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 4C 89 C3 48 89 D7 48 89 CE 48 8B 42 08 48 8D 50 08 48 85 C0 4C 8D 25",
+  "match": "0x1416a2ad0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416a2ad0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Bind_SelectedDriverNodes"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1416a40c0",
+  "made_on_target": "0x1416a40c0",
+  "twin": "made on steam-26566308; the target 0x1416a40c0 is KB 0x1416a2ad0: Vm_Release_RnDSlotNodes (0x16a16e0) and site_Game_DriverSelect_NumberResult (0x16a4e89) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1416a40c0",
+    "target": "0x1416a40c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c503d035d4ca0941c04ce418bfd506caa87198a67502576859f83caf2c74c2b5"
+  }
+ ]
+}

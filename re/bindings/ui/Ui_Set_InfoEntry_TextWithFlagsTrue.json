@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Set_InfoEntry_TextWithFlagsTrue",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1421f76d0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Set_InfoEntry_TextWithFlagsTrue(void *entry, void *item)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1421f92d0 (RacingPC lab re_groups/_decomp);xref:0x1421f9cd0",
+  "notes": "Sets the bool nodes at entry +0x48 and entry +0x28 to true (Vm_NodeSet_Bool, after the usual valid / not-locked / bool-type checks), then Vm_Holder_SetCStr(entry, item ? *(char **)(*(item+0x10)+0x10) : default string 0x14568fd06). Caller Ui_LobbySessionInfo_UpdateView calls it for view+0x2e0 with info+0x20, view+0x3c0 with info+0x28 and, when info[0x1c] != 0, view+0x4a0 with info+0x28. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.set_info_entry_text_with_flags_true",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 48 89 D7 48 89 CE C6 44 24 27 01 48 8B 59 48",
+  "match": "0x1421f76d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1421f76d0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Set_InfoEntry_TextWithFlagsTrue"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1421f92d0",
+  "made_on_target": "0x1421f92d0",
+  "twin": "made on steam-26566308; the target 0x1421f92d0 is KB 0x1421f76d0: Game_DataGathererPlayers_Update (0x21f3000) and Career_MyTeamSetupVM_ResetStepSelection (0x22684b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1421f92d0",
+    "target": "0x1421f92d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4f6cb4e2006f9bd062481d59d401221a19213b9708de8c5c82e8c35aeb67d0c3"
+  }
+ ]
+}

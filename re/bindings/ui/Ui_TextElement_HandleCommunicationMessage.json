@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_TextElement_HandleCommunicationMessage",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14431c7c0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_TextElement_HandleCommunicationMessage(void *self, void *msg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14431ed90 (RacingPC lab re_groups/_decomp);xref:0x14431e500",
+  "notes": "Calls Ne_UIElementBase_HandleCommunicationMessage, then switches on msg+0x10: 0x2b sets flag bit 2 of +0x1f8 from msg+0x22 and byte +0x1f9 from msg+0x23; 1 clears bit 2 and calls vfn +0x168; 0 clears bit 2 and, if the NeStr at msg+0x20 differs from the text at +0x1f0 (length, hash, strcmp), assigns it with refcounting, sets dirty bit 0 of +0x1f8, calls 0x144304830 when +0x1a0 exists and is not already flagged, and marks layout dirty (+0x170 bit 0, (+0x1a8)+8 bit 2) when flags at +0x198 have 0xc00. Good hook point to observe text changes of any text element."
+ },
+ "signature": {
+  "id": "ui.text_element_handle_communication_message",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE E8 ?? ?? ?? ?? 8B 47 10",
+  "match": "0x14431c7c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14431c7c0",
+  "kind": "func_start",
+  "names": [
+   "Ui_TextElement_HandleCommunicationMessage"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14431ed90",
+  "made_on_target": "0x14431ed90",
+  "twin": "made on steam-26566308; the target 0x14431ed90 is KB 0x14431c7c0: Ne_UITextElement_UpdateDocument (0x431ad00) and Ui_Build_TeamHqMyTeamTabViewModels (0x431fcf0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14431ed90",
+    "target": "0x14431ed90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f3d63f15622de2d6d18331b86d788e39c391c108843f55b4d25f0b65ee14e3df"
+  }
+ ]
+}

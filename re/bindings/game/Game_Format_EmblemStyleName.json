@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_Format_EmblemStyleName",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143859910",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void **Game_Format_EmblemStyleName(void **out_str, char *name, char *style)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14385bea0 (RacingPC lab re_groups/_decomp);xref:0x14207d920",
+  "notes": "Returns NeStr 'emblem_style_blank' when style equals the constant at 0x14563ea72, otherwise formats '%s_style_%s' from name and style. Context from caller: badge emblem asset name."
+ },
+ "signature": {
+  "id": "game.format_emblem_style_name",
+  "section": ".xtls",
+  "pattern": "48 0F 44 D1 48 89 D9 E8 ?? ?? ?? ?? C7 44 24 40 01 00 00 00",
+  "match": "0x14207d87c",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x7"
+  },
+  "target": "0x143859910",
+  "kind": "call",
+  "names": [
+   "Game_Format_EmblemStyleName"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14207f47c",
+  "made_on_target": "0x14385bea0",
+  "twin": "made on steam-26566308; the target 0x14385bea0 is KB 0x143859910: Game_UITrack_Apply_DevContractTrack (0x3856480) and Career_Get_RnDRecognitionDescription (0x385d290) on either side both sit 0x2590 above their KB addresses; the match 0x14207f47c is KB 0x14207d87c: Ui_MyTeamSetupGeneric_Option (0x2066b90) and Game_CarCustomisation_ApplyDriverNumbers (0x2080590) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14207f47c",
+    "target": "0x14385bea0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "75a67903bd4176090b752e047fa5e4199a18995aa892c1ecc0277cf794f5b9b9"
+  }
+ ]
+}

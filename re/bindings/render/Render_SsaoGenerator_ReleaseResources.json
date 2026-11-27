@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_SsaoGenerator_ReleaseResources",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143d0ed50",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_SsaoGenerator_ReleaseResources(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143d11320 (RacingPC lab re_groups/_decomp);xref:0x143d12040",
+  "notes": "Releases every GPU object of the SSAO generator before re-setup: 16 handles at +0x58 and 16 at +0xd8, 20 owned shader/technique objects at +0x358..+0x490 and +0x570 (unregistered via Render_Gfx2_LookupEntryOrDefault on +0x40 then destroyed with their allocators), zeroes the parameter cache +0x158..+0x358 and +0x498..+0x4b8, and destroys textures/buffers at +0x508..+0x560. Clears flags +0x588 and +0x580."
+ },
+ "signature": {
+  "id": "render.ssao_generator_release_resources",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 48 89 CE C6 81 88 05 00 00 00",
+  "match": "0x143d0ed50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d0ed50",
+  "kind": "func_start",
+  "names": [
+   "Render_SsaoGenerator_ReleaseResources"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143d11320",
+  "made_on_target": "0x143d11320",
+  "twin": "made on steam-26566308; the target 0x143d11320 is KB 0x143d0ed50: Ne_NodeTable_FindIndexByHash (0x3cfeec0) and Ne_IBLCubeProbe_FreeInterpolatedArrays (0x3d1bcd0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143d11320",
+    "target": "0x143d11320"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f71a8120774fe5ebbebe94c379998f969e6cba751896578b389a7e321b11b17b"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_EvpKeymgmt_NamesDoAll",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144d9cdf0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "int Ne_Ossl_EvpKeymgmt_NamesDoAll(void *keymgmt, void (*fn)(const char *, void *), void *data)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144d9f7b0 (RacingPC lab re_groups/_decomp);xref:0x144da8fb0,0x144f46000",
+  "notes": "OpenSSL EVP_*_names_do_all pattern: returns 1 if provider (+0x18) is null, else walks the libctx namemap for name_id (+0x4) under its lock, collects names into a temp array and calls fn(name,data) for each. Context from caller: encoder/decoder setup for pkey, so the object is most likely an EVP_KEYMGMT."
+ },
+ "signature": {
+  "id": "core.ossl_evp_keymgmt_names_do_all",
+  "section": ".xtls",
+  "pattern": "B8 28 00 00 00 E8 ?? ?? ?? ?? 48 2B E0 48 8B 41 18 48 85 C0 74 15 4D 8B C8",
+  "match": "0x144d9cdf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144d9cdf0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_EvpKeymgmt_NamesDoAll"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144d9f7b0",
+  "made_on_target": "0x144d9f7b0",
+  "twin": "made on steam-26566308; the target 0x144d9f7b0 is KB 0x144d9cdf0: Ne_Crt_ReportGsFailure (0x4d94e1c) and Ne_Crt_Strstr (0x532d4b8) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144d9f7b0",
+    "target": "0x144d9f7b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7fb24d722a17b60918c33eddb1098568f21d1879321ac2cc42073587fb482b87"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Sync_RnDDriverUpgradesFocusNode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141c60bb0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void *Career_Sync_RnDDriverUpgradesFocusNode(void *vm, char on_back)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141c627b0 (RacingPC lab re_groups/_decomp);xref:0x141c60e70",
+  "notes": "Gets the view via Career_Unk_141c609f0 and compares the focus holder at view+0xb70 with node holders view+0x110 and view+0x650 (Ui_Compare_NodeHandles). With on_back set and focus on +0x110 it writes 0 to the s32 focus property and dispatches a named UI event (name at 0x145741591, arg type 4); otherwise, gated by bool nodes view+0x670 and +0x690, it copies the s32 value or relinks the +0xb70 holder to the other node. Return value is incidental. Better context needed: which panels +0x110 and +0x650 are."
+ },
+ "signature": {
+  "id": "career.sync_rn_d_driver_upgrades_focus_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 89 D5 48 89 CB",
+  "match": "0x141c60bb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c60bb0",
+  "kind": "func_start",
+  "names": [
+   "Career_Sync_RnDDriverUpgradesFocusNode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141c627b0",
+  "made_on_target": "0x141c627b0",
+  "twin": "made on steam-26566308; the target 0x141c627b0 is KB 0x141c60bb0: Career_Update_RnDDriverUpgradeRow (0x1c61f30) and Career_Update_RnDNumEquippedUpgrades (0x1c62dc0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141c627b0",
+    "target": "0x141c627b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8d99cfe56ef0a7db5b42f25c75333f94e8ab7137b1726110c7cce1d52792f21d"
+  }
+ ]
+}

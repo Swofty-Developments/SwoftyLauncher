@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Find_FontByName_OrDefaultStyle",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14430eda0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Find_FontByName_OrDefaultStyle(void *name_str)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144311370 (RacingPC lab re_groups/_decomp);xref:0x144313230,0x144315390,0x14431ad00",
+  "notes": "Asks the UI manager (0x146ca6de0 vtable+0x60) and looks the name up in its map at +0x10, returning entry+0x38. On a miss it looks up the style named \"default\" in the map at +0x78 (entry+0x58) and resolves that style's font name at +0x108 instead. Callers read metrics from result+0x40 and +0x860."
+ },
+ "signature": {
+  "id": "ui.find_font_by_name_or_default_style",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC D0 00 00 00 48 89 CE 48 8B 0D",
+  "match": "0x14430eda0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14430eda0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Find_FontByName_OrDefaultStyle"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144311370",
+  "made_on_target": "0x144311370",
+  "twin": "made on steam-26566308; the target 0x144311370 is KB 0x14430eda0: Ne_UITextElement_SetText (0x430e310) and Ne_UITextElement_UpdateDocument (0x431ad00) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144311370",
+    "target": "0x144311370"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "53b502db43b046a98f655ec6cbc8149666e27cc0e8dbdea420147a720e34036a"
+  }
+ ]
+}

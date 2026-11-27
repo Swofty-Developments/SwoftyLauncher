@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_Parse_UInt32ArrayResult",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140967bd0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_F1os_Parse_UInt32ArrayResult(void *result, void *reader)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140967c20 (RacingPC lab re_groups/_decomp);xref:0x140b657e0,0x140cf27e0,0x1425fa310,0x1426521d0,0x142667de0,0x1426968e0,0x1427d36d0,0x142817f10",
+  "notes": "Allocates a new shared vector of 4-byte values (allocator 0x1460c6c88, control block vtable 0x1456624c0) into result+8/+0x10. Looks at the reader's current value on its stack (reader+0x10): if it is an array (type tag 4) resizes the vector to the element count, then for each element pushes the child value (Ne_RingDeque_PushBack_F1os), calls reader vfunc +0x40 to read it into the 4-byte slot and pops. Generic helper reused by many F1os result handlers."
+ },
+ "signature": {
+  "id": "game.f1os_parse_u_int32_array_result",
+  "section": ".xtls",
+  "pattern": "48 8D 54 24 48 E8 ?? ?? ?? ?? 48 8B 6C 24 58",
+  "match": "0x14269517a",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x140967bd0",
+  "kind": "call",
+  "names": [
+   "Game_F1os_Parse_UInt32ArrayResult"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1426974fa",
+  "made_on_target": "0x140967c20",
+  "twin": "made on steam-26566308; the target 0x140967c20 is KB 0x140967bd0: Gdb_Define_RewardsTableColumns (0x95f730) and Ne_Struct_CopyConstructInlineStrings (0x96cd40) on either side both sit 0x50 above their KB addresses; the match 0x1426974fa is KB 0x14269517a: Game_F1os_Create_CompleteEvent (0x264af10) and Game_F1os_LogLargePayload_UpgradeCard (0x2697990) on either side both sit 0x2380 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1426974fa",
+    "target": "0x140967c20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2327ca65a0b514ed8ea729412607878bcd9b153a7f59785233ab89fa554d9592"
+  }
+ ]
+}

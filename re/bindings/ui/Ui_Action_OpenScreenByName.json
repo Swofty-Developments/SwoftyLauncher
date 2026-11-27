@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Action_OpenScreenByName",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144181e70",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void **Ui_Action_OpenScreenByName(void *action, void **out_error, void *args, void *opener)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144184440 (RacingPC lab re_groups/_decomp);xref:0x14388d110",
+  "notes": "Reads the screen name argument (func 0x144184950), looks its hash up in the screen system robin-hood map (+0x98 multiplier, +0xa0 entries, +0xa8 info, +0xb8 mask). Missing: returns \"No screen called %hs exists\". Found: reads an optional 0x13-char named argument and, if it equals string 0x145614a6a, a 0xd-char named argument passed to func 0x144184ad0(screen, value, 0); then calls Vm_Open_Screen(opener, screen) and returns the global OK string (0x146ca7590) or \"Screen %hs failed to open because of %d\". Good hook point to log or redirect screen opens."
+ },
+ "signature": {
+  "id": "ui.action_open_screen_by_name",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 4D 89 CE 4C 89 C7 48 89 D6 48 89 CB",
+  "match": "0x144181e70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144181e70",
+  "kind": "func_start",
+  "names": [
+   "Ui_Action_OpenScreenByName"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144184440",
+  "made_on_target": "0x144184440",
+  "twin": "made on steam-26566308; the target 0x144184440 is KB 0x144181e70: Ne_EventBus_Unsubscribe (0x417e580) and Ne_UIAction_C_closeScreenId (0x4185c30) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144184440",
+    "target": "0x144184440"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6bc10faf66aeb0baf55909196cab4133070bebbf9a42dfd53983c23385786374"
+  }
+ ]
+}

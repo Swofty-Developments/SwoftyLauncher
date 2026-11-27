@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_TileList_AddItemsFromBoundList",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143832850",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_TileList_AddItemsFromBoundList(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143834de0 (RacingPC lab re_groups/_decomp);xref:0x143832480",
+  "notes": "Walks the components at self+0x30 until it finds the one whose type chain contains 0x146ca59b0 (no end check), calls 0x14424b340 on it and takes its node handle at comp+0xb0 (or the empty handle when bit 0x20 at comp+0xf8 is set). If the handle's node is valid (vt+0x10) the count is (node+0x48 - node+0x40)/8, otherwise vt+0x28 must be true and the count is node+0x80; for each index it gets the element with Ne_Ref_GetListElementOrEmpty(g_Vm_Registry, handle, i, 1) and calls self vt+0x1d0(self, elem, self). Caller 0x143832480 (vtable 0x145884850 slot 50, the node event handler) reaches this body by tail jump when the event id equals the value at 0x146105544. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.tile_list_add_items_from_bound_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 CE 48 8B 3D",
+  "match": "0x143832850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143832850",
+  "kind": "func_start",
+  "names": [
+   "Ui_TileList_AddItemsFromBoundList"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143834de0",
+  "made_on_target": "0x143834de0",
+  "twin": "made on steam-26566308; the target 0x143834de0 is KB 0x143832850: Game_TrackSurface_DryLineStrength (0x37cff90) and site_Game_TileListSelect_ChildStep (0x383b560) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143834de0",
+    "target": "0x143834de0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "bb1ebb99d3cf9bdf0d3ac3c81014f3cbdf6980431797a532e14af040976585c5"
+  }
+ ]
+}

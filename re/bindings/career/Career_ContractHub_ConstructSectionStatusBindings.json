@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_ContractHub_ConstructSectionStatusBindings",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1422f2b70",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_ContractHub_ConstructSectionStatusBindings(void *self, void *parent_holder)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1422f4770 (RacingPC lab re_groups/_decomp);xref:0x1422f6040",
+  "notes": "Constructor of a binding block: \"subtitle\" string (+0x00) on the parent node, then on child node hash 0xce73ee60 the bools \"disabled_from_beginning\" (+0x20) and \"completed\" (+0x40), string \"completed_string\" (+0x60) and a nested block at +0x80 built by FUN_141697bc0. Returns self."
+ },
+ "signature": {
+  "id": "career.contract_hub_construct_section_status_bindings",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 48 89 D3 48 89 CE 48 8B 42 08",
+  "match": "0x1422f2b70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422f2b70",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractHub_ConstructSectionStatusBindings"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1422f4770",
+  "made_on_target": "0x1422f4770",
+  "twin": "made on steam-26566308; the target 0x1422f4770 is KB 0x1422f2b70: Career_TeamHqContractsVM_ClearRows (0x22f3760) and Career_ContractHubVM_OnActivate (0x22f6040) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1422f4770",
+    "target": "0x1422f4770"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e57098584320cdd54bd89ead90b3bcfe3f324745f7ab5583bea2b1ff6c0ef96d"
+  }
+ ]
+}

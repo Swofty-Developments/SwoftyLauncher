@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Sort_PartitionMedianGuess_Elem64_ByteKey",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1424e4710",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Sort_PartitionMedianGuess_Elem64_ByteKey(void **out_pair, uint8_t *first, uint8_t *last)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1424e6310 (RacingPC lab re_groups/_decomp)",
+  "notes": "(lib) MSVC std::sort helper (_Partition_by_median_guess_unchecked) for 0x40-byte elements ordered by their first byte: median-of-3 (ninther when range > 0xA00 bytes / 40 elems), then three-way partition with whole-element 64-byte swaps; writes the [equal_begin, equal_end) pointer pair to out_pair. No game semantics visible. Better context needed: the caller would tell which 64-byte record with a uint8 sort key is being sorted."
+ },
+ "signature": {
+  "id": "core.sort_partition_median_guess_elem64_byte_key",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 48 48 89 C8 4C 89 C1",
+  "match": "0x1424e4710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424e4710",
+  "kind": "func_start",
+  "names": [
+   "Ne_Sort_PartitionMedianGuess_Elem64_ByteKey"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1424e6310",
+  "made_on_target": "0x1424e6310",
+  "twin": "made on steam-26566308; the target 0x1424e6310 is KB 0x1424e4710: Game_MessageBus_PostEntrantChangeEnd (0x24e4b00) and Sess_SortEntrantsByGarageOrder (0x24e9250) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1424e6310",
+    "target": "0x1424e6310"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "466acdb8b4ac592f10fa405a0f13a210c5942aa53e0ac4bd20d4366f483c7f71"
+  }
+ ]
+}

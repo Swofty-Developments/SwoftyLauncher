@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_DepthDownsizePass_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143d17960",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "void *Render_DepthDownsizePass_Ctor(void *self, void *allocator, void *gfx, void *props)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143d19f30 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140104f70",
+  "notes": "Whole body read: Render_GeometryPass_Ctor with 7 slots, vtable 0x1459b27f0; slot 0 = MD5-hashed literal, slot 1 props 'output', slot 2 'depth', slots 3..6 optional 'depthDownsize1'..'depthDownsize4'; int prop (0x14560e659) into +0x560; when it is 0 allocates a 0x590-byte shared state (vtable 0x1459b2330, global 0x1465456c8) with five Gfx2 buffers (sizes 0x20,0x10,0x80,0x30,0x70) and 12 float constants at +0x4d8; finally formats a name from self+0x528 into +0x550. Context from caller: Render_Gfx_BuildConfigObject (decompile timed out; factory role from KB name and sibling InitResourceEntry) creates this pass from render config. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.depth_downsize_pass_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 98 04 00 00",
+  "match": "0x143d17960",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d17960",
+  "kind": "func_start",
+  "names": [
+   "Render_DepthDownsizePass_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143d19f30",
+  "made_on_target": "0x143d19f30",
+  "twin": "made on steam-26566308; the target 0x143d19f30 is KB 0x143d17960: Ne_NodeTable_FindIndexByHash (0x3cfeec0) and Ne_IBLCubeProbe_FreeInterpolatedArrays (0x3d1bcd0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143d19f30",
+    "target": "0x143d19f30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "89a28f5c60873073dcbe68a5eafd32fe0d71c4c43968a1c0b1dc598afa1039e2"
+  }
+ ]
+}

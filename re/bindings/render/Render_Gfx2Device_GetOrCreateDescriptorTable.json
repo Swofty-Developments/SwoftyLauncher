@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_GetOrCreateDescriptorTable",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1439e0f90",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void **Render_Gfx2Device_GetOrCreateDescriptorTable(void *device, void **out_handle, uint64_t key, void **views, uint64_t count)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439e3560 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143a26af0,0x143a277c0",
+  "notes": "Under CS +0x3288 looks key up in the hash map at device+0x3238 (16-byte key/value entries); hit returns the stored handle in out. Miss atomically reserves count descriptors from the linear heap (cursor +0x3220, increment +0x3224, CPU base +0x3228, GPU base +0x3230), gathers each view's handle at view+0x58 (null view -> device+0x1c20), calls native device (+0x508) vfunc +0xb8 to copy them, then inserts key -> handle (rehash via 0x143a2f440). Callers 0x143a26af0/0x143a277c0: binding code that FNV-1a hashes the bound view pointers per table and uses the returned handle as the table base. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.gfx2_device_get_or_create_descriptor_table",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 C5 F8 29 B4 24 90 01 00 00 4D 89 CC 4C 89 C3",
+  "match": "0x1439e0f90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439e0f90",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_GetOrCreateDescriptorTable"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1439e3560",
+  "made_on_target": "0x1439e3560",
+  "twin": "made on steam-26566308; the target 0x1439e3560 is KB 0x1439e0f90: Render_Gfx2Buffer_Construct (0x39d7ce0) and Ne_Load_SlUpgradeInterface (0x39e6f90) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1439e3560",
+    "target": "0x1439e3560"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c482fb0a45b47124d8a592902bfe5c2bfe2bfdc3452adbe7a2ecd65a59b3e1c7"
+  }
+ ]
+}

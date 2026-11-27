@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_PassiveObjective_Bind_Dependencies",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14297b740",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_PassiveObjective_Bind_Dependencies(void *self, void *arg, void *dep_map)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14297db00 (RacingPC lab re_groups/_decomp);xref:0x1429558a0",
+  "notes": "Looks up two entries in the robin-hood map dep_map by type keys 0x146049ab8 and 0x146070cf8 and stores them at self+0x8 and self+0x10; when both exist calls the virtual at vtable+0x68(self, arg, dep_map), otherwise sets errno 0x16 with the errno trace. Context from caller: MyTeam attribute modifier passive objective. Better context needed: which systems the two type keys are."
+ },
+ "signature": {
+  "id": "game.passive_objective_bind_dependencies",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C6 48 89 D3 48 89 CF 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 4C 89 C1 E8 ?? ?? ?? ?? 48 C1 E0 04 48 03 46 18 48 3B 46 20 74 55 48 8B 40 08",
+  "match": "0x14297b740",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14297b740",
+  "kind": "func_start",
+  "names": [
+   "Game_PassiveObjective_Bind_Dependencies"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14297db00",
+  "made_on_target": "0x14297db00",
+  "twin": "made on steam-26566308; the target 0x14297db00 is KB 0x14297b740: Career_Pick_RandomUpgrade_A (0x2969520) and Game_Build_PassiveObjectiveKeyName (0x297e150) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14297db00",
+    "target": "0x14297db00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "290c10a92c17b8b828a9f7ad8ee12fb21584d24b75537fd182318fa2ffbc8e7e"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ui_Set_DynamicProperty_ByName",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144380530",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Set_DynamicProperty_ByName(void *target, const char *name, void *value, void *allocator)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144382b00 (RacingPC lab re_groups/_decomp);xref:0x144207540,0x144231b00,0x14424b4f0",
+  "notes": "Whole body read. NULL name sets errno 0x16. Lazily allocates the 0x60-byte property map at target+0x10 from allocator (hash seed 0xc4ceb9fe1a85ec53, group width 0x20); if the map has an alias pool (+0x50) the name is first looked up with Ne_StringPool_FindObjectByCStr and replaced by the alias string when its type is 0x14612bad8. Hashes the name with djb2 (0x1505, x33) and probes the map: on a hit whose value type id equals type 0x14612bf38 it tail-calls value vt+0x40(value_obj, value); type mismatch sets errno 0x58. On a miss it creates a value object through type 0x14612bf38 vt+8(map allocator), sets it via vt+0x40 and inserts {hash, obj} (0x1438f5f80, grow 0x1438f6240), freeing it and setting errno 0x58 if the insert reports a duplicate; alloc failures set errno 0xc. Callers: 0x14424b4f0 and 0x144207540 (pin-target fan-out, one or two name/value pairs per target) and Vm_UiControllerPrompt_Update (names 0x1456f814d and 0x14588d227), always with the allocator from g_Vm_UiSystem vt+8. Good hook to log every named value pushed to UI targets. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.set_dynamic_property_by_name",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 FF C6 49 8B 47 10",
+  "match": "0x144205090",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x144380530",
+  "kind": "call",
+  "names": [
+   "Ui_Set_DynamicProperty_ByName"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144207660",
+  "made_on_target": "0x144382b00",
+  "twin": "made on steam-26566308; the target 0x144382b00 is KB 0x144380530: Ne_StringMap_EmplaceNode (0x434aff0) and Ne_Crt_ThrowOverflow_B (0x4385690) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144207660",
+    "target": "0x144382b00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "df5b9c195461047e10a5459224a6b0b20667f7f29a340313a506fc1e02d1f3c2"
+  }
+ ]
+}

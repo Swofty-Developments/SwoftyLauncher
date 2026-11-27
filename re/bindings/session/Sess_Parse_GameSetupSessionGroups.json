@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_Parse_GameSetupSessionGroups",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142a23b30",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "void Sess_Parse_GameSetupSessionGroups(void *alloc_holder, void *out_mode, const char *mode_row_ref)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142a25ef0 (RacingPC lab re_groups/_decomp);xref:0x142a172e0",
+  "notes": "Gamedb loader for one game-setup mode row (ref = two 0x100 char bufs, joined as table.label). Step 1: <mode>.session_collection row0 -> its 'session' rows; reads standings (-> game_setup.session_standings / session_standing_preset stat_id, ptr = g_Game_Scenarios+0xe8 + id*0x20), session_id and session_to_apply_penalties_to (both matched by strcmp against the 19-entry session-name table at 0x1457cb7e0), pushes 16-byte {standings ptr, session type, penalty session type} into vector out+0x8/+0x10/+0x18 unless that session type is already present. Step 2: <mode>.session_group_collection row0 -> three near-identical passes over practice_session_group, qualifying_session_group, race_session_group, appended to vectors at out+0x28, out+0x48, out+0x68 (elem 0x38: +0 group enum 1-5 by FNV-1a64 lowercase hash of field 'group', +0x10 vector of length groupings, +0x28 '<row>.type' enum 1-5 by hash, +0x29 '<row>.ruleset' via 0x140b02290 default 0x10, +0x2c '<row>.grid_type' and +0x30 '<row>.grid_type_no_qualifying' via 0x1413d4260 default -1). Each group also walks <row>.practice_session_length_grouping (race pass uses race_session_len..., qualifying analog): 'available_in' labels -> game_setup.weekend_options.practice_lengths/practice_length_option (race: ...race_lengths/race_length_option) stat_id (<16, else fatal 0x142b16e50) OR-ed into a bitmask minus bits claimed by earlier groupings, 'sessions' names -> session type ints; elem 0x28 {+0 mask u32, +0x10 int vector}. Strings are XOR-decoded in place with k_Gdb_StringXorKey. Good hook to see or alter which sessions a weekend format contains per session-length option. Read fully for the standings step and practice pass, start and end of the other two passes; the middle of the qualifying/race passes was checked by call sequence only."
+ },
+ "signature": {
+  "id": "session.parse_game_setup_session_groups",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 88 13 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 79 7F AC 24 70 13 00 00",
+  "match": "0x142a23b30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a23b30",
+  "kind": "func_start",
+  "names": [
+   "Sess_Parse_GameSetupSessionGroups"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142a25ef0",
+  "made_on_target": "0x142a25ef0",
+  "twin": "made on steam-26566308; the target 0x142a25ef0 is KB 0x142a23b30: Sess_Load_GameSetupBranding (0x2a15340) and Game_Garage_FadeOutForExit (0x2a3c920) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142a25ef0",
+    "target": "0x142a25ef0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7214f128358da34c4e6fc1eea87d428f22f0bda9875a53b32e8ebcede55ce0b6"
+  }
+ ]
+}

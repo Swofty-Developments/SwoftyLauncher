@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_SettingsControls_AddRowItem",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141da1800",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_SettingsControls_AddRowItem(void *vm, uint8_t *row_counter, uint8_t *item_counter, uint32_t id)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141da3400 (RacingPC lab re_groups/_decomp);xref:0x141da41c0,0x141da5390",
+  "notes": "Appends one item view (0x2d8 bytes, ctor FUN_141da9510, allocator vm+0x270) to the list model at vm+0xaf8. If the list node at +0x70 is empty or the last row's child list (binding 0x1456faf02) already holds more than 2 items, it first creates a new row object (0x130 bytes, ctor 0x141daa060, node name printf with *row_counter, which is then incremented) and pushes row and item into the vector at +0x128; otherwise the item is created under the last row and its parent is the last vector element (or that element's +0x128 parent). Writes the parent to item+0x128, the post-incremented *item_counter to the node at item+0xb0 and id to the node at item+0xd0; returns the item. Callers FeInput_Settings_BuildDeviceRows and Game_SettingsControlsScreenViewModel_ApplyFilterRebuildList then set the item's text holders at +0x130/+0x150/+0x190/+0x1b0. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.settings_controls_add_row_item",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 F8 29 B4 24 10 01 00 00 44 89 CB 4C 89 84 24 08 01 00 00",
+  "match": "0x141da1800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141da1800",
+  "kind": "func_start",
+  "names": [
+   "Vm_SettingsControls_AddRowItem"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141da3400",
+  "made_on_target": "0x141da3400",
+  "twin": "made on steam-26566308; the target 0x141da3400 is KB 0x141da1800: Game_F1WorldRewards_PopulateXpScreen (0x1d83970) and Game_SettingsControlsScreenViewModel_ApplyFilterRebuildList (0x1da5390) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141da3400",
+    "target": "0x141da3400"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7ae0c1ef09d447828e4d28e67009db6015ab461197a0c31911721fbefbc20ff0"
+  }
+ ]
+}

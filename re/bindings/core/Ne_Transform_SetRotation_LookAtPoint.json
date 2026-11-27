@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Transform_SetRotation_LookAtPoint",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1443ff2d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Transform_SetRotation_LookAtPoint(void *xform, const float *target)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1444018a0 (RacingPC lab re_groups/_decomp);xref:0x1406b7830,0x1406b8f00",
+  "notes": "Computes normalized direction target - xform+0 (position), builds an orthonormal basis with the constant up vector at 0x1453849c0 via two cross products, converts the 3x3 basis to a quaternion (branch on largest diagonal/trace) and writes it to xform+0x20. Also zeroes the w lane of the position at +0. Context from caller: camera behaviour aiming at a target. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "core.transform_set_rotation_look_at_point",
+  "section": ".xtls",
+  "pattern": "48 83 EC 68 C5 78 29 5C 24 50 C5 78 29 54 24 40 C5 78 29 4C 24 30 C5 78 29 44 24 20 C5 F8 29 7C 24 10 C5 F8 29 34 24 C5 F8 28 15",
+  "match": "0x1443ff2d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443ff2d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Transform_SetRotation_LookAtPoint"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1444018a0",
+  "made_on_target": "0x1444018a0",
+  "twin": "made on steam-26566308; the target 0x1444018a0 is KB 0x1443ff2d0: Game_AudioAutodetect_Initialise (0x43f1370) and Ne_TextRingBuffer_FlushPending (0x4414dd0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1444018a0",
+    "target": "0x1444018a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2710a86c38ae7d176b69366e389e8a56d37b9c524b7eed99733530663fdc4425"
+  }
+ ]
+}

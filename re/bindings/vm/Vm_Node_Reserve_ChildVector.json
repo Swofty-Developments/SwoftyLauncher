@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Node_Reserve_ChildVector",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144180e00",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Node_Reserve_ChildVector(void *node, uint64_t capacity)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1441833d0 (RacingPC lab re_groups/_decomp);xref:0x1441825e0,0x144183b90,0x1441dd740,0x144242aa0",
+  "notes": "Ensures the pointer vector at node+0x18 can hold capacity entries: creates the 0x20-byte vector header and storage from the g_Vm_UiSystem allocator when absent, or reallocates and copies when the current capacity (+0x18) is smaller. No-op for capacity 0."
+ },
+ "signature": {
+  "id": "vm.node_reserve_child_vector",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 D6 48 89 CF 4C 8B 71 18",
+  "match": "0x144180e00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144180e00",
+  "kind": "func_start",
+  "names": [
+   "Vm_Node_Reserve_ChildVector"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1441833d0",
+  "made_on_target": "0x1441833d0",
+  "twin": "made on steam-26566308; the target 0x1441833d0 is KB 0x144180e00: Ne_EventBus_Unsubscribe (0x417e580) and Ne_UIAction_C_closeScreenId (0x4185c30) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1441833d0",
+    "target": "0x1441833d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6bf5c5bd82235e62d098ecaa174726a4bc7f3a7899309c64ed54699240fac557"
+  }
+ ]
+}

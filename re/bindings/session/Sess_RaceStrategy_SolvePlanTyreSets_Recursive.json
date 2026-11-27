@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_RaceStrategy_SolvePlanTyreSets_Recursive",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1436a2510",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint32_t Sess_RaceStrategy_SolvePlanTyreSets_Recursive(void *alloc_ctx, void *strategy, void *plan_vec, void *compound_list, int32_t value_idx, float limit)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1436a4aa0 (RacingPC lab re_groups/_decomp);xref:0x143698580,0x1436a37c0",
+  "notes": "Recursive validator/completer for a stint plan (vector of 0x38-byte stints at plan+8..+0x10). Sums available tyre-set capacity (sets with flag +0x19 in strategy+0x188[compound], float at set+0x10+value_idx*4) and compares it with plan length versus remaining laps (+0x234); checks rule flags in strategy+0x268 (bit 0x4000000 = need two different compounds, bit 0x8000000 = mandatory-compound/set-flag check via tyre component +0x9c68) and calls Sess_RaceStrategy_IsPlanValid. If every stint already has a set (or the plan passes) it finalises with 0x1436a7350, 0x1436a8460(plan, +0x234) and 0x1436a85a0 and returns the pass bool. Otherwise for each candidate compound it clones the plan into a 0x28-byte candidate {float cost=FLT_MAX, bool valid, vector}, appends a stint with an unused set (0x1436a48e0), recurses, scores valid candidates by summed stint time plus pit loss (+0x214), sorts candidates (0x1436b9c20) and copies the best back into plan_vec; returns its valid flag. Stint fields: +0 compound, +8 start lap or -1, +0xc length, +0x14 set age or -1, +0x24 set index. Good hook for forcing/inspecting AI tyre strategy."
+ },
+ "signature": {
+  "id": "session.race_strategy_solve_plan_tyre_sets_recursive",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 79 7F 8C 24 C0 00 00 00",
+  "match": "0x1436a2510",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436a2510",
+  "kind": "func_start",
+  "names": [
+   "Sess_RaceStrategy_SolvePlanTyreSets_Recursive"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1436a4aa0",
+  "made_on_target": "0x1436a4aa0",
+  "twin": "made on steam-26566308; the target 0x1436a4aa0 is KB 0x1436a2510: Sess_RaceStrategy_BuildRedFlagStints (0x36a37c0) and Sess_Strategy_TyreClassTimeLoss (0x36a67c0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1436a4aa0",
+    "target": "0x1436a4aa0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "20f738d0f435859124f3c184769883b0bed25232227e13fa36561c3d4946c8fe"
+  }
+ ]
+}

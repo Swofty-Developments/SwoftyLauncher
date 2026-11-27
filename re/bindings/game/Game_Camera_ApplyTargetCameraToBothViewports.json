@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Camera_ApplyTargetCameraToBothViewports",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1406c1610",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Camera_ApplyTargetCameraToBothViewports(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1406c1650 (RacingPC lab re_groups/_decomp);xref:0x1406bf170,0x1406c1350,0x1406c1560",
+  "notes": "Sets flag 0x100 in (+0xf0)->+0x54, takes target vehicle index +0x60 (0xff = default from (+0x118)->+0x60 entry +0x28), scans pair list (+0xf8)->+0x28..+0x30 for owner whose +0x58->+0xe8 equals it, then writes that camera into slots 0 and 1 of manager +0xf0 (+0x80 table) and calls Game_Camera_FindCameraTransformByOwner + Game_RacingCameraArbitrator_RequiresCrossfade(viewport 0 and 1, mode 2). Good hook to force the active camera owner."
+ },
+ "signature": {
+  "id": "game.camera_apply_target_camera_to_both_viewports",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 68 48 89 CE 48 8B 81 F0 00 00 00",
+  "match": "0x1406c1610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406c1610",
+  "kind": "func_start",
+  "names": [
+   "Game_Camera_ApplyTargetCameraToBothViewports"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1406c1650",
+  "made_on_target": "0x1406c1650",
+  "twin": "made on steam-26566308; the target 0x1406c1650 is KB 0x1406c1610: Game_CinematicSafetyCar_FadeIn (0x6c1560) and Game_CinematicSafetyCar_RunThenFadeIn (0x6c1e60) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1406c1650",
+    "target": "0x1406c1650"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7c3066ccfd0834bfe2e9a73522f160fb91a1e4dc1dda7ed4f80dffbc99b08902"
+  }
+ ]
+}

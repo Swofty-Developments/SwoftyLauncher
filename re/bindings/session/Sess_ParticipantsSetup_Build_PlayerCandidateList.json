@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_ParticipantsSetup_Build_PlayerCandidateList",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1425704a0",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "void Sess_ParticipantsSetup_Build_PlayerCandidateList(void *setup, uint64_t max_count)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1425723d0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14256f2b0",
+  "notes": "Clears the vector setup+0x130 (0x50-byte elements holding a 0x40-byte xor-masked id block and tag 0x10000000) and refills it with up to max_count unique ids from three sources: records returned by 0x14253b9a0([setup+0xd8], filter bytes {1,2,4}, max_count) (stride 0x1810, id at +0x17d0), a second id list (stride 0x40) filled through [[setup+0xe8]+0x3a0] vcall +0x30, and the entries of [0x146c66520]+0x110 (+0x50..+0x58, stride 0xa8) whose state [+0xa0]+0x48 is in bit mask 0x768, built with Game_XorMaskedId3_Ctor(type 7). Duplicates are skipped by comparing the decoded ids. Callers: Sess_ParticipantsSetup_ApplySelection passes the selectable entrant count or the count at +0x4a60; Caller 0x14257c6b0: wrapper that calls it with max 20 and returns 0. Better context needed: the names of 0x14253b9a0 and of the +0x3a0 service would prove that the ids are players. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.participants_setup_build_player_candidate_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 F8 29 B4 24 10 01 00 00 48 89 D6 48 89 CF",
+  "match": "0x1425704a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1425704a0",
+  "kind": "func_start",
+  "names": [
+   "Sess_ParticipantsSetup_Build_PlayerCandidateList"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1425723d0",
+  "made_on_target": "0x1425723d0",
+  "twin": "made on steam-26566308; the target 0x1425723d0 is KB 0x1425704a0: Game_FrontendSceneCar_SpawnFromLiveryData (0x254b890) and Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver (0x257cdb0) on either side both sit 0x1f30 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1425723d0",
+    "target": "0x1425723d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1259ae5dfb7aca9208d5ce51281e98308de7cfcda092ca14c97d82d9dae8c258"
+  }
+ ]
+}

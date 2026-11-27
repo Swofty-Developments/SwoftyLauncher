@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Show_OnlineServicesConnectingMessage",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14079ca70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Show_OnlineServicesConnectingMessage(void *self, int32_t state)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14079cab0 (RacingPC lab re_groups/_decomp);xref:0x141ad0be0,0x141ad3090,0x141adc290,0x141ae5530,0x141ae5e10,0x141aed300,0x141aedba0,0x141b208f0",
+  "notes": "Only when state==7, counter +0x5c > 0 and no message is active in handle +0x38: calls Game_UiMessage_DisplayMessage with key \"online_services_connecting\", stores the handle in +0x30 (Ne_ListenerHandle_Assign) and sets (+0x20)->+0x8c = 1 (log \"BUSY_SPINNER\" \"setHidden %d\")."
+ },
+ "signature": {
+  "id": "game.show_online_services_connecting_message",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC F0 00 00 00 83 FA 07",
+  "match": "0x14079ca70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14079ca70",
+  "kind": "func_start",
+  "names": [
+   "Game_Show_OnlineServicesConnectingMessage"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14079cab0",
+  "made_on_target": "0x14079cab0",
+  "twin": "made on steam-26566308; the target 0x14079cab0 is KB 0x14079ca70: Game_RetrieveConsumableEntitlementsTask_RequestSteamPrices (0x793910) and Game_GameModeEntity_SetSetupMode (0x79f340) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14079cab0",
+    "target": "0x14079cab0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "593c9676b70adac4e7c5b410943b06b253f07124a5ecc756fd279244ae6edda0"
+  }
+ ]
+}

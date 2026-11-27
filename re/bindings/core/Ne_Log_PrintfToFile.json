@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Log_PrintfToFile",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143918d70",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Log_PrintfToFile(const char *fmt, ...)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14391b300 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1406c5c80,0x1406cda70,0x1406d63a0",
+  "notes": "Whole body read. Formats the varargs twice with Ne_Crt_VsnprintfWrapper (first for the length, then into a stack buffer capped at 0x3ff chars), and when the file handle at 0x146108f18 is open it writes separator + text with 0x14391b440 (separator 0x14565af47 only after the first write, flag 0x146108f20) and flushes. Caller 0x1406c5c80: crash-report init, opens that file from the module file name + process id and writes cl=%d (0x1629b8); caller 0x1406cda70: fatal handler, writes ipe=true once before Ne_FatalAbort; Game_Elastic_ElasticSearchDisabledViaConfig writes one more key. The file is a small key=value crash info file, not the normal game log. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "core.log_printf_to_file",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 8B B7 D8 14 00 00",
+  "match": "0x1406c5d3d",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x143918d70",
+  "kind": "call",
+  "names": [
+   "Ne_Log_PrintfToFile"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1406c5d7d",
+  "made_on_target": "0x14391b300",
+  "twin": "made on steam-26566308; the target 0x14391b300 is KB 0x143918d70: Ne_Crt_Swprintf (0x391aef0) and Ne_ErrorTrace_PushRing (0x391c0e0) on either side both sit 0x2590 above their KB addresses; the match 0x1406c5d7d is KB 0x1406c5d3d: Game_CinematicDirector_SendCinematicData (0x6c1fb0) and Ne_Heap_OnCorruptionNotification (0x6cd780) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1406c5d7d",
+    "target": "0x14391b300"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cb3046a4f0d11089cd0da430daa2141f05d5a0db6a4299321317941c2228298f"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Control_ApplyPinTargetsAndRaiseEvent",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144248f20",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Control_ApplyPinTargetsAndRaiseEvent(void *control, uint32_t *pin_hash, const char *prop_name, void *value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14424b4f0 (RacingPC lab re_groups/_decomp);xref:0x14422a5a0,0x144257330,0x1442add80",
+  "notes": "Whole body read. Searches control components (+0x30..+0x38) for the one whose type chain contains 0x146ca6820; in its entry list (component-0x18..-0x10) finds the entry with +0x28 == *pin_hash and, for every target pointer in entry+0x10..+0x18, calls Ui_Set_DynamicProperty_ByName(target, prop_name, value, allocator from g_Vm_UiSystem vt+8). Always ends with Vm_Raise_NodeEvent(UiSystem vt+0x48 result +0x230, control, pin_hash, 0, 0). Callers: 0x14422a5a0 (message switch, case 0x38: pin 0x146ca4858 with name 0x145a6a567 and value msg+0x20), 0x144257330 (selects item index param_3, then pin 0x146ca4a60 with the index as value), Vm_UiPL_DeliverPin (pin hash 0x7fa7d67f with a bool value). Single-pair sibling of 0x144207540, which sets two name/value pairs. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.control_apply_pin_targets_and_raise_event",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 4C 24 28 48 89 54 24 30 4C 8B 61 30",
+  "match": "0x144248f20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144248f20",
+  "kind": "func_start",
+  "names": [
+   "Ui_Control_ApplyPinTargetsAndRaiseEvent"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14424b4f0",
+  "made_on_target": "0x14424b4f0",
+  "twin": "made on steam-26566308; the target 0x14424b4f0 is KB 0x144248f20: Ne_UINodeBase_SetElementVisibility (0x4249e10) and Ne_UINodeBase_OnVMSetDataContext (0x424b9b0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14424b4f0",
+    "target": "0x14424b4f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c9e33cdc49704ecb72542755a3cab33bc902af917a09f9029aee51abf0137cb2"
+  }
+ ]
+}

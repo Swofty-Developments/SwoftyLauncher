@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Destroy_NodeHandleWithOptionalList",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14190f060",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Destroy_NodeHandleWithOptionalList(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141910840 (RacingPC lab re_groups/_decomp);xref:0x141b2f410",
+  "notes": "Destructor body: if the engaged flag at +0x90 is set it destroys the vector of {allocator, object} pairs at +0x78..+0x80 (object vtbl+0 dtor, allocator vtbl+0x38 free; buffer freed through the allocator at +0x70), releases the VM node handle at +0x50..+0x68 and clears the flag; then always releases the VM node handle at +0x30..+0x48 via Vm_Release_Node. Context from caller: EntryListVm deleting destructor."
+ },
+ "signature": {
+  "id": "ui.destroy_node_handle_with_optional_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CE 80 B9 90 00 00 00 00",
+  "match": "0x14190f060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14190f060",
+  "kind": "func_start",
+  "names": [
+   "Ui_Destroy_NodeHandleWithOptionalList"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141910840",
+  "made_on_target": "0x141910840",
+  "twin": "made on steam-26566308; the target 0x141910840 is KB 0x14190f060: Ui_Purchase_SelectTierButton (0x18e10c0) and Ui_Rnd_SetUpgradeRewards (0x1921af0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141910840",
+    "target": "0x141910840"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "98c327c881299b70b5f6da3a7afc228541fd4a8ea6623c50e4e2f076ff53f619"
+  }
+ ]
+}

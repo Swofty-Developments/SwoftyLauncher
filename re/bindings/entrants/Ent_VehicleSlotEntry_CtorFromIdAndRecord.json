@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ent_VehicleSlotEntry_CtorFromIdAndRecord",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1424f9310",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "void *Ent_VehicleSlotEntry_CtorFromIdAndRecord(void *out, uint32_t id, void *record)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1424faf10 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142478370,0x1424787d0",
+  "notes": "Whole body read. out+0x00 = id; copies record+0x00.. to out+0x10.. (dest = src + 0x10): 0x48 bytes of header, five inline strings {vt 0x145615538, cap 0x100, ptr, chars} at out+0x58, +0x170, +0x288, +0x3a0, +0x4b8, a 0x218-byte block at +0x5d0, a counted array (count out+0x880, elems 0x30 bytes at out+0x7f0), 0x40 bytes at +0x890, a 0x2b0-byte block at +0x8d0, sub-objects with vt 0x14563ea90 at +0xb80 and vt 0x14563eae0 at +0xc10, tail up to about +0xcf0. Returns out. Callers Ent_EntrantsSystem_ReplaceVehicle 0x142478370 (id = packed handle) and Ent_EntrantsSystem_AddVehicle 0x1424787d0 (id = slot << 16 | 1) build the entry on the stack and pass it to Sess_VehicleTable_EmplaceAt. Hook point to see or edit a user vehicle record before it is stored. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "entrants.vehicle_slot_entry_ctor_from_id_and_record",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 4C 89 C7 48 89 CE 89 11 C4 C1 78 28 00",
+  "match": "0x1424f9310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424f9310",
+  "kind": "func_start",
+  "names": [
+   "Ent_VehicleSlotEntry_CtorFromIdAndRecord"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1424faf10",
+  "made_on_target": "0x1424faf10",
+  "twin": "made on steam-26566308; the target 0x1424faf10 is KB 0x1424f9310: Game_EntrantsUi_BuildCharacterRef (0x24f3970) and site_Game_MyTeamVehicleBases_SaveRecord (0x2508cbf) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1424faf10",
+    "target": "0x1424faf10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4a0f9cce2e58adce494b3c003180843cf668ca41ecc02dc7af245dbddc3af580"
+  }
+ ]
+}

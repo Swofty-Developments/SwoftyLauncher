@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_Ssl_EvpCipherFree",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144c62fb0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Ossl_Ssl_EvpCipherFree(void *cipher)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144c65970 (RacingPC lab re_groups/_decomp);xref:0x1450b5420",
+  "notes": "OpenSSL ssl_evp_cipher_free pattern: for a non-null cipher, checks a getter (func 0x144903290, presumably get0_provider) and only then calls the free FUN_144c986b0, so only fetched ciphers are released."
+ },
+ "signature": {
+  "id": "core.ossl_ssl_evp_cipher_free",
+  "section": ".xtls",
+  "pattern": "48 85 C9 74 28 53 B8 20 00 00 00 E8 ?? ?? ?? ?? 48 2B E0 48 8B D9 E8 ?? ?? ?? ?? 48 85 C0 74 08 48 8B CB E8 ?? ?? ?? ?? 48 83 C4 20 5B C3 CC CC 48 89 5C 24 08",
+  "match": "0x144c62fb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144c62fb0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_Ssl_EvpCipherFree"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144c65970",
+  "made_on_target": "0x144c65970",
+  "twin": "made on steam-26566308; the target 0x144c65970 is KB 0x144c62fb0: Ne_Std_ThrowBadFunctionCall (0x49e4194) and Ne_Crt_Chkstk (0x4c8c190) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144c65970",
+    "target": "0x144c65970"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7de6ca206f78206a4e2c4639d1fe6785287025622a62c1ec9fd34726339f991d"
+  }
+ ]
+}

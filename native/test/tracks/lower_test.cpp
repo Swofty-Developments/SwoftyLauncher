@@ -149,7 +149,7 @@ static void parity_tests(const Fixture &f, const std::string &dir)
     for (auto &c : CASES) {
         tk::Db db(fixture_read(f));
         tk::Lowered l =
-            tk::lower_track(db, tk::builtin_tables(), {c.code, c.code, c.from, c.slot, -1, true, c.ui_lists, c.sprint});
+            tk::lower_track(db, tk::builtin_tables(), {c.code, c.code, c.from, c.slot, -1, true, c.ui_lists, c.sprint, ""});
         check(l.error.empty(), std::string(c.name) + ": lowers over the fixture (" + l.error + ")");
         bool found = false;
         auto want = expected_of(dir + "/fixture/expected/" + c.name + ".json", found);
@@ -222,13 +222,55 @@ static void weekend_format_tests(const Fixture &f)
     }
     {
         tk::Db db(fixture_read(f));
-        tk::Lowered l = tk::lower_track(db, t, {"mod.x/delhi", "delhi", "zandvoort", "", -1, true, {}, {"f1", "f1_2025"}});
+        tk::Lowered l = tk::lower_track(db, t, {"mod.x/delhi", "delhi", "zandvoort", "", -1, true, {}, {"f1", "f1_2025"}, ""});
         check(l.error.empty(), "delhi lowers with a sprint list (" + l.error + ")");
         check(holds(l.lines, "weekend format: delhi runs sprint weekends in f1"), "the sprint data sets are logged");
         check(
             holds(l.warnings, "sprint f1_2025: delhi has no weekend format in that data set, so it takes its parent data set's"),
             "a sprint data set without a weekend format block is a warning");
     }
+}
+
+static void video_tests(const Fixture &f, const std::string &dir)
+{
+    const tk::Tables &t = tk::builtin_tables();
+    const std::string video = "track_map/swofty/mod.x/okayama.bk2";
+    tk::Db db(fixture_read(f));
+    tk::Lowered l = tk::lower_track(db, t, {"mod.x/okayama", "okayama", "melbourne", "melbourne", -1, true, {}, {}, video});
+    check(l.error.empty() && l.warnings.empty(), "okayama lowers with a video (" + l.error + ")");
+    bool found = false;
+    auto want = expected_of(dir + "/fixture/expected/okayama.json", found);
+    check(found, "expected/okayama.json exists");
+    std::map<uint64_t, std::pair<int, std::string>> got;
+    std::vector<uint64_t> intro;
+    for (auto &w : db.writes()) {
+        auto had = f.find(w.key);
+        if (had == f.end() || had->second.tag != w.tag || had->second.text != w.text)
+            got[w.key] = {w.tag, w.text};
+        if (w.path.ends_with(".TrackVideo_0.value") && w.text == video)
+            intro.push_back(w.key);
+    }
+    check(intro.size() == 1, "exactly one TrackVideo value is the placed video (" + std::to_string(intro.size()) + ")");
+    if (intro.size() != 1)
+        return;
+    check(want.count(intro[0]) && want[intro[0]].second == "track_map/melbourne.bk2",
+          "the launcher's okayama row holds the base's track_map/melbourne.bk2 where the core writes the video");
+    want[intro[0]].second = video;
+    check(got == want, "with the video set, every other row equals the launcher's okayama row for row (" +
+                           std::to_string(got.size()) + " vs " + std::to_string(want.size()) + ")");
+    bool logged = false;
+    for (auto &line : l.lines)
+        logged =
+            logged || line == "okayama: circuit intro " + video + " (the track row's TrackVideo was track_map/melbourne.bk2)";
+    check(logged, "one line says the video is set and what the row held");
+    tk::Db plain(fixture_read(f));
+    tk::Lowered p = tk::lower_track(plain, t, {"mod.x/okayama", "okayama", "melbourne", "melbourne", -1, true});
+    bool any = false;
+    for (auto &w : plain.writes())
+        any = any || (w.path.ends_with(".TrackVideo_0.value") && w.text != "track_map/melbourne.bk2");
+    check(!any, "without a video the row keeps the base's value");
+    for (auto &line : p.lines)
+        check(line.find("circuit intro") == std::string::npos, "without a video nothing is logged");
 }
 
 static void lowering_tests(const Fixture &f)
@@ -415,6 +457,33 @@ static void seed_tests(const Fixture &f, const std::string &regs)
     check(p.fresh > 1000 && p.addon_fresh["mod.a"] > 0, std::to_string(p.fresh) + " new database key(s) counted for sizing");
     check(ids::store().get("track", "mod.a/sepang").id == 253, "the allocated id is pinned in ids.json");
 
+    {
+        const std::string video = "track_map/swofty/mod.a/albert.bk2";
+        auto intro = [&](const tk::Db &db, const std::string &record) {
+            std::vector<std::string> values;
+            for (auto &w : db.writes())
+                if (w.record == record && w.path.ends_with(".TrackVideo_0.value"))
+                    values.push_back(w.text);
+            return values;
+        };
+        tk::Db with_video(fixture_read(f));
+        tk::Plan pv = tk::lower_records(st, with_video, tk::builtin_tables(), s, older.tracks, stat, {},
+                                        [&](const std::string &code) { return code == "albert" ? video : std::string(); });
+        bool logged = false;
+        for (auto &l : pv.lines)
+            logged = logged || l == "track mod.a/albert: albert: circuit intro " + video +
+                                        " (the track row's TrackVideo was track_map/melbourne.bk2)";
+        check(logged, "a record whose facts name a video logs one line for it");
+        check(intro(with_video, "mod.a/albert") == std::vector<std::string>{video},
+              "the cloned track row's TrackVideo_0.value is the placed video, after the clone");
+        check(intro(with_video, "mod.a/sepang") != std::vector<std::string>{video} &&
+                  intro(boot, "mod.a/albert") == std::vector<std::string>{"track_map/melbourne.bk2"},
+              "a track with no video keeps its base's TrackVideo (melbourne's), and nothing sets one without facts");
+        std::size_t lines = 0;
+        for (auto &l : p.lines)
+            lines += l.find("circuit intro") != std::string::npos;
+        check(lines == 0, "no circuit intro line without a video");
+    }
     std::size_t variants = tk::declare_data_variants(st, p);
     check(variants >= 4, std::to_string(variants) + " data block variant(s) declared");
     std::string lap_set;
@@ -563,6 +632,7 @@ int main(int argc, char **argv)
     lowering_tests(f);
     parity_tests(f, dir);
     weekend_format_tests(f);
+    video_tests(f, dir);
     seed_tests(f, regs);
     venue_seed_tests(regs);
     boot_order_tests(f, regs);

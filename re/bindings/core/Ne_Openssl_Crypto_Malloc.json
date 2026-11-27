@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Openssl_Crypto_Malloc",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144c89820",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Openssl_Crypto_Malloc(size_t num)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144c8c1e0 (RacingPC lab re_groups/_decomp);xref:0x144ca7fe0,0x144ca8260,0x144caaf90,0x144cab330,0x144cab760,0x144cabf70,0x144f23290,0x144f235f0",
+  "notes": "(lib) OpenSSL CRYPTO_malloc: if the malloc_impl pointer DAT_145f793b8 is not this function it tail-calls the custom allocator; returns NULL for 0; clears the allow-customize flag DAT_145f793b0; otherwise inlined CRT malloc (HeapAlloc on DAT_146016a98 with new-handler retry, errno 0xc on failure)."
+ },
+ "signature": {
+  "id": "core.openssl_crypto_malloc",
+  "section": ".xtls",
+  "pattern": "B8 28 00 00 00 E8 ?? ?? ?? ?? 48 2B E0 48 8B 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 49 3B C1 74 07 48 83 C4 28 48 FF E0 48 85 C9",
+  "match": "0x144c89820",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144c89820",
+  "kind": "func_start",
+  "names": [
+   "Ne_Openssl_Crypto_Malloc"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144c8c1e0",
+  "made_on_target": "0x144c8c1e0",
+  "twin": "made on steam-26566308; the target 0x144c8c1e0 is KB 0x144c89820: Ne_Crt_Chkstk (0x4c8c190) and Ne_Crt_SecurityCookieFailure (0x4c964a0) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144c8c1e0",
+    "target": "0x144c8c1e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "40ed338222c4746dc48f4dc2e2252b00a94d143fe5fc934fe6ebe4c6b0c39400"
+  }
+ ]
+}

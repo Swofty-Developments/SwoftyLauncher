@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Check_TeamPresetItem_Selectable",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14385c700",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "uint32_t Ui_Check_TeamPresetItem_Selectable(void *preset_ctx, void *owner, void *item_map_owner)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14385ec90 (RacingPC lab re_groups/_decomp);xref:0x141a2dc70",
+  "notes": "Whole body read. Builds a 4-byte preset key with Ui_CareerWizard_BuildTeamPresetNames(&key,1,preset_ctx), walks the dense map at p3+0x130/+0x138 (count +0x140) for the item whose +0xca key matches and tests vcall +0x40 == 1; also scans the 0x1e0-byte array at [p2+0x230] (count +0x7870) for an entry with int +0x70 == 0x6f. Returns (state_ok OR has_0x6f) only when feature flag bit 43 is set, else 0. Context from caller: Ui_MyTeamTeamIcons_Select uses the result to pick between two prompt string sets; Caller 0x140dc7d10: when the result is 0 it builds a 256-bit option mask from g_Game_OptionsStore+0x340. Better context needed: meaning of vcall +0x40 == 1 and of id 0x6f (0x6e..0x71 are upsell item ids in 0x142429d90), so 'Selectable' is not proven. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.check_team_preset_item_selectable",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 4C 89 C3 48 89 D7 49 89 CE",
+  "match": "0x14385c700",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14385c700",
+  "kind": "func_start",
+  "names": [
+   "Ui_Check_TeamPresetItem_Selectable"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14385ec90",
+  "made_on_target": "0x14385ec90",
+  "twin": "made on steam-26566308; the target 0x14385ec90 is KB 0x14385c700: Ui_CareerWizard_BuildTeamPresetNames (0x385e5e0) and Career_MyTeamF1Length_ChoiceTable (0x386bea0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14385ec90",
+    "target": "0x14385ec90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "22f83c05822b9aba55d8699ba458315114b8261d32377840cef8a26d34b17e77"
+  }
+ ]
+}

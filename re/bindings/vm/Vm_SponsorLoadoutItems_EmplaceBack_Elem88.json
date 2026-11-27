@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_SponsorLoadoutItems_EmplaceBack_Elem88",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14211eb80",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_SponsorLoadoutItems_EmplaceBack_Elem88(void *vec, void *parentNode, void *unused, int64_t *value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142120780 (RacingPC lab re_groups/_decomp);xref:0x141ff3ba0",
+  "notes": "Emplace-back into a vector of 0x58-byte VM row items (vec+8 begin, +0x10 end, +0x18 cap). Each item: node handle at +0x00 built from parentNode, string property node \"name\" (init \"\") at +0x20, +0x40=-1, +0x48=*value, +0x50=0. Grow path reallocates 1.5x, relinks intrusive node handles and releases old ones via Vm_Release_Node."
+ },
+ "signature": {
+  "id": "vm.sponsor_loadout_items_emplace_back_elem88",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 4D 89 CD 4D 89 C4",
+  "match": "0x14211eb80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14211eb80",
+  "kind": "func_start",
+  "names": [
+   "Vm_SponsorLoadoutItems_EmplaceBack_Elem88"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142120780",
+  "made_on_target": "0x142120780",
+  "twin": "made on steam-26566308; the target 0x142120780 is KB 0x14211eb80: site_Career_RnDPieMoveAssignSlotDtor (0x21188ca) and Vm_MyTeamUpgradeScreenCards_ReleaseNodes (0x2122770) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142120780",
+    "target": "0x142120780"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6f16609a2e87ba9c39d57298b123968aef223dc6a3e3d5787a3fcc2410dcf828"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Make_SharedTypedNode_ByKind",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142775040",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_Make_SharedTypedNode_ByKind(void *out_shared_ptr, void *allocator, uint8_t kind)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1427773c0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14279e3f0,0x14279f2c0",
+  "notes": "Factory: switch on kind 0..11 allocates a node from allocator vcall +0x18 (0x40 bytes; 0x58 for kind 7 with an extra owned 0x28 list block; 0x268 for kind 11 with an inline 0x200 string buffer), runs the base ctor 0x142771a10 and sets the per-kind vtable (0x1457a13e0..0x1457a1540), then allocates a 0x28 control block (refcounts 1/1, deleter vtable 0x1457a6550..0x1457a66b0) from the global allocator 0x14612bc00 and writes {node, control} to out; other kinds give a null pair. Context from caller: Game_Unk_14279c070 (inventory/catalog response handler) and Ent_TeamSetup_RebuildFromRows create a node with the kind byte of the row, then fill node +0xc id, +0x10 state and +0x18/+0x20 owner. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.make_shared_typed_node_by_kind",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 C5 F8 29 74 24 20 48 89 CE 41 80 F8 0E",
+  "match": "0x142775040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142775040",
+  "kind": "func_start",
+  "names": [
+   "Game_Make_SharedTypedNode_ByKind"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1427773c0",
+  "made_on_target": "0x1427773c0",
+  "twin": "made on steam-26566308; the target 0x1427773c0 is KB 0x142775040: site_Career_TeamDeptEnumStore (0x27765d8) and Game_F1os_F1CGTask_Update (0x27a1ea0) on either side both sit 0x2380 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1427773c0",
+    "target": "0x1427773c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7151e67e6aba67c8d7ea53b8cf3cb4318102ac1d5ecc1a73c1ab30f44498dc2f"
+  }
+ ]
+}

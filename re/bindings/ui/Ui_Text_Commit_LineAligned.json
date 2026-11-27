@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Text_Commit_LineAligned",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14430ef00",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Text_Commit_LineAligned(void *text_elem, float *line, float *cursor, float max_width, void *state)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1443114d0 (RacingPC lab re_groups/_decomp);xref:0x144313230,0x144315390",
+  "notes": "Finishes one layout line: increments line counter state+0x40, applies shrink-to-fit scale to line+0x10 when cursor[8] > max_width (mode cursor[2] 1/3 = x only, 2 = uniform), computes x offset from alignment cursor[1] (1 center, 2 right, 3 justify by spreading the gap over runs), advances the pen in state+0x20, pushes the line to text_elem+0x2f8 and resets line and cursor. Honors the visible line window text_elem+0x1fa/+0x1fb when flag +0x1f8 bit 0x40 is set."
+ },
+ "signature": {
+  "id": "ui.text_commit_line_aligned",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 78 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 C5 F8 28 F3",
+  "match": "0x14430ef00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14430ef00",
+  "kind": "func_start",
+  "names": [
+   "Ui_Text_Commit_LineAligned"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1443114d0",
+  "made_on_target": "0x1443114d0",
+  "twin": "made on steam-26566308; the target 0x1443114d0 is KB 0x14430ef00: Ne_UITextElement_SetText (0x430e310) and Ne_UITextElement_UpdateDocument (0x431ad00) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1443114d0",
+    "target": "0x1443114d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5d8248d911a80887c4c94c1c6f4214c84d0d76ba7d43a3e356eebc8534fdf12c"
+  }
+ ]
+}

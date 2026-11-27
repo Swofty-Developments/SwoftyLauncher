@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_Strategy_TrimStintLaps_ToRemaining",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1436a4dc0",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "void Sess_Strategy_TrimStintLaps_ToRemaining(void *self, void *vehCtx, void *plan, int32_t tyreSet)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1436a7350 (RacingPC lab re_groups/_decomp)",
+  "notes": "Race-strategy helper: sums planned laps over the stint vector plan+8..+0x10 (0x38-byte stints: +0 compound id, +4 laps done, +8 flag -1 = open stint, +0xc planned laps, +0x14, +0x24 tyre variant) and while the total exceeds vehCtx+0x234 (laps available) it scores each trimmable stint by integrating a time/wear cost of its last lap (Car_Tyre_SampleCurveSet2KeyLerp, Car_Tyre_SampleWearCurve2DAlt, Sess_VpTable_SelectBlocks, compound tables 0x14585bc48/0x14585bc9c, factors 0.33/0.66 for compounds 3/4, g_Game_TrackLength, g_Live_SectorEnds[3]) and decrements +0xc of the highest-scoring stint. Uses vehCtx+0xc4 car index, +0x1e4 per-compound wear scale, +0x240 and flag +0x26b bit 0x10 as a lap reserve; sentinel 1e38 (0x7e967699) marks scores to recompute. Good hook for AI/suggested pit strategy stint lengths. Better context needed: caller to confirm AI vs player strategy."
+ },
+ "signature": {
+  "id": "session.strategy_trim_stint_laps_to_remaining",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 02 00 00 C5 78 29 BC 24 80 02 00 00 C5 78 29 B4 24 70 02 00 00 C5 78 29 AC 24 60 02 00 00 C5 78 29 A4 24 50 02 00 00 C5 78 29 9C 24 40 02 00 00 C5 78 29 94 24 30 02 00 00 C5 79 7F 8C 24 20 02 00 00",
+  "match": "0x1436a4dc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436a4dc0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Strategy_TrimStintLaps_ToRemaining"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1436a7350",
+  "made_on_target": "0x1436a7350",
+  "twin": "made on steam-26566308; the target 0x1436a7350 is KB 0x1436a4dc0: Game_Predict_StrategyWetness (0x36a6a90) and Sess_RaceStrategy_Initialise (0x36a9bd0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1436a7350",
+    "target": "0x1436a7350"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3de8ee7eaed91348435c36cb3b405adca8eb5e50aac8fa591113d94fd025c5e3"
+  }
+ ]
+}

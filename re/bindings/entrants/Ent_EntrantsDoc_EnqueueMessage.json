@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsDoc_EnqueueMessage",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1424e2820",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "uint64_t Ent_EntrantsDoc_EnqueueMessage(void *self, void *msg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1424e4420 (RacingPC lab re_groups/_decomp);xref:0x142462050,0x14310e760,0x143111240,0x143115eb0",
+  "notes": "If the running flag at +0x68 is clear it returns errno 0x58. Otherwise, under the critical section at +0x98, it allocates a 0x10 byte node (vtable 0x145790a60) from the allocator at +0x70 holding msg+8, appends it to the singly linked queue (head +0x58, tail +0x60) and signals the event at +0x88. Returns 0, or 0xc on allocation failure."
+ },
+ "signature": {
+  "id": "entrants.entrants_doc_enqueue_message",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 41 83 7C 24 08 01 0F 8F",
+  "match": "0x14310d119",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1424e2820",
+  "kind": "call",
+  "names": [
+   "Ent_EntrantsDoc_EnqueueMessage"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14310f6a9",
+  "made_on_target": "0x1424e4420",
+  "twin": "made on steam-26566308; the target 0x1424e4420 is KB 0x1424e2820: Sess_Parse_EntrantTemplateRef (0x24dffe0) and Game_MessageBus_PostEntrantChangeBegin (0x24e4790) on either side both sit 0x1c00 above their KB addresses; the match 0x14310f6a9 is KB 0x14310d119: Game_CustomDriverNetworkMessageHandler_AddReplicatedDriver (0x310d3b0) and Game_PlayerSet_SetEntryLocked (0x3111b50) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14310f6a9",
+    "target": "0x1424e4420"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "679cb56182ab198c834db8f5386eea95a95f633c235c82b28ff19652b4ee0c3d"
+  }
+ ]
+}

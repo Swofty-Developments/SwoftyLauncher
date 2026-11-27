@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ui_Build_HomeTile_F1World_Item148",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14174a260",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t Ui_Build_HomeTile_F1World_Item148(void *list, uint8_t index)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14174b9e0 (RacingPC lab re_groups/_decomp);xref:0x14173f700",
+  "notes": "Formats \"button_%d\" with index, gets/creates that child VM node under list+0x38, allocs a 0xd8 Tile (template \"fe_tile_button_default\", vtable 0x145708cc8) from allocator list+0x8, allocs a 0x148 HomeItem with id \"f1_world\" (base vtable 0x14570c6a0, final 0x145707310), stores item in tile and appends the tile to the vector at list+0x70. Good hook point to add/remove home screen tiles."
+ },
+ "signature": {
+  "id": "ui.build_home_tile_f1_world_item148",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? B2 02 4C 89 F1 E8 ?? ?? ?? ?? E9",
+  "match": "0x14173ecbb",
+  "anchor": "0xb",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xa"
+  },
+  "target": "0x14174a260",
+  "kind": "call",
+  "names": [
+   "Ui_Build_HomeTile_F1World_Item148"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14174043b",
+  "made_on_target": "0x14174b9e0",
+  "twin": "made on steam-26566308; the target 0x14174b9e0 is KB 0x14174a260: FeHome_Add_CareerTile (0x1747e90) and site_Career_RnDUpgradeListDeptIcon (0x174f384) on either side both sit 0x1780 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14174043b",
+    "target": "0x14174b9e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f8ae8cf056586dca84d75f2c1f7ba52e44bb45280e623af29b348eadd1010637"
+  }
+ ]
+}

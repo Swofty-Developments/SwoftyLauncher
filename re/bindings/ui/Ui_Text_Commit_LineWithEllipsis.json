@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Text_Commit_LineWithEllipsis",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14430e870",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Text_Commit_LineWithEllipsis(void *text_elem, float *line, float *cursor, float max_width, void *state)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144310e40 (RacingPC lab re_groups/_decomp);xref:0x144313230",
+  "notes": "If the line has runs (+0x38..+0x40) and its width cursor[8] exceeds max_width with wrap width +0x200 > 0, measures the UTF-8 ellipsis (bytes E2 80 A6 in 0x146ca71f0) and walks runs from the end, recording the cut run index at line+0x26 and byte count at +0x28 until it fits. Then advances the pen in state+0x20..+0x2c, pushes the line into the vector at text_elem+0x2f8 and resets line and cursor from the style (+0x148,+0x154,+0x158)."
+ },
+ "signature": {
+  "id": "ui.text_commit_line_with_ellipsis",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 78 29 9C 24 B0 00 00 00 C5 78 29 94 24 A0 00 00 00 C5 78 29 8C 24 90 00 00 00 C5 78 29 84 24 80 00 00 00 C5 F8 29 7C 24 70 C5 F8 29 74 24 60 C5 F8 28 F3",
+  "match": "0x14430e870",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14430e870",
+  "kind": "func_start",
+  "names": [
+   "Ui_Text_Commit_LineWithEllipsis"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144310e40",
+  "made_on_target": "0x144310e40",
+  "twin": "made on steam-26566308; the target 0x144310e40 is KB 0x14430e870: Ne_UITextElement_SetText (0x430e310) and Ne_UITextElement_UpdateDocument (0x431ad00) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144310e40",
+    "target": "0x144310e40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f2dd9fef451e8b6418743812f9b8d7837b81b79252ff7e9106cb5113973495ef"
+  }
+ ]
+}

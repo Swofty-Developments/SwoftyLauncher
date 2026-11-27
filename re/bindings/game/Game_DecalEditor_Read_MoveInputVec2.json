@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_DecalEditor_Read_MoveInputVec2",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141fefd20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "float *Game_DecalEditor_Read_MoveInputVec2(void *editor, float *out_vec2)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141ff1920 (RacingPC lab re_groups/_decomp);xref:0x141ff0620,0x141ff1510",
+  "notes": "Reads four directional values from the block at *(DAT_146ca2810)+0x198 via Render_ParamBlock_ApplyByHash, each with three alternative ids (0x146ca6b18/6b68/6ac0, 6b20/6b70/6ac8, 6b28/6b58/6ab0, 6b30/6b60/6ab8; first positive one wins) and writes out = (fourth - third, first - second). If both components are below 0.0001 it stamps the idle time at +0x3e8 (if zero) and zeroes the accumulator at +0x5d0. With DAT_146068c40 set each axis becomes -1/0/+1 after a deadzone taken from **( *(editor+0x398)+0x230 )+8. Context from caller: Game_DecalCatalogue_PlaceOrSwap scales the result by frame time for free movement, 0x141ff1510 uses it for stepped movement. Good hook to inject decal move input. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.decal_editor_read_move_input_vec2",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 88 00 00 00 C5 78 29 54 24 70",
+  "match": "0x141fefd20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141fefd20",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalEditor_Read_MoveInputVec2"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141ff1920",
+  "made_on_target": "0x141ff1920",
+  "twin": "made on steam-26566308; the target 0x141ff1920 is KB 0x141fefd20: Ui_SponsorLogoBinding_Build (0x1fe42f0) and Game_SponsorLoadout_BuildList (0x1ff3ba0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141ff1920",
+    "target": "0x141ff1920"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6688d096622660b7d19feb4bf70474d8e28f9c6a58114c0d5ed5ed4502e5bc68"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ui_Format_TextWithTwoNamedIntArgs",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14166cb50",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void **Ui_Format_TextWithTwoNamedIntArgs(void *fmt, void **out_str, int32_t value_a, int32_t value_b)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14166e140 (RacingPC lab re_groups/_decomp);xref:0x1418666a0,0x141a9c330,0x141a9f660",
+  "notes": "Builds two argument records on the stack (type tag 7, 64-char inline name, int value): name A copied from the C string at fmt+0x8 with value_a, name B from fmt+0x10 with value_b (if both names are equal the second value overwrites the first slot). Then clears *out_str and calls Ne_InternedString_ManageB(args, fmt+0x18, out_str, 0) to substitute into the text held at fmt+0x18; returns out_str. Callers 0x141a9c330 and 0x141a9f660: look up a localised string into fmt+0x18, format it with two ints and write the result to a VM string node via Vm_NodeSet_String; Vm_SponsorGoalsText_Refresh uses the result for the goals[0].current_progress text. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.format_text_with_two_named_int_args",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 9E B0 10 00 00",
+  "match": "0x141a9acdb",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x14166cb50",
+  "kind": "call",
+  "names": [
+   "Ui_Format_TextWithTwoNamedIntArgs"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141a9c4bb",
+  "made_on_target": "0x14166e140",
+  "twin": "made on steam-26566308; the target 0x14166e140 is KB 0x14166cb50: Ne_InternedString_ManageB (0x16689d0) and Career_Bind_FacilityUpgradeNameStrings (0x16752d0) on either side both sit 0x15f0 above their KB addresses; the match 0x141a9c4bb is KB 0x141a9acdb: Game_ChallengeEvent_OnTabDeactivated (0x1a8c060) and Game_F1WorldHub_BuildPlayTiles (0x1ab9fa0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141a9c4bb",
+    "target": "0x14166e140"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1350a9c1d42bf278a5ae9c7f0c370b30557bbf3eccb43bd50940ca29573d8f88"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Selector_Advance_NextWrapped",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1416d5190",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Selector_Advance_NextWrapped(void *selector)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1416d6780 (RacingPC lab re_groups/_decomp);xref:0x141fee5a0",
+  "notes": "Returns early if the row vector +0x98..+0xa0 (stride 0xc0) is empty; resolves the selected-node property +0x78 (follows up to 0x62 reference hops), finds the row whose node handle (+8) matches, takes (row+0x68 index + 1) % row_count, fetches that element from the list ref +0x58 (Ne_Ref_GetListElementOrEmpty) and writes it back into property +0x78 via Ne_Property_SetUIDBRefIfChanged when the type matches 0x146ca7550; returns selector+0x70. Context from caller: Game_DecalEditor_CommitEdit (decal editor VM command handler) tail-jumps here with vm+0x3f8 on command hash 0x5bcbf7c4 when preview +0x5e4 is off (body is merged into the caller decompile, no call line); sibling 0x1416d68f0 is used on the same selector. Good hook to observe row cycling. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.selector_advance_next_wrapped",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 8B 81 98 00 00 00",
+  "match": "0x1416d5190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416d5190",
+  "kind": "func_start",
+  "names": [
+   "Ui_Selector_Advance_NextWrapped"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1416d6780",
+  "made_on_target": "0x1416d6780",
+  "twin": "made on steam-26566308; the target 0x1416d6780 is KB 0x1416d5190: Sess_Resolve_PlayerVehicleRef (0x16cda70) and Career_Get_UpgradeCostAdjust (0x16d69e0) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1416d6780",
+    "target": "0x1416d6780"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1fe4523d6ba8c7b3bf02df0c0e1c890dce817b184db8647ed6f1981dc9e5aa1a"
+  }
+ ]
+}

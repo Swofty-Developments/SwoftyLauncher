@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamDriverMarket_SetExclusiveStateBool",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1422ffe70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_MyTeamDriverMarket_SetExclusiveStateBool(void *boolSet, uint8_t index)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142301a70 (RacingPC lab re_groups/_decomp);xref:0x142301ef0,0x142308150",
+  "notes": "Writes false to the eight Vm bool nodes at +0x28, +0x48, +0x68, +0x88, +0xa8, +0xc8, +0xe8, +0x108, then writes true to the one selected by index 0..7 (other values leave all false). Called with the object at screen +0x2a90 and the state byte kept at screen +0x2d40, so it drives which sub-panel/state of the driver market screen is shown."
+ },
+ "signature": {
+  "id": "game.my_team_driver_market_set_exclusive_state_bool",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B BE 80 2D 00 00",
+  "match": "0x142301629",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1422ffe70",
+  "kind": "call",
+  "names": [
+   "Game_MyTeamDriverMarket_SetExclusiveStateBool"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142303229",
+  "made_on_target": "0x142301a70",
+  "twin": "made on steam-26566308; the target 0x142301a70 is KB 0x1422ffe70: Career_Build_DepartmentUpgradeCounts (0x2300030) and Game_MyTeamDriverMarket_Open (0x2301ef0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142303229",
+    "target": "0x142301a70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ed389799fde2bd3f86e5b3061ba1bb69cd2b44c687671cc22ac39627cd83d964"
+  }
+ ]
+}

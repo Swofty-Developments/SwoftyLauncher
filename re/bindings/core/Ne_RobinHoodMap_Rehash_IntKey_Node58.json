@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_Rehash_IntKey_Node58",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1406767c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodMap_Rehash_IntKey_Node58(void *map, uint64_t new_bucket_count, char force_free_old)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140676800 (RacingPC lab re_groups/_decomp);xref:0x14066c310",
+  "notes": "(lib) Robin-hood hash map rehash: reads old slots +0x28 and info bytes +0x30, allocates (n+overflow)*9+8 bytes via allocator +0x18, resets count +0x38, mask +0x40, max-load (80 percent) +0x48, info inc +0x50 = 0x20, then reinserts every node hashing the int32 at node+0 times multiplier +0x20. Old bucket block is freed or carved into 0x58-byte nodes pushed on the free list +0x8."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_rehash_int_key_node58",
+  "section": ".xtls",
+  "pattern": "48 89 E9 45 31 C0 E8 ?? ?? ?? ?? E9",
+  "match": "0x14066cdff",
+  "anchor": "0x7",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x6"
+  },
+  "target": "0x1406767c0",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_Rehash_IntKey_Node58"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14066ce3f",
+  "made_on_target": "0x140676800",
+  "twin": "made on steam-26566308; the target 0x140676800 is KB 0x1406767c0: Ai_TrackLine_FindSideMarkerInCorner (0x66ef00) and Game_AiRoute_CompileMarkerChannel (0x677b20) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14066ce3f",
+    "target": "0x140676800"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7a1dd5958a395e9f960723ce8e81795329b5c0006fc950f772484f93ca4e5c04"
+  }
+ ]
+}

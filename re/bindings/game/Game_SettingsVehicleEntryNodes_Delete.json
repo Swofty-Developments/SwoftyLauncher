@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_SettingsVehicleEntryNodes_Delete",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141e4e8c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_SettingsVehicleEntryNodes_Delete(void *allocator, void *nodes)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141e504c0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141dde040,0x141dde630,0x141de0d90",
+  "notes": "Destroys a 0x2e0-byte block of 23 VM node-ref slots (0x20 each: vtable 0x145614e48, node, prev, next). For each slot from +0x2c0 down to +0x0 it unlinks the ref from the node's ref list (node+0x28 head), calls Vm_Release_Node(g_Vm_Registry,node) and zeroes it, then tail-calls allocator vtable+0x38 (free) on the block. Callers: the SettingsViewModel dtor path 0x141dde040 (frees vm[0x159] with allocator vm[0x158]), Game_SettingsViewModel_BuildAiVehicleBlockList (frees the old block before installing a new one) and Game_SettingsViewModel_OnEntrantVehicleEntryUpdated (frees vm+0xac8 with vm+0xac0). Slot names 'SettingsVehicleEntry' are context from callers. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.settings_vehicle_entry_nodes_delete",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 48 89 CF 48 8D 1D ?? ?? ?? ?? 48 89 9A C0 02 00 00",
+  "match": "0x141e4e8c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141e4e8c0",
+  "kind": "func_start",
+  "names": [
+   "Game_SettingsVehicleEntryNodes_Delete"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141e504c0",
+  "made_on_target": "0x141e504c0",
+  "twin": "made on steam-26566308; the target 0x141e504c0 is KB 0x141e4e8c0: Ui_Release_RnDDriverUpgradeRowNodes (0x1e45a90) and Game_TitleScreenVM_OnScreenActivated (0x1e9f230) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141e504c0",
+    "target": "0x141e504c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b98dd43034dbeee3fcbea2858438c5df6ec3a135ac74d93e0f75b0585a9f0760"
+  }
+ ]
+}

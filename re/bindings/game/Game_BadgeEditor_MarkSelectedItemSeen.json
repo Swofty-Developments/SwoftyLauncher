@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_BadgeEditor_MarkSelectedItemSeen",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142076790",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_BadgeEditor_MarkSelectedItemSeen(void *editor)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142078390 (RacingPC lab re_groups/_decomp);xref:0x14207d450,0x14207d920",
+  "notes": "Reads the selected tab index (u32 node at +0x280+0x70), bounds-checks it against the tab array at +0x290 (stride 0x2f0), finds the selected item index in the tab list (+0x90 list, +0xb0 selection) and takes item = tab+0x70 array (stride 0x2b8). If the item bool node +0x1c8 is true it builds a key (type 8 for tab 1/2 with map (+0x1530)->+0x250, type 7 for tab 0 with map ->+0x240, id = low u16 of item+0x2ac), looks it up (vfunc +8), sets the item bool to false, calls 0x142ecc660(*(editor+0x1560), entry), then recomputes whether any item of the tab still has the flag and writes that to the tab bool node +0x50. Game_BadgeEditor_OnCommandRaised calls it for command hash 0x0da709a6; caller 0x14207d450 (string-named event handler of the editor) calls it when the event name equals the string at 0x145737ef0, before refreshing the selection. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.badge_editor_mark_selected_item_seen",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CE 4C 8D B1 80 02 00 00",
+  "match": "0x142076790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142076790",
+  "kind": "func_start",
+  "names": [
+   "Game_BadgeEditor_MarkSelectedItemSeen"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142078390",
+  "made_on_target": "0x142078390",
+  "twin": "made on steam-26566308; the target 0x142078390 is KB 0x142076790: Ui_MyTeamSetupGeneric_Option (0x2066b90) and Game_CarCustomisation_ApplyDriverNumbers (0x2080590) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142078390",
+    "target": "0x142078390"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1edde2ee29c9515b343201eb8c35d5e5f372e804ce77bf8dc8df9edec7c8dd03"
+  }
+ ]
+}

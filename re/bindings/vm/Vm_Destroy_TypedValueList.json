@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Destroy_TypedValueList",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1442c4d40",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Destroy_TypedValueList(void *holder)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442c7310 (RacingPC lab re_groups/_decomp);xref:0x1442c3db0",
+  "notes": "holder = {allocator, list}; list = {allocator +0x0, item array +0x8, u16 count +0x10}. For each item it calls the item's type (vtable +0x8) cleanup at type vtable +0x20, the item destructor, and frees it; then frees the array and frees the list through the holder allocator (vtable +0x38)."
+ },
+ "signature": {
+  "id": "vm.destroy_typed_value_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 8B 71 08 48 85 F6",
+  "match": "0x1442c4d40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442c4d40",
+  "kind": "func_start",
+  "names": [
+   "Vm_Destroy_TypedValueList"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1442c7310",
+  "made_on_target": "0x1442c7310",
+  "twin": "made on steam-26566308; the target 0x1442c7310 is KB 0x1442c4d40: Vm_Fire_Route (0x42c33f0) and Ne_UIMessageSystem_OnMetadataAssetCleanup (0x42dbe90) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1442c7310",
+    "target": "0x1442c7310"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "dec47bf85105e1fcb5f10615cc29691053795b332c52cb0102468085204a355b"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_GetOrCreateSamplerState",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1439d7750",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void *Render_Gfx2Device_GetOrCreateSamplerState(void *device, uint64_t *desc)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439d9d20 (RacingPC lab re_groups/_decomp);xref:0x143b61130",
+  "notes": "Under CS device+0x2668, MD5-hashes the sampler desc fields (desc+0x18..+0x3c: filter, address U/V/W, compare, max anisotropy, lod bias float) and looks the hash up in map device+0x2538; on hit increments refcount (+0x78) and returns. On miss allocates 0x80-byte object (vtable 0x1458a14a0), translates enums through tables 0x1458a1900 (filter, +0x80 when comparison), 0x1458a1970 (address modes), 0x1458a1840 (compare func), clamps anisotropy to 1..16, MaxLOD FLT_MAX, allocates a descriptor slot (Render_Gfx2Device_AllocDescriptorSlot at +0xf18) and calls native device vtable +0xb0 (CreateSampler) on *(global 0x14618eaa8 +0x508); inserts into the hash map and into live-object set device+0x4648, bumps counters +0x4750/+0x4758. Patch point for forcing anisotropy or LOD bias."
+ },
+ "signature": {
+  "id": "render.gfx2_device_get_or_create_sampler_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 C5 F8 29 B4 24 30 01 00 00 49 89 D6 48 89 CE",
+  "match": "0x1439d7750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439d7750",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_GetOrCreateSamplerState"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1439d9d20",
+  "made_on_target": "0x1439d9d20",
+  "twin": "made on steam-26566308; the target 0x1439d9d20 is KB 0x1439d7750: Render_Gfx2Buffer_Construct (0x39d7ce0) and Ne_Load_SlUpgradeInterface (0x39e6f90) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1439d9d20",
+    "target": "0x1439d9d20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "76e821b04a265db281d6cfd8d26a01c68c0814c6da927778d6fd0ac2475f4c6e"
+  }
+ ]
+}

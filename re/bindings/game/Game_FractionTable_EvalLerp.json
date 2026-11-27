@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_FractionTable_EvalLerp",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1437acd80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "float Game_FractionTable_EvalLerp(void *obj, float frac)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1437af310 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14150e570,0x141616e50,0x141d60a30",
+  "notes": "Builds the table through 0x1437ae630 when state +0x254 is 0 (returns -1.0 if still 0), then binary-searches the (float x, float y) pair array +0x190..+0x198 and returns the lerped y; 0 for frac <= 0, the last y for frac >= 1, -1.0 for an empty table or (state 1) frac beyond the last x. Context from caller: the known callers pass lap distance / track length clamped to 0..1 from Game_VehicleProgressSystem_GetLapProgress and subtract (result + lap difference * obj+0x268) from a Sess_LapTimes_GetCarData time, so the table is a reference lap time-by-lap-fraction curve used for a time delta. Caller 0x14150e570: writes the delta to a VM node via 0x141770d00; caller 0x141616e50: same delta for another widget; caller 0x141d60a30: per-frame update that derives the same delta for an EntrantRecord. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.fraction_table_eval_lerp",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 C5 F8 29 74 24 20 C5 F8 28 F1 48 89 CE 44 8B 81 54 02 00 00",
+  "match": "0x1437acd80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437acd80",
+  "kind": "func_start",
+  "names": [
+   "Game_FractionTable_EvalLerp"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1437af310",
+  "made_on_target": "0x1437af310",
+  "twin": "made on steam-26566308; the target 0x1437af310 is KB 0x1437acd80: Asset_Unk_14379dd00 (0x37a0290) and Career_ContractOutro_Destruct (0x37b65f0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1437af310",
+    "target": "0x1437af310"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f5527e7f46bc9450e0e53b95ec890fb15253f19cd5ac034eaf8eb4255f27cb70"
+  }
+ ]
+}

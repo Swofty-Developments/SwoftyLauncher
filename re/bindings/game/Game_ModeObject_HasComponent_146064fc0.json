@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_ModeObject_HasComponent_146064fc0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1407c5ed0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "bool Game_ModeObject_HasComponent_146064fc0(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1407c5f10 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141dd36f0",
+  "notes": "Gets the type descriptor via vfunc +0x28 and walks its parent chain (+0x10 links, end 0x146050c60); if the type is k_Ne_TypeRoot or derives from 0x14612bca8 it returns false, otherwise it returns whether the component container at self+0x1030 (vfunc +0x10) finds key 0x146064fc0. Caller Game_SettingsTabbingBaseViewModel_ApplyFilterRebuildCategories uses it next to Game_ModeObject_HasComponent_14605d148_Gated on the game mode object to decide which settings category tiles to build. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.mode_object_has_component_146064fc0",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 84 C0 0F 84 ?? ?? ?? ?? B9 A8 00 00 00",
+  "match": "0x141dd2164",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1407c5ed0",
+  "kind": "call",
+  "names": [
+   "Game_ModeObject_HasComponent_146064fc0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141dd3d64",
+  "made_on_target": "0x1407c5f10",
+  "twin": "made on steam-26566308; the target 0x1407c5f10 is KB 0x1407c5ed0: Sess_Result_RequestVehicleStatus (0x7c3720) and Sess_Weather_CheckTrackWorldComponents (0x7c6150) on either side both sit 0x40 above their KB addresses; the match 0x141dd3d64 is KB 0x141dd2164: Game_SettingsTabbingBaseViewModel_ApplyFilterRebuildCategories (0x1dd36f0) and Trk_SettingsSelectTrackTabVm_RefreshTrackList (0x1de81e0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141dd3d64",
+    "target": "0x1407c5f10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8dec32de4059f6b14715db66fcaac7f5fad8c0acfc51788616deea7c7f28fbc1"
+  }
+ ]
+}

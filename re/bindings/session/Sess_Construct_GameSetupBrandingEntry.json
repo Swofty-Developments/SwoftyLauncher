@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_Construct_GameSetupBrandingEntry",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142a0e610",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "void *Sess_Construct_GameSetupBrandingEntry(void *self, void *allocator, void *gdbRowKey)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142a109d0 (RacingPC lab re_groups/_decomp);xref:0x142a15340",
+  "notes": "Constructor that fills one branding record (about 0x370 bytes) from a gamedb game_setup row: stores allocator at +0x08/+0x20, creates two red-black maps (+0x10 keyed by season statId, +0x28 keyed by race_format enum 1-5 from FNV-1a hash) whose nodes hold the branding_videos strings short_swipe/full_swipe/sting/short_swipe_opaque (rows of table <row>.branding_videos, seasons list resolved via game_setup.seasons statId), copies the 0x208-byte row key to +0x160, decrypts row name (k_Gdb_StringXorKey) to +0x00. Then reads fields: divider +0x38, tutorial_type +0x40, team_select_title +0x48, team_select_mini_title +0x50, standings_title +0x58, front/rear_suspension_toe_desc, parc_ferme_warning_message +0x70, tyre_allocation_disabled_message +0x78, ui_season_review_panel +0x80, loading_textures_path +0x88, session_manager_track_texture_path +0x90, <row>.ui_session_browser_logo +0x98, lobby_summary_texture +0xa0, override_settings_start_event_texture +0xa8, leaderboards_logo +0xb0, grid_background +0xb8, activity_brand +0xc0, timing_tower_logo_texture_path +0xc8, bool flags +0xd0..+0xe0 (use_f2_announcers +0xd0, use_standard_player_badge +0xd1, show_ui_side_car_textures, show_weekend_results, mfd_enable_car_engine, mfd_enabled +0xd5, supports_feature_race, show_aws_elements, show_garage_entry_tutorial +0xd8, allow_quick_practice, broadcast_show_f1_logo, car_setup_available +0xdb, race_strategy_available_check_percentage, show_leaderboard_year_icons, race_strategy_screen_available +0xde, track_lap_record_valid +0xdf, has_official_championship_season +0xe0), car_setup_images +0xe8, options_texture_path +0xf0, logo_name +0xf8, theatre_icon_name +0x100, divider_name +0x108, lobby_mode +0x110, event_vehicle_texture +0x118, result_variant +0x120 (F1=0,F2=1), intro_variant +0x121 (F1=0,F2=1,F2Wide=2), reward_cutscene_available +0x122, driver_of_the_day_available +0x123, enable_voice_commands +0x124, show_season_complete_driver +0x125, show_session_video_intro +0x126, override_team_display_labels_as_vehicle +0x127, official +0x128, leaderboard_year_icon_texture_path +0x130, mode entry via Game_Read_GameSetupModeEntry +0x138/+0x140, stat_id u16 +0x144, video_folder +0x148, show_car_performance_icon +0x150, ui_override_colour ptr +0x158. Returns self. Good hook to override per-series (F1/F2/etc) UI branding and feature flags after load. Demoted to L1: agent reported the body was not read line by line in full."
+ },
+ "signature": {
+  "id": "session.construct_game_setup_branding_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 08 00 00 C5 F8 29 BC 24 B0 08 00 00 C5 F8 29 B4 24 A0 08 00 00 4C 89 C3",
+  "match": "0x142a0e610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a0e610",
+  "kind": "func_start",
+  "names": [
+   "Sess_Construct_GameSetupBrandingEntry"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142a109d0",
+  "made_on_target": "0x142a109d0",
+  "twin": "made on steam-26566308; the target 0x142a109d0 is KB 0x142a0e610: Ui_CareerSelectMyTeam_SetDriverIconActive (0x2a0c9f0) and Sess_Load_GameSetupBranding (0x2a15340) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142a109d0",
+    "target": "0x142a109d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f2b4580d4ffb23c990e46171dc4e69affc9a710c57285f189ed461f2b14815c6"
+  }
+ ]
+}

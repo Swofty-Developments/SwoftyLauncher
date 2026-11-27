@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Gdb_Get_FieldStringOrDefault",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1445a36a0",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "proto": "const char *Gdb_Get_FieldStringOrDefault(void *row, const char *field, const char *def, int index)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1445a5f10 (RacingPC lab re_groups/_decomp);xref:0x1409f1ba0,0x140c32b40,0x1425580c0,0x1428f5970,0x143542d20",
+  "notes": "Fetches the field handle via Gdb_Get_FieldInt, lazily XOR-decodes the stored string with k_Gdb_StringXorKey from +0x18 (len +0x10) into the buffer at +0x48 (skipped when +0x40 == 1), and returns the decoded string if non-empty, otherwise def. Good hook for reading or overriding string config values."
+ },
+ "signature": {
+  "id": "gamedb.get_field_string_or_default",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 4C 89 C6 45 89 C8",
+  "match": "0x1445a36a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445a36a0",
+  "kind": "func_start",
+  "names": [
+   "Gdb_Get_FieldStringOrDefault"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1445a5f10",
+  "made_on_target": "0x1445a5f10",
+  "twin": "made on steam-26566308; the target 0x1445a5f10 is KB 0x1445a36a0: site_Gdb_DeptCountStore (0x45a514f) and Gdb_FindMetadata (0x45a6170) on either side both sit 0x2870 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1445a5f10",
+    "target": "0x1445a5f10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a0b9f5aab8ec326c61c3bc6dabb88ce304eb5af1db2179c057cb037aa486ec40"
+  }
+ ]
+}

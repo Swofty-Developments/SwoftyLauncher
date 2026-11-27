@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_VectorI32_PushBackUnique_142508920",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142506d20",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_VectorI32_PushBackUnique_142508920(void *vec, int32_t *value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142508920 (RacingPC lab re_groups/_decomp);xref:0x14098f450",
+  "notes": "(lib) Linear search of an int32 vector; returns 0x11 (already exists) when the value is present. Otherwise records errno 2 in the error trace, appends the value with 1.5x growth (alignment 4) and returns 0."
+ },
+ "signature": {
+  "id": "core.vector_i32_push_back_unique_142508920",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 D7 48 89 CE 48 8B 41 08 48 8B 49 10 48 39 C8 74 13 8B 17",
+  "match": "0x142506d20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142506d20",
+  "kind": "func_start",
+  "names": [
+   "Ne_VectorI32_PushBackUnique_142508920"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142508920",
+  "made_on_target": "0x142508920",
+  "twin": "made on steam-26566308; the target 0x142508920 is KB 0x142506d20: Game_EntrantsUi_BuildCharacterRef (0x24f3970) and site_Game_MyTeamVehicleBases_SaveRecord (0x2508cbf) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142508920",
+    "target": "0x142508920"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "40309110fea0b51a6fe59d7901117a73fe13c1d0d6005ebf54b356220513fe6d"
+  }
+ ]
+}

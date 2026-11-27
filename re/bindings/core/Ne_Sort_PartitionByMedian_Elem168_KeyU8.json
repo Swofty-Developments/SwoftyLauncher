@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Sort_PartitionByMedian_Elem168_KeyU8",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d3b810",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Sort_PartitionByMedian_Elem168_KeyU8(void **out_pair, void *first, void *last)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d3c390 (RacingPC lab re_groups/_decomp)",
+  "notes": "(lib) std::sort partition step (median-of-3 / ninther via FUN_140d3df50 when range > 40 elems) over 0xA8-byte elements, ordered by the u8 key at elem+0x60; returns the [equal_begin, equal_end) pair in out_pair[0..1]. Each swap re-points the inline fixed string (elem+0x10 cap=0x40, +0x18 ptr -> elem+0x20 buffer), so the element is {u16 id, FixedString64 @+0x08, 68-byte payload @+0x60}. Called from the sort driver 0x140d3b9f0; Better context needed: that caller decides what the records are."
+ },
+ "signature": {
+  "id": "core.sort_partition_by_median_elem168_key_u8",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 0B 00 00 49 89 D1",
+  "match": "0x140d3b810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d3b810",
+  "kind": "func_start",
+  "names": [
+   "Ne_Sort_PartitionByMedian_Elem168_KeyU8"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140d3c390",
+  "made_on_target": "0x140d3c390",
+  "twin": "made on steam-26566308; the target 0x140d3c390 is KB 0x140d3b810: Ne_Vector24_PushBackMove (0xd34330) and Career_DeptEvent_CheckStoredUpgradeForDriver (0xd6d5c0) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140d3c390",
+    "target": "0x140d3c390"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "37f6b77cfef5695a6454265c0147878d094c90267a84916468f60c9c0971c154"
+  }
+ ]
+}

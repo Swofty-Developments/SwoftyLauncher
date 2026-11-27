@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbort_Thunk_143ebeb10",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143ebc540",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbort_Thunk_143ebeb10(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ebeb10 (RacingPC lab re_groups/_decomp);xref:0x143c03920",
+  "notes": "(thunk) Noreturn stub: calls Ne_Crt_InvalidParameterAbort then int3. Overflow failure path of the IBL config hash set."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_thunk_143ebeb10",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 8B 0E 50",
+  "match": "0x143ebc540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ebc540",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_InvalidParameterAbort_Thunk_143ebeb10"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143ebeb10",
+  "made_on_target": "0x143ebeb10",
+  "twin": "made on steam-26566308; the target 0x143ebeb10 is KB 0x143ebc540: Ne_MipTailGenerator_Destroy (0x3ead800) and Ne_Gfx2Renderer_FrameEntryNameMap_FatalStub (0x3ec1f20) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143ebeb10",
+    "target": "0x143ebeb10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0154ee6eb4dea9aebd0fc1aad51e48a234dd3184c31df330bed8b246f73a1bfb"
+  }
+ ]
+}

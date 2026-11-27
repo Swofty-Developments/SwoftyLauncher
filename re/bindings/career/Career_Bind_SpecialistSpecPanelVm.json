@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Bind_SpecialistSpecPanelVm",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1418574b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void **Career_Bind_SpecialistSpecPanelVm(void *self, uint8_t specId, void *parentNode, char onlyCurrentLevel)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141858c90 (RacingPC lab re_groups/_decomp);xref:0x141c896f0",
+  "notes": "Binds the MyTeam/R&D department specialist panel: releases old holders (+0x38..+0x118, bound flag +0x138), then creates VM nodes spec_title (+0x60), spec_desc (+0x80), spec_level (+0xa0), a progress float (+0xc0), spec_current_progress_numerical (+0xe0), is_spec_available (+0x100) and a perk list (+0x118). Looks the spec up with FUN_1412dcf10(component 0x146065e50, specId); spec record: +0x02 available, +0x10 -> {level, xp, firstPerk, lastPerk, +0x18 xp-per-level table}, +0x88 icon, +0x90 title, +0x98 desc. Progress = xp / table[level]; text built with AMOUNT/TOTAL tokens. Per perk it adds description, active_text, bg_tex, show; locked perks get lng_perk_unlocked_at_level, unlocked ones \"#overrides.specialists.goals.perks.%s\" (name table 0x14571db68, 6 entries). Good place to read specialist level/xp layout."
+ },
+ "signature": {
+  "id": "career.bind_specialist_spec_panel_vm",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 04 00 00 C5 F8 29 B4 24 D0 04 00 00 44 88 4C 24 3F",
+  "match": "0x1418574b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418574b0",
+  "kind": "func_start",
+  "names": [
+   "Career_Bind_SpecialistSpecPanelVm"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141858c90",
+  "made_on_target": "0x141858c90",
+  "twin": "made on steam-26566308; the target 0x141858c90 is KB 0x1418574b0: Game_SessionResults_PopulateTable (0x1836b70) and Career_Bind_SpecialistUpgradeText (0x185ad60) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141858c90",
+    "target": "0x141858c90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a1ea9ea29edf18ada9501ccd89d22404a7efead3dbc0dd1cce71ff021e4706c6"
+  }
+ ]
+}

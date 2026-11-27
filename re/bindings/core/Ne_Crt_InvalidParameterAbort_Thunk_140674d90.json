@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbort_Thunk_140674d90",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140674d50",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbort_Thunk_140674d90(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140674d90 (RacingPC lab re_groups/_decomp);xref:0x140668600",
+  "notes": "(thunk) Calls Ne_Crt_InvalidParameterAbort then int3. Noreturn overflow trap used by the hash map code next to it."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_thunk_140674d90",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 44 24 28 48 C1 E0 04 48 03 46 30",
+  "match": "0x140668bd3",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x140674d50",
+  "kind": "call",
+  "names": [
+   "Ne_Crt_InvalidParameterAbort_Thunk_140674d90"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140668c13",
+  "made_on_target": "0x140674d90",
+  "twin": "made on steam-26566308; the target 0x140674d90 is KB 0x140674d50: Ai_TrackLine_FindSideMarkerInCorner (0x66ef00) and Game_AiRoute_CompileMarkerChannel (0x677b20) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140668c13",
+    "target": "0x140674d90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e3aced0d3999c6b74223463a1f010ed10c5f486e65cb5eb8b131b1fdd0b56216"
+  }
+ ]
+}

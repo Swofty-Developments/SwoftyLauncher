@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_Rehash_KeyU32_Node96",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1411bb960",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_HashMap_Rehash_KeyU32_Node96(void *map, uint64_t newCapacity, uint8_t freeOld)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1411bbfa0 (RacingPC lab re_groups/_decomp);xref:0x1411229d0",
+  "notes": "(lib) Same robin-hood rehash as 0x1411bb920 but the node key is an unsigned 32-bit value; old table is freed or recycled into the 0x60-byte node free list at +0x08/+0x10."
+ },
+ "signature": {
+  "id": "core.hash_map_rehash_key_u32_node96",
+  "section": ".xtls",
+  "pattern": "48 8B 8C 24 A8 00 00 00 45 31 C0 E8 ?? ?? ?? ?? E9",
+  "match": "0x141122e75",
+  "anchor": "0xc",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xb"
+  },
+  "target": "0x1411bb960",
+  "kind": "call",
+  "names": [
+   "Ne_HashMap_Rehash_KeyU32_Node96"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1411234b5",
+  "made_on_target": "0x1411bbfa0",
+  "twin": "made on steam-26566308; the target 0x1411bbfa0 is KB 0x1411bb960: Game_TyreWearDynamicObjective_Activate (0x119c930) and Ne_Bitset_ThrowInvalidPosition_A (0x11c0b30) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1411234b5",
+    "target": "0x1411bbfa0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4b26729cc93cf0ec77964f445d947abcec1fd58d887e2279989f1fc1a13756cb"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Save_TeamDepartments_WriteSortedMap",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1434f6b90",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint32_t Career_Save_TeamDepartments_WriteSortedMap(void **self, void *writer, void *filter)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1434f9120 (RacingPC lab re_groups/_decomp);xref:0x14123dbe0",
+  "notes": "Writes a list field (type 0x14612bce0) and collects every u16 key of the hash map at self+0x38..+0x6c into a small vector (128 inline), sorts it with Ne_Sort_IntrosortU16, then for each key (skipped when filter+0x2c0 is non-zero and the key is absent from the 4-byte id list at filter+0x318..+0x320) writes a child object with 3 fields: the key, the packed secondary key (entry[0x10] << 14 | u16 at entry+0x12) and the entry body at +0x20 via FUN_1434f9b70. Returns 0, 0xc on allocation failure, or the writer error; traps if a key vanished."
+ },
+ "signature": {
+  "id": "career.save_team_departments_write_sorted_map",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 01 00 00 C5 78 29 84 24 B0 01 00 00 C5 F8 29 BC 24 A0 01 00 00 C5 F8 29 B4 24 90 01 00 00 4C 89 C7 48 89 D3 49 89 CC 48 8B 32",
+  "match": "0x1434f6b90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434f6b90",
+  "kind": "func_start",
+  "names": [
+   "Career_Save_TeamDepartments_WriteSortedMap"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1434f9120",
+  "made_on_target": "0x1434f9120",
+  "twin": "made on steam-26566308; the target 0x1434f9120 is KB 0x1434f6b90: Ne_HashMap_U64_Insert (0x34f6700) and Career_Add_TeamModifier (0x34faf90) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1434f9120",
+    "target": "0x1434f9120"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "64aaf236ab4be66630eccd793547c26882f8aadeaea0c9361adcbac56265372f"
+  }
+ ]
+}

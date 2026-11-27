@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Text_Is_Utf8CharInPunctuationSet",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1443171e0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "bool Ui_Text_Is_Utf8CharInPunctuationSet(const uint8_t *utf8)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1443197b0 (RacingPC lab re_groups/_decomp);xref:0x144315390",
+  "notes": "Lazily builds a static hash set (0x146ca7208) of 15 code points: U+3001, U+3002, ',', '.', U+FF0C, U+FF01, U+FF1F, U+FF1A, U+FF1B, U+FF5E, U+FF09, U+FF3D, U+FF5D, U+FF60, U+FF63. Decodes one UTF-8 code point (2 to 4 byte lead handling, 0xa0 special case), FNV-1a hashes its 4 bytes and returns whether it is in the set. These are closing punctuation marks, so it is most likely the no-line-start (kinsoku) test for wrapping."
+ },
+ "signature": {
+  "id": "ui.text_is_utf8_char_in_punctuation_set",
+  "section": ".xtls",
+  "pattern": "56 48 81 EC 80 00 00 00 48 89 CE 8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 48 8B 14 25 58 00 00 00 48 8B 0C CA 3B 81 04 00 00 00 0F 8F ?? ?? ?? ?? 0F B6 16 84 D2",
+  "match": "0x1443171e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443171e0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Text_Is_Utf8CharInPunctuationSet"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1443197b0",
+  "made_on_target": "0x1443197b0",
+  "twin": "made on steam-26566308; the target 0x1443197b0 is KB 0x1443171e0: Ne_UITextElement_SetText (0x430e310) and Ne_UITextElement_UpdateDocument (0x431ad00) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1443197b0",
+    "target": "0x1443197b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "052af93be51cef451d220d5f49c7c9874348ae17d4e8da542dc8fe38efd7bea3"
+  }
+ ]
+}

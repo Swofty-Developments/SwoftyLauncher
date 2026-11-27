@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkInvite_Format_StateDebugString",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143160230",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "char *Game_NetworkInvite_Format_InviteDataString(uint32_t *invite_data, char *buf, int32_t size)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1431627c0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143075790,0x1430b2ff0,0x143162e50",
+  "notes": "Renamed from Game_NetworkInvite_Format_StateDebugString: the argument is the invite data block (callers pass m_inviteData, e.g. InviteManager+0x18), not the manager state. Whole body read. Checks validity with 0x1430675a0; invalid data prints the type name from table 0x145820240 (14 entries, index invite_data[0]) with format 0x1458203f1. Valid data switches on the type 1..13: types 1/2/3 add a sub-state name from table 0x1458201c0 (fields +0x78, +0x70, +0xd8), type 5 adds +0xf0/+0xf8/+0x100, type 8 adds a nested type +0x10c and an index +0x110. Writes into buf with Ne_Crt_Snprintf(size) and returns buf. The known callers use the text only for NETWORK-INVITE log lines (static buffer 0x1460bf0f0, 0x80 bytes). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.network_invite_format_state_debug_string",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC B0 00 00 00 44 89 C7",
+  "match": "0x143160230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143160230",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkInvite_Format_StateDebugString"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1431627c0",
+  "made_on_target": "0x1431627c0",
+  "twin": "made on steam-26566308; the target 0x1431627c0 is KB 0x143160230: Game_SeasonLobbyUi_SetTrackSetByMode (0x3160d00) and Game_InviteManager_ChangeState (0x3164140) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1431627c0",
+    "target": "0x1431627c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "51799d0bb5a25b9a7b3164c8bb833f568694a38e49bca7436e1d1a0d29d2a777"
+  }
+ ]
+}

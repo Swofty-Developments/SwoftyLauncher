@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_TeamRenownAndForm_SerialiseField28",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140fc6a10",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint32_t Career_TeamRenownAndForm_SerialiseField28(void *self, void *writer)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140fc7590 (RacingPC lab re_groups/_decomp);xref:0x140f95c70",
+  "notes": "Calls Gdb_Write_ReflectedFieldA(writer, name at 0x1456be690, type desc *0x14612be08, &field); on success binds the field object to the writer, calls field vfunc +0x40 with self+0x28 as the data pointer and appends the field to writer's array (+8, count u16 +0x10). Returns the error code (0 ok)."
+ },
+ "signature": {
+  "id": "career.team_renown_and_form_serialise_field28",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 48 89 CB 48 C7 44 24 20 00 00 00 00 4C 8B 35 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 4C 24 20 48 89 F1 4D 89 F0 E8 ?? ?? ?? ?? 89 C7 85 C0 75 3D 48 83 C3 28",
+  "match": "0x140fc6a10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fc6a10",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamRenownAndForm_SerialiseField28"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140fc7590",
+  "made_on_target": "0x140fc7590",
+  "twin": "made on steam-26566308; the target 0x140fc7590 is KB 0x140fc6a10: Career_MyTeamRewards_GetRewardName (0xfc6a70) and Career_Deserialise_ClaimedFlag (0xfc7620) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140fc7590",
+    "target": "0x140fc7590"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5ee724b1bf3c81415762d10eb47ad15b347cd81deab640949221dc1c1ebd5979"
+  }
+ ]
+}

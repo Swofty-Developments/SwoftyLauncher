@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_DriverContractRenewal_UpsertOfferEntry",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d975e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_DriverContractRenewal_UpsertOfferEntry(void *self, uint32_t idA, uint32_t idB, uint32_t value, uint8_t flag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d98160 (RacingPC lab re_groups/_decomp);xref:0x140d8c820",
+  "notes": "Searches the 14-byte entry vector at +0x3d0..+0x3d8 for an entry whose id at +0x00 equals idA and id at +0x08 equals idB; if found overwrites value (+0x04) and flag (+0x0c), else appends {idA, value, idB, flag}, growing by 1.5x through the allocator at +0x3c8. Which ids are driver and team is decided by the caller."
+ },
+ "signature": {
+  "id": "career.driver_contract_renewal_upsert_offer_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 44 89 CF 44 89 C3",
+  "match": "0x140d975e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d975e0",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverContractRenewal_UpsertOfferEntry"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140d98160",
+  "made_on_target": "0x140d98160",
+  "twin": "made on steam-26566308; the target 0x140d98160 is KB 0x140d975e0: Career_Record_DriverMove (0xd8fd70) and Career_ContractRenewal_AllSlotsMeetMinimum (0xd99900) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140d98160",
+    "target": "0x140d98160"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f558eb3fcbe590dbef88d2368c6a5c0e6c775340dce8d655bb4ca8c4d89fc50b"
+  }
+ ]
+}

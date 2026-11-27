@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_RnD_Sum_WeightedCategoryRange",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143518ac0",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "float Team_RnD_Sum_WeightedCategoryRange(void **ctx, void *items, char group, char tier)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14351b050 (RacingPC lab re_groups/_decomp);xref:0x141892cd0",
+  "notes": "items is an inline array of pointers with count at +0xc00. Filters items by byte +0x72 == group, then by byte at (*(item+0xc8) - 8) == tier; for each survivor takes its category byte +0x70, looks up the range (float +0x10 minus +0xc) in the 0x20-stride table at *ctx +0x1a38..+0x1a40, divides by the summed weight (float +0x64) of all items of that category and adds range/sum * item weight. Returns the total (0 when empty). Uses large alloca scratch arrays."
+ },
+ "signature": {
+  "id": "teams.rn_d_sum_weighted_category_range",
+  "section": ".xtls",
+  "pattern": "56 57 53 B8 30 24 00 00 E8 ?? ?? ?? ?? 48 29 C4",
+  "match": "0x143518ac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143518ac0",
+  "kind": "func_start",
+  "names": [
+   "Team_RnD_Sum_WeightedCategoryRange"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14351b050",
+  "made_on_target": "0x14351b050",
+  "twin": "made on steam-26566308; the target 0x14351b050 is KB 0x143518ac0: Career_Compute_InstalledUpgradePerformanceByType (0x351abf0) and Career_Pick_RandomUpgrade_B (0x351b760) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14351b050",
+    "target": "0x14351b050"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e7e190ae5a8ecc795d29d3d7c085b7919848ab73a0f90b1804a126380235b0d1"
+  }
+ ]
+}

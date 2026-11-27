@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_CreateTrackedObject_8a48",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1439d4690",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void *Render_Gfx2Device_CreateTrackedObject_8a48(void *device)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439d6c60 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143b61130",
+  "notes": "Under critical section device+0x2668: allocates 0x8a48 bytes (align 8) from allocator device+0x150, constructs it with 0x1439d6da0 (vtable 0x1458a1120), appends the pointer to the vector device+0xba8/+0xbb0/cap +0xbb8 (grow x1.5 via allocator +0xba0), registers it with 0x143a16600(device+0x3ab0, obj, device+0x3ab8) and returns it. Caller Ne_Gfx2Renderer_Initialise calls it once per entry of a worker list and stores the results in renderer +0x43fa8[] (count +0x43fa0/+0x440a8), so it is most likely a per-thread command context; class not proven here. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.gfx2_device_create_tracked_object_8a48",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE 48 8B 89 68 26 00 00",
+  "match": "0x1439d4690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439d4690",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_CreateTrackedObject_8a48"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1439d6c60",
+  "made_on_target": "0x1439d6c60",
+  "twin": "made on steam-26566308; the target 0x1439d6c60 is KB 0x1439d4690: Ne_Gfx2CommandQueue_FlushResourceBarriers (0x39d63f0) and Render_Gfx2Buffer_Construct (0x39d7ce0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1439d6c60",
+    "target": "0x1439d6c60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6717883729538ce88b6781c6b68edecf38521f8840c04a22fd769cb70abddc1d"
+  }
+ ]
+}

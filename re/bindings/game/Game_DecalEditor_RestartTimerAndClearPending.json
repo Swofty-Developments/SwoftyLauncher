@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_DecalEditor_RestartTimerAndClearPending",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141fed6b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_DecalEditor_RestartTimerAndClearPending(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141fef2b0 (RacingPC lab re_groups/_decomp);xref:0x141fee5a0",
+  "notes": "Sets vm+0x3e0 = QueryPerformanceCounter + offset 0x14610a9f8; if the pause stamp vm+0x3e8 is nonzero it is consumed (elapsed added to +0x3e0, then cleared); zeroes 16 bytes at vm+0x5d0; if global byte 0x146068c40 is set calls 0x141ff1510(vm). Context from caller: Game_DecalEditor_CommitEdit tail-jumps here on command hash 0x6e2819ff when preview +0x5e4 is off (body merged into the caller decompile); 0x146068c40 is the flag toggled with lng_on/lng_off ('precision_mode_status' in 0x141fed950). Better context needed: what the 16 bytes at +0x5d0 hold (likely the move velocity integrated by the VM tick 0x141ff0620) to confirm the 'ClearPending' part. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.decal_editor_restart_timer_and_clear_pending",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 48 8D 4C 24 28 FF 15 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 03 44 24 28 48 89 86 E0 03 00 00",
+  "match": "0x141fed6b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141fed6b0",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalEditor_RestartTimerAndClearPending"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141fef2b0",
+  "made_on_target": "0x141fef2b0",
+  "twin": "made on steam-26566308; the target 0x141fef2b0 is KB 0x141fed6b0: Ui_SponsorLogoBinding_Build (0x1fe42f0) and Game_SponsorLoadout_BuildList (0x1ff3ba0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141fef2b0",
+    "target": "0x141fef2b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5bf5f504e51419849c330b81e0ac58fb803e1e44f1f5fabb8f14a011517c4c88"
+  }
+ ]
+}

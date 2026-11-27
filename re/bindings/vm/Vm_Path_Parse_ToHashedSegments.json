@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Path_Parse_ToHashedSegments",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1442b6740",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Path_Parse_ToHashedSegments(void *path, const char *text)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442b8d10 (RacingPC lab re_groups/_decomp);xref:0x14148ab00,0x142a757b0,0x144355e50",
+  "notes": "Clears the path (15 slots of 8 bytes, count byte at +0x78), copies text into a 255 char buffer, sets flag +0x79 when it starts with '#', and splits on '.', '[' and ']'. Each name segment is stored as its djb2 hash (seed 0x1505, times 33); a numeric segment inside brackets is stored as the index OR 0x100000000. Hash a name the same way to build paths by hand."
+ },
+ "signature": {
+  "id": "vm.path_parse_to_hashed_segments",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 30 01 00 00 48 89 CE",
+  "match": "0x1442b6740",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442b6740",
+  "kind": "func_start",
+  "names": [
+   "Vm_Path_Parse_ToHashedSegments"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1442b8d10",
+  "made_on_target": "0x1442b8d10",
+  "twin": "made on steam-26566308; the target 0x1442b8d10 is KB 0x1442b6740: Vm_Release_Node (0x42b6340) and Ne_Variant_FormatToString (0x42bc680) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1442b8d10",
+    "target": "0x1442b8d10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0dad01cc9490acc313eb9d097a349be71d1525195e2bc9c4a286d39a8098ab5a"
+  }
+ ]
+}

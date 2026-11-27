@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_Err_New",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144c83780",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Ossl_Err_New(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144c86140 (RacingPC lab re_groups/_decomp);xref:0x144c5ec40,0x144c92080,0x144c921b0,0x144c922c0,0x144c92440,0x144ca4b90,0x144ca5990,0x144ca6220",
+  "notes": "OpenSSL ERR_new. Advances the thread error state top index (+0x340, modulo 16, bumping bottom +0x344 on wrap) and clears that slot: data string, flags, code, line -1 (+0x280), frees file (+0x200) and func (+0x2c0)."
+ },
+ "signature": {
+  "id": "core.ossl_err_new",
+  "section": ".xtls",
+  "pattern": "40 53 B8 20 00 00 00 E8 ?? ?? ?? ?? 48 2B E0 E8 ?? ?? ?? ?? 48 8B D8 48 85 C0 0F 84 ?? ?? ?? ?? 8B 88 40 03 00 00",
+  "match": "0x144c83780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144c83780",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_Err_New"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144c86140",
+  "made_on_target": "0x144c86140",
+  "twin": "made on steam-26566308; the target 0x144c86140 is KB 0x144c83780: Ne_Std_ThrowBadFunctionCall (0x49e4194) and Ne_Crt_Chkstk (0x4c8c190) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144c86140",
+    "target": "0x144c86140"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "57dc3244b938d26c6670c93c0a0187d3986bdf894405c7c7b75eeccab703dbf4"
+  }
+ ]
+}

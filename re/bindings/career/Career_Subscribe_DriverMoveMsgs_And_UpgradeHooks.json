@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Subscribe_DriverMoveMsgs_And_UpgradeHooks",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14352b3f0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_Subscribe_DriverMoveMsgs_And_UpgradeHooks(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14352d980 (RacingPC lab re_groups/_decomp);xref:0x14123d080",
+  "notes": "Subscribes handler Career_Unk_14352e370 (delegate {fn,self}) on g_Game_MessageBus to MessageDriverMoveConfirmed, MessageDriversMovedTeams, MessageDriverMovesFinalised and DriverRetired. Then finds the entry for team id self+0xc in (self+0x1ab0)+0x2c8 (stride 0x30), and for keys 0..3 looks up a name in the byte-key map at self+0x1ac0, strcmp-matches it against the team object list (+0x28..+0x30) and pushes callback FUN_143539840 {key,self} into the matched object vector at +0x88. Good hook point for driver transfer events."
+ },
+ "signature": {
+  "id": "career.subscribe_driver_move_msgs_and_upgrade_hooks",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 48 89 CE 48 8B 05",
+  "match": "0x14352b3f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14352b3f0",
+  "kind": "func_start",
+  "names": [
+   "Career_Subscribe_DriverMoveMsgs_And_UpgradeHooks"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14352d980",
+  "made_on_target": "0x14352d980",
+  "twin": "made on steam-26566308; the target 0x14352d980 is KB 0x14352b3f0: site_Career_UpgradeGraphRegularNode (0x352af9b) and Career_Set_UpgradesOwner (0x3530bb0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14352d980",
+    "target": "0x14352d980"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d1c0ec40a11af3746c38f28bb4e924d0eda60ceb860683a56f79769e0bad1059"
+  }
+ ]
+}

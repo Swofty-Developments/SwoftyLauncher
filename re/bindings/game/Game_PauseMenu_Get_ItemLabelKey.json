@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_PauseMenu_Get_ItemLabelKey",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142bc2d10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "const char *Game_PauseMenu_Get_ItemLabelKey(void *menu, uint32_t item)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142bc52a0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142bc10f0",
+  "notes": "Switch on item 0..0x17 returning a localisation key (lng_restart_lap, lng_reset_to_track, lng_restart_session, lng_hud_retire, lng_quit_to_main_menu ...), default 'invalid'. Item 1 reads VM node #pause_flow.instant_replay_label; item 3 picks lng_return_to_grid when *(*(*(menu+0x400)+0x88)+0x260)+0x2b0 has byte +0x1cb set; item 0x12 returns '0000' for game mode string solo_testing else lng_hot_loading; item 0x17 returns lng_quit_to_event_hub if menu+0x398 entry is in a list. Caller 0x142bc10f0: builds the pause menu tiles (pause_options_button) and uses the key as each tile label; good hook to relabel pause items. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.pause_menu_get_item_label_key",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 48 8B 81 00 04 00 00",
+  "match": "0x142bc2d10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bc2d10",
+  "kind": "func_start",
+  "names": [
+   "Game_PauseMenu_Get_ItemLabelKey"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142bc52a0",
+  "made_on_target": "0x142bc52a0",
+  "twin": "made on steam-26566308; the target 0x142bc52a0 is KB 0x142bc2d10: Game_PauseAvailabilityVM_OnActivate (0x2bb9a40) and Game_PhotoMode_InitDependencies (0x2bcfce0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142bc52a0",
+    "target": "0x142bc52a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6a199bcf3a2adbe32ab6179157552b5f5bda9f47d37fd1dbf112921d3aa5fb3a"
+  }
+ ]
+}

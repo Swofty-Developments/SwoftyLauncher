@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Apply_ComponentDataByKey",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1407c1690",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Apply_ComponentDataByKey(void *save, uint8_t key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1407c16d0 (RacingPC lab re_groups/_decomp);xref:0x141a2a500,0x141fb54b0,0x141fb7380",
+  "notes": "Looks up byte key in the hash map at save+0x1090..+0x10c4 (0x28-byte entries); the entry holds a vector (+0x10..+0x18) of 0x50-byte records {name cstr +0x10 len +0x8, data +0x28}. Clears the pointer vector save+0x1068..+0x1078, then for each record finds the component in save+0x1040..+0x1048 (16-byte slots, ptr at +8) whose name at +0x230 strcmp-matches, calls 0x140ae2c00(component, record+0x28) and pushes the component into +0x1068; at the end sets save+0x1058=0, calls vt+0x40 on subobject save+0x1030 and 0x1407b5370(save). Returns nothing; no-op when the key is missing. Context from caller: all callers get the save from Career_Find_CareerSaveByPredicate, pass key 0, then call Game_Game_SetCurrentGameMode(game, save+0xf08) (new-game / career-type-select screens). Caller 0x141fb54b0: main-menu screen setup that binds the found career save and sets the current game mode. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "career.apply_component_data_by_key",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 CE 0F B6 CA",
+  "match": "0x1407c1690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407c1690",
+  "kind": "func_start",
+  "names": [
+   "Career_Apply_ComponentDataByKey"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1407c16d0",
+  "made_on_target": "0x1407c16d0",
+  "twin": "made on steam-26566308; the target 0x1407c16d0 is KB 0x1407c1690: Game_SeasonUI_SetupChampionshipVariables (0x7bb700) and Sess_Result_RequestVehicleStatus (0x7c3720) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1407c16d0",
+    "target": "0x1407c16d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8f5301828b732db6449b4eff420a6091207fc6e7be6d0704be20a6e1c8792f5d"
+  }
+ ]
+}

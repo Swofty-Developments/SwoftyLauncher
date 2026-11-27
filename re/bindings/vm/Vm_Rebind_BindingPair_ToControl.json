@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Rebind_BindingPair_ToControl",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144209850",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Rebind_BindingPair_ToControl(void *self, void *control)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14420be20 (RacingPC lab re_groups/_decomp);xref:0x144240620",
+  "notes": "Whole body read. For the binding object at self+0x50 and, if present, the one at self+0x58: when binding+0x10 differs from control it removes the change callback {0x1442b31e0, binding} from the old source (0x14420ae60), stores control in +0x10 and adds the callback to it (0x14420b960); then calls Vm_Binding_SetSourceAndResolve(binding+0x18, name string at +0x120, source handle, 0) where the handle is control+0xb0, or k_Vm_EmptyNodeHandle if control flag 0x20 at +0xf8 is set, or g_Vm_Registry root+8 if the source ended up NULL. Tail-calls the base step 0x144209d50(self, control). Caller Vm_UiList_BuildItemTable calls it first (arguments passed through in registers) and uses its int result before syncing row/column counts. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.rebind_binding_pair_to_control",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 48 89 D6 48 89 CF 48 8B 59 50",
+  "match": "0x144209850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144209850",
+  "kind": "func_start",
+  "names": [
+   "Vm_Rebind_BindingPair_ToControl"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14420be20",
+  "made_on_target": "0x14420be20",
+  "twin": "made on steam-26566308; the target 0x14420be20 is KB 0x144209850: Ne_Time_BreakDownMicroseconds (0x41f15f0) and Vm_Node_Clear (0x420f330) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14420be20",
+    "target": "0x14420be20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "950cd6c3fd9c3ac90da3a8d49e333b187bd3425aabf7f1dc1afd2aed61d9949e"
+  }
+ ]
+}

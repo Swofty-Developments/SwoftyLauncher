@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_PushBack_Elem168_Str128",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143ab4990",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_Vector_PushBack_Elem168_Str128(void *vec, void *elem)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ab6f60 (RacingPC lab re_groups/_decomp);xref:0x143aa60d0,0x143aa9940",
+  "notes": "(lib) push_back on a vector of 0xa8-byte records (two qwords, a dword at +0x10, two qwords at +0x18 and +0x20, then a 128-byte C string at +0x28), growing by 1.5x and copying old elements field by field. Returns 0. Context from caller: connected input device descriptors with device name."
+ },
+ "signature": {
+  "id": "core.vector_push_back_elem168_str128",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 80 BF C1 00 00 00 00",
+  "match": "0x143aad776",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x143ab4990",
+  "kind": "call",
+  "names": [
+   "Ne_Vector_PushBack_Elem168_Str128"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143aafd46",
+  "made_on_target": "0x143ab6f60",
+  "twin": "made on steam-26566308; the target 0x143ab6f60 is KB 0x143ab4990: Ne_InputLibraryDirectInput_IsXInputDevice (0x3aa6d90) and Ne_JobQueue_FindBestJob (0x3abfaa0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143aafd46",
+    "target": "0x143ab6f60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "49f0b7abf332833841f3355f598fec11c64f5726bdec900861cdd9e23de0ee68"
+  }
+ ]
+}

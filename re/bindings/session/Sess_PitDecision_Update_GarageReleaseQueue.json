@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_PitDecision_Update_GarageReleaseQueue",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143692190",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "void Sess_PitDecision_Update_GarageReleaseQueue(void *self, void *car_ctx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143694720 (RacingPC lab re_groups/_decomp);xref:0x143692a80",
+  "notes": "Per-car garage release logic. Resolves the entrant row (table +0x2e0, elem 0x88, car index at car_ctx+0xc4), checks session type at (+0x58)+0x1a8 +4 and flag byte +0x4b bit 0x10 to early-out, computes session time and a normalised session progress, evaluates a curve (Career_Eval_Curve) to get max cars allowed on track and counts cars in states DAT_14604a4a0/a4. Under critical section DAT_146103328 inspects the global queue DAT_1461032e8 of {u8 car, f32 time}: if this car is at the front and its time and global next-release time DAT_146103358 have passed, removes it, re-sorts, calls Sess_PitDecision_ChooseTyreAndFuel and Game_PitLane_VehicleWantsToLeaveGarage_Thunk, sets car_ctx+0x130 flag 0x20 and bit 1, and sets DAT_146103358 = now + random in [min,max] (defaults 6..18 s, or 1.5..3.5 s when DAT_14610335c is set; overridable from tuning at (+0xb8)+0x10..+0x48). Otherwise upserts {car, time} into the queue (shared tail Sess_PitDecision_UpsertPitCommitList). Modders: DAT_146103358 and the 6/18 and 1.5/3.5 constants control spacing of AI cars leaving the garage."
+ },
+ "signature": {
+  "id": "session.pit_decision_update_garage_release_queue",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 68 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 48 89 D6 48 89 CF 48 8B 42 10",
+  "match": "0x143692190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143692190",
+  "kind": "func_start",
+  "names": [
+   "Sess_PitDecision_Update_GarageReleaseQueue"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143694720",
+  "made_on_target": "0x143694720",
+  "twin": "made on steam-26566308; the target 0x143694720 is KB 0x143692190: site_Sess_PitEvalReturnFalse (0x36946da) and Sess_RaceStrategy_SetPlanType (0x369b840) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143694720",
+    "target": "0x143694720"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a0bf9a3985f395bbcdac98fc5521604f6b47b4df337b923e6fc681fdaa5638fb"
+  }
+ ]
+}

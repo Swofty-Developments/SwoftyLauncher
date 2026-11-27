@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Career_ResourcePoints_GetPracticeProgCompletedPts",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1435050b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int32_t Career_ResourcePoints_GetPracticeProgCompletedPts(void **ctx, uint32_t team_key, uint32_t index)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143507640 (RacingPC lab re_groups/_decomp);xref:0x143508660,0x143509320,0x1437928a0",
+  "notes": "Builds the gamedb key \"resource_points.practice_programme_overrides.per_team_mode.completed\" (or \"per_driver_mode\" when ResourcePoints component byte +0x4a0 is 0), reads the int at array slot [index] via Gdb_Lookup_Key, then if positive scales it by the sum/100 of type 0x0b team modifiers (8-byte entries, float at +4) from Career_Get_TeamModifiers((component+0x608)+0xc90, team_key). Returns resource points for a completed practice programme; good hook for R&D point gains."
+ },
+ "signature": {
+  "id": "career.resource_points_get_practice_prog_completed_pts",
+  "section": ".xtls",
+  "pattern": "45 89 F0 E8 ?? ?? ?? ?? 89 C5 01 FD",
+  "match": "0x1418001ca",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x1435050b0",
+  "kind": "call",
+  "names": [
+   "Career_ResourcePoints_GetPracticeProgCompletedPts"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1418019aa",
+  "made_on_target": "0x143507640",
+  "twin": "made on steam-26566308; the target 0x143507640 is KB 0x1435050b0: Career_ResourcePointsAward_ReadSaveData (0x35058a0) and Career_Adjust_RpTeamWallet (0x350aad0) on either side both sit 0x2590 above their KB addresses; the match 0x1418019aa is KB 0x1418001ca: Career_Init_RnDUpgradeRewardPanel (0x1800d50) and Career_Apply_RnDChallengerIconsLayout (0x180bc20) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1418019aa",
+    "target": "0x143507640"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c48f1cd3cf115584d01703432d5709c7cf10cc074f02632153355bf3a4635d3b"
+  }
+ ]
+}

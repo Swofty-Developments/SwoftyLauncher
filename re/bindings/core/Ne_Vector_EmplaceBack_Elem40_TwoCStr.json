@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_EmplaceBack_Elem40_TwoCStr",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142255b10",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_Vector_EmplaceBack_Elem40_TwoCStr(void *vec, const char *str1, const char *str0)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142257710 (RacingPC lab re_groups/_decomp);xref:0x142241600",
+  "notes": "(lib) Vector emplace_back for element 0x28: +0x0 NeStr from param_3, +0x8 NeStr from param_2, +0x10 and +0x18 null strings, int32 +0x20 = 1. 1.5x growth with move of old elements and release of their 4 NeStr refs. Context from caller: MyTeam homescreen state rows."
+ },
+ "signature": {
+  "id": "core.vector_emplace_back_elem40_two_c_str",
+  "section": ".xtls",
+  "pattern": "48 89 D9 E8 ?? ?? ?? ?? 49 8B 74 24 F0",
+  "match": "0x14224d81e",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x142255b10",
+  "kind": "call",
+  "names": [
+   "Ne_Vector_EmplaceBack_Elem40_TwoCStr"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14224f41e",
+  "made_on_target": "0x142257710",
+  "twin": "made on steam-26566308; the target 0x142257710 is KB 0x142255b10: Game_DataGathererPlayers_Update (0x21f3000) and Career_MyTeamSetupVM_ResetStepSelection (0x22684b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14224f41e",
+    "target": "0x142257710"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "31060a48bdaacfc14225ab29407012f329dcf967de5f01e7cf3225d88fa9eb6c"
+  }
+ ]
+}

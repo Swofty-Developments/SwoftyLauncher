@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Map_Emplace_U8Key_Val4_Node20_C",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143900ae0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Map_Emplace_U8Key_Val4_Node20_C(void *map, void *out_iter_bool, uint8_t *key, uint32_t *value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143903070 (RacingPC lab re_groups/_decomp);xref:0x143872b40",
+  "notes": "(lib) Byte-identical copy of the 0x20-node red-black tree emplace (key byte at +0x1a, 4-byte value at +0x1c), a separate template instantiation. Returns {node,inserted}."
+ },
+ "signature": {
+  "id": "core.map_emplace_u8_key_val4_node20_c",
+  "section": ".xtls",
+  "pattern": "C6 84 24 38 07 00 00 00 48 8D 8C 24 98 05 00 00 48 89 FA 4C 8D 84 24 38 07 00 00 4D 89 E9 E8 ?? ?? ?? ?? 48 89 E9",
+  "match": "0x143871b7c",
+  "anchor": "0x1f",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x1e"
+  },
+  "target": "0x143900ae0",
+  "kind": "call",
+  "names": [
+   "Ne_Map_Emplace_U8Key_Val4_Node20_C"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14387410c",
+  "made_on_target": "0x143903070",
+  "twin": "made on steam-26566308; the target 0x143903070 is KB 0x143900ae0: Sess_GameWeatherSystem_UpdateRandomSeed (0x38ca670) and Ne_NameTable_FindByFnv1a_B (0x3907810) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14387410c",
+    "target": "0x143903070"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "239fb12ac24013d692bbe6fcf813201434e82432cc7009e952fca121ee32a239"
+  }
+ ]
+}

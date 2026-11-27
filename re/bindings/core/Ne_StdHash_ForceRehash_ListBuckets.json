@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_StdHash_ForceRehash_ListBuckets",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143ed1db0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_StdHash_ForceRehash_ListBuckets(void *hash, uint64_t buckets)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ed4380 (RacingPC lab re_groups/_decomp)",
+  "notes": "(lib) MSVC std::_Hash::_Forcerehash pattern with a custom allocator: rounds buckets to a power of two, refills the bucket vector (+0x28..+0x38) with the list sentinel (+0x10), sets mask +0x40 and bucket count +0x48, then relinks every list node into its bucket by the hash stored at node+0x18. Throws via Ne_Std_ThrowStdException when buckets exceed 2^59."
+ },
+ "signature": {
+  "id": "core.std_hash_force_rehash_list_buckets",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 8B 4F 60 4C 21 F1",
+  "match": "0x143beb27e",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x143ed1db0",
+  "kind": "call",
+  "names": [
+   "Ne_StdHash_ForceRehash_ListBuckets"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143bed84e",
+  "made_on_target": "0x143ed4380",
+  "twin": "made on steam-26566308; the target 0x143ed4380 is KB 0x143ed1db0: Ne_Vector_GrowEmplace_Elem384 (0x3ecf690) and Ne_PoolList_Resize_B (0x3ed46c0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143bed84e",
+    "target": "0x143ed4380"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ab17958d6fba26819efbbee939c36ecd20b923d2df1f5bc2ba96d8a50f04c4d8"
+  }
+ ]
+}

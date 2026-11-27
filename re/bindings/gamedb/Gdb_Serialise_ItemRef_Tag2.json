@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Gdb_Serialise_ItemRef_Tag2",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1402b7d80",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "proto": "int Gdb_Serialise_ItemRef_Tag2(const void *item, void *save_obj)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1402b7d80 (RacingPC lab re_groups/_decomp);xref:0x142493e00,0x1424aeb30",
+  "notes": "Same body as the tag 1 variant but the constant type field value is at 0x1456153d8 (tag 2 item class). Writes packed id (byte +0x10, uint16 +0x12) and two 4-element arrays from item+0x18 (uint32) and item+0x28 (bytes)."
+ },
+ "signature": {
+  "id": "gamedb.serialise_item_ref_tag2",
+  "section": ".xtls",
+  "pattern": "48 8D 4F 38 E8 ?? ?? ?? ?? 85 C0 75 19",
+  "match": "0x142492325",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x4"
+  },
+  "target": "0x1402b7d80",
+  "kind": "call",
+  "names": [
+   "Gdb_Serialise_ItemRef_Tag2"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142493f25",
+  "made_on_target": "0x1402b7d80",
+  "twin": "made on steam-26566308; the target 0x1402b7d80 is KB 0x1402b7d80: Ne_String_Reserve (0x2b5650) and Ne_Std_ThrowBadArrayNewLength (0x2be320) on either side both sit 0x0 above their KB addresses; the match 0x142493f25 is KB 0x142492325: Ent_EntrantsSystem_ReplaceVehicle (0x2478370) and Ai_DriverConfig_InitDefault (0x249c0f0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142493f25",
+    "target": "0x1402b7d80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b4f2a4ce17dbe366aa0356f82945134fb4187b2ba4d8fb7d80580d46fcc02496"
+  }
+ ]
+}

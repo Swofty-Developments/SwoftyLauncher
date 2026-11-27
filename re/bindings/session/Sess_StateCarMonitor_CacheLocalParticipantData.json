@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_StateCarMonitor_CacheLocalParticipantData",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141206da0",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "void Sess_StateCarMonitor_CacheLocalParticipantData(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1412073e0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142da3810",
+  "notes": "Part 1: for each 0x88-byte element of the list returned by vfunc +0xa8 on (self+0x278)+0x1030, fetches a block via 0x142f2e220(self+0x2d0) and for each of its entries (count byte +0x9c48, stride 200) sets byte +0xa0 = !(byte +0xa8 & 1). Part 2: finds the 0x230-byte row at (self+0x298)+0x460 with flag 0x10 at +0x4b, matches its id (+0x50 byte, +0x52 short) against the pointer list (self+0x2c0)+0x2d0..+0x2d8 and stores byte +1 | 0x100 at self+0x2f8, copies 0xa8 bytes from entry (+8 or +0xb0 base, picked by +0x1c50) +0x1af8 to self+0x2fc and sets self+0x3a4. Context from caller: Sess_StateCarMonitor_OnStateExit and 0x142da79a0 (a sibling state handler that then transitions with vfunc +0x78) fetch self from the session registry by key 0x146064fc0, so self is a registry component, not the state. Stays L1: that flag 0x10 means local player is inferred. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.state_car_monitor_cache_local_participant_data",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 68 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 CE",
+  "match": "0x141206da0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141206da0",
+  "kind": "func_start",
+  "names": [
+   "Sess_StateCarMonitor_CacheLocalParticipantData"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1412073e0",
+  "made_on_target": "0x1412073e0",
+  "twin": "made on steam-26566308; the target 0x1412073e0 is KB 0x141206da0: Game_ControllerState_SyncHudHideReason13 (0x11f5b70) and Game_CustomSeason_RebuildFromRounds (0x12078d0) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1412073e0",
+    "target": "0x1412073e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "aa45534c2ce4146f96dc9aadc22381b121132f809888dec5ae35e72844a44e73"
+  }
+ ]
+}

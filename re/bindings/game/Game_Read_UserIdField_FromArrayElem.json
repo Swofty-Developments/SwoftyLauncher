@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Read_UserIdField_FromArrayElem",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143167a50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int Game_Read_UserIdField_FromArrayElem(void *out_id, void *arr, uint64_t index)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143169fe0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14245ab20",
+  "notes": "Whole body read. Array-element variant of 0x143169980: 0x14393cf90(arr, index, buf) reads the element blob into a 0x400 stack buffer, wrapped as a bit stream; if the first bit is set it reads a ranged uint 0..0x12 that must be 7, then reads an unaligned u32 (flags), then 0x1441256d0 deserialises the 0x40-byte id block; result goes to out+0x08..+0x47, flags to out+0x48. Same substitution as the object variant: flag 0x10000000 with a default id is replaced by the id from [[g_Game_Manager+0x140]+0x198]+0x1c0 vcall +0x38. Returns the read status. Caller Ent_Deserialise_EntrantVector 0x14245ab20 calls it once per saved entrant index to fill the id of a temporary entrant record before it unpacks the packed u64 words. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.read_user_id_field_from_array_elem",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC F0 04 00 00 C5 F8 29 B4 24 E0 04 00 00",
+  "match": "0x143167a50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143167a50",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_UserIdField_FromArrayElem"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143169fe0",
+  "made_on_target": "0x143169fe0",
+  "twin": "made on steam-26566308; the target 0x143169fe0 is KB 0x143167a50: Game_InviteManager_OnJoinCompleted_2 (0x3168220) and Game_PlayerSetSubsystem_Init (0x316b2b0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143169fe0",
+    "target": "0x143169fe0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "08057577d958245c68a895b89c130a4b6cc01b882671741d30096f92e976392a"
+  }
+ ]
+}

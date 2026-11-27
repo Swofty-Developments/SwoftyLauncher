@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Customisation_SyncDriverCustomisations_IfKeyTracked",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14144b5a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Customisation_SyncDriverCustomisations_IfKeyTracked(void *customisation, uint32_t packed_key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14144bd80 (RacingPC lab re_groups/_decomp);xref:0x141a4b400,0x141bef1a0",
+  "notes": "Returns unless packed_key is valid (low byte != 0 or high word != 0x3fff), Ent_Get_VehicleCustomisation_Thunk(self+0x280, key) is non-null and the bitmask hash set at self+0x1d8/+0x1e0 (count +0x1e8, 6-byte entries: type byte +2, id word +4) contains the key. Then builds a u32 vector seeded with self+0x1b4, lets 0x141449610 extend it and calls Career_MyTeam_SyncDriverCustomisationsFromLivery(self+0x278, &key, id) for every id before freeing the vector. Caller 0x141a4b400: applies the selected loadout entry (Game_Loadout_FindByPackedKey gives the key) and then refreshes scene decals; caller 0x141bef1a0: large screen setup that ends with the same FindByPackedKey + sync pair. The call from 0x14142e280 was not seen. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.customisation_sync_driver_customisations_if_key_tracked",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 50 89 D7",
+  "match": "0x14144b5a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14144b5a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Customisation_SyncDriverCustomisations_IfKeyTracked"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14144bd80",
+  "made_on_target": "0x14144bd80",
+  "twin": "made on steam-26566308; the target 0x14144bd80 is KB 0x14144b5a0: Game_DecalGeneration_ReadBackCompressed (0x14387c0) and Ne_FlagMaskSet_SetBit (0x144e040) on either side both sit 0x7e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14144bd80",
+    "target": "0x14144bd80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "569d3bfa1330e5db1c2e88607c0a2f373a8e7119abd95a801d73601cb7a71ea9"
+  }
+ ]
+}

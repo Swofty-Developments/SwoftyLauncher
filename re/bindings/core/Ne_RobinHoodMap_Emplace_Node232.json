@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_Emplace_Node232",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1426ea3d0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_RobinHoodMap_Emplace_Node232(void *map, void *out_iter, void *value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1426ec750 (RacingPC lab re_groups/_decomp);xref:0x142577080",
+  "notes": "(lib) Pops a 0xe8-byte node from the pool at map+8 (refills via 0x1426ecec0), copy-constructs the value (int key, two entrant identity blocks with vtable 0x145614e20, sub-objects with vtables 0x145794b30 and 0x145794b10), then inserts via 0x1426ec8f0; returns iterator {slot ptr, info ptr, inserted flag}. If the key already exists the node goes back to the pool."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_emplace_node232",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 4D 89 C7 48 89 D6",
+  "match": "0x1426ea3d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1426ea3d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_RobinHoodMap_Emplace_Node232"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1426ec750",
+  "made_on_target": "0x1426ec750",
+  "twin": "made on steam-26566308; the target 0x1426ec750 is KB 0x1426ea3d0: Game_F1os_LogLargePayload_GetCompendiumRewards (0x26d29e0) and Game_F1os_F1WorldTask_Update (0x273c900) on either side both sit 0x2380 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1426ec750",
+    "target": "0x1426ec750"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1eac38c43f9ab7cc040d38fa329972de07859a033ef7268ffc5737e29b9b84bc"
+  }
+ ]
+}

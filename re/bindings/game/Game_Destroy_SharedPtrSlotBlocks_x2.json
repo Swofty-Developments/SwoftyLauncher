@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Destroy_SharedPtrSlotBlocks_x2",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1419360c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_Destroy_SharedPtrSlotBlocks_x2(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1419378a0 (RacingPC lab re_groups/_decomp);xref:0x1425311a0,0x1425445b0,0x1427b2070,0x1430e2af0,0x1430f6240,0x143186dd0,0x14318afd0,0x14318ee50",
+  "notes": "Destroys two adjacent 0x120-byte blocks of the same type as in 0x141936940 (vtable 0x145614f80 at +0x120 and +0): releases the shared-pointer vector (+0xe0 allocator, +0xe8 begin, +0xf0 end), frees it, and destroys the inline 0x30-byte items (+0x60, count +0xc0) when flag +0xd0 is set. Context from caller: F1 Life config and customisation replication data."
+ },
+ "signature": {
+  "id": "game.destroy_shared_ptr_slot_blocks_x2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CE 4C 8D 35 ?? ?? ?? ?? 4C 89 B1 20 01 00 00",
+  "match": "0x1419360c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419360c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Destroy_SharedPtrSlotBlocks_x2"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1419378a0",
+  "made_on_target": "0x1419378a0",
+  "twin": "made on steam-26566308; the target 0x1419378a0 is KB 0x1419360c0: Ne_Map_DestroySubtree (0x1924350) and Ne_Std_ThrowVectorSubscriptError (0x1952cb0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1419378a0",
+    "target": "0x1419378a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fb564cf88e3fe1e94bfa447595976c6ffc9363c9f7d509c3fb6989ea00f10698"
+  }
+ ]
+}

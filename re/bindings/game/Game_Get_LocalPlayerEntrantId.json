@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Get_LocalPlayerEntrantId",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1418784d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint32_t *Game_Get_LocalPlayerEntrantId(void *self, uint32_t *out_id)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141879cb0 (RacingPC lab re_groups/_decomp);xref:0x141a69860,0x141a6a660,0x141a6b230",
+  "notes": "Writes a packed entrant id to out_id: a static invalid id (0x3fff0000 pattern) when byte self+0xc68 is set or self+0xc78 is null; otherwise builds the local user identity (g_Game_Manager+0x140 -> +0x198 -> +0x1c0 vfunc +0x38), searches the entrant records at (self+0xc78)+0x2e0..+0x2e8 with Sess_Match_EntrantIdentity_Thunk and returns that record id, falling back to Ent_Get_Driver_Thunk on the career data (self+0xc80)->+0x238 (id +0x260 or +0x1b0). Returns out_id."
+ },
+ "signature": {
+  "id": "game.get_local_player_entrant_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC B8 00 00 00 48 89 D6 80 B9 68 0C 00 00 00",
+  "match": "0x1418784d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418784d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Get_LocalPlayerEntrantId"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141879cb0",
+  "made_on_target": "0x141879cb0",
+  "twin": "made on steam-26566308; the target 0x141879cb0 is KB 0x1418784d0: Career_Find_UpgradeEntryByKey (0x1874890) and site_Game_TeamSelect_TeamLogoFormat (0x187b085) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141879cb0",
+    "target": "0x141879cb0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4227cdd2d3429874bdcae5972893d9b12dc5cf1126a2aca48b3c6e2175c28de3"
+  }
+ ]
+}

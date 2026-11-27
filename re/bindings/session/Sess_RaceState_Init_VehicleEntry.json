@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_RaceState_Init_VehicleEntry",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142f21ee0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_RaceState_Init_VehicleEntry(void *entry, void *vehicle, void **context)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142f24470 (RacingPC lab re_groups/_decomp);xref:0x142f2bdb0",
+  "notes": "Zero-initialises the per-vehicle race state (sentinels 0xffffffff at +0x30 and +0x118, 0xffff at +0x38, 0xff at +0x3a), stores vehicle at +0xe8 and context at +0x120, and caches seven type-checked system pointers from *context (+0x318, +0x258, +0x278, +0x2f8, +0x368, +0x348, +0x228) at +0x128..+0x158. Copies the vehicle index (vehicle+0x18 -> +0x58 -> +0xe8) to +8 and sets bit 7 of +2 when the vehicle entity has component 0x146102b38, storing component 0x146102b18 at +0x168 in that case. Otherwise it stores the timing entry matching the vehicle index from (context[7])+0x48 at +0x160 and copies byte +0xcea of the entity from Sess_ResolveEntityHandle to +9."
+ },
+ "signature": {
+  "id": "session.race_state_init_vehicle_entry",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 4C 89 C7 48 89 CE 48 C7 01 00 00 00 00",
+  "match": "0x142f21ee0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f21ee0",
+  "kind": "func_start",
+  "names": [
+   "Sess_RaceState_Init_VehicleEntry"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f24470",
+  "made_on_target": "0x142f24470",
+  "twin": "made on steam-26566308; the target 0x142f24470 is KB 0x142f21ee0: Sess_ScDebris_SumPartVolumes_B (0x2f1b530) and Sess_SafetyCar_OnLapChanged (0x2f24950) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f24470",
+    "target": "0x142f24470"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1c7e0e9341345910fe08bf290f38312b999ca01569f1e4c02f8e02da4ceae216"
+  }
+ ]
+}

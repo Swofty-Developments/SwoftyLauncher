@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsDocument_ReplaceEntrantIdentity",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142456df0",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "uint64_t Ent_EntrantsDocument_ReplaceEntrantIdentity(void *doc, void *old_id, void *new_id, uint8_t *opt_entrant_id, uint32_t *opt_vehicle_cust, uint32_t *opt_driver_cust, uint16_t car_number)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1424589f0 (RacingPC lab re_groups/_decomp);xref:0x142458630,0x1429232c0,0x143115eb0,0x143117030",
+  "notes": "Swaps the identity of an entrant in the document's EntrantRecord vector (+0x08..+0x10). No-op if old and new identity match. Otherwise posts EntrantsDocumentOpened, sets busy flag +0x20, finds the record matching old_id; if another record already holds new_id it is given old_id (swap). Writes new name_block, ordinal_flags, optional id_lo/id_hi, driver_customisation, vehicle_customisation and car_number (param used only if >0xff), posts two bus messages (0x145790a60, 0x14568fc70 with old/new id and swapped flag), then EntrantsDocumentClosed. Good hook for drop-in/player swap."
+ },
+ "signature": {
+  "id": "entrants.entrants_document_replace_entrant_identity",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 4C 89 CD",
+  "match": "0x142456df0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142456df0",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsDocument_ReplaceEntrantIdentity"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1424589f0",
+  "made_on_target": "0x1424589f0",
+  "twin": "made on steam-26566308; the target 0x1424589f0 is KB 0x142456df0: Sess_Parse_EntrantList (0x2455840) and Career_Build_LineupChanges (0x2459690) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1424589f0",
+    "target": "0x1424589f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "59969203b7d74bbd0a4b3f6f874af2824ceb845d7f5721cf2ba8128143ca46d6"
+  }
+ ]
+}

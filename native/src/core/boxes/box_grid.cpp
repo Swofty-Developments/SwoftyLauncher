@@ -11,6 +11,7 @@
 #include <swofty/mixin.hpp>
 
 #include "core/apply/content/appliers.hpp"
+#include "core/apply/tracks/box.hpp"
 
 #include <algorithm>
 #include <atomic>
@@ -435,6 +436,7 @@ namespace {
 constexpr const char *VIDEO_MIXIN = "swofty_core.dll (video redirects per box)";
 constexpr const char *OPEN_FN = "Ne_VideoPlayer_OpenFile";
 constexpr int VIDEO_LOG_LINES = 16;
+constexpr int TRACK_VIDEO_LOG_LINES = 64;
 
 using Open_t = void(void *player, const char *path, void *options, uint8_t a, uint8_t b, uint8_t c);
 
@@ -448,11 +450,38 @@ std::string video_box;
 std::vector<swofty_core::apply::content::VideoRedirect> video_redirects;
 std::atomic<bool> videos_on{false};
 std::atomic<int> video_lines{0};
+std::atomic<int> track_video_lines{0};
+std::atomic<bool> track_videos_logged{false};
 thread_local char video_path[0x100];
+
+bool has_prefix_nocase(std::string_view s, std::string_view pre)
+{
+    if (s.size() < pre.size())
+        return false;
+    for (std::size_t i = 0; i < pre.size(); i++) {
+        char c = s[i] >= 'A' && s[i] <= 'Z' ? char(s[i] - 'A' + 'a') : s[i];
+        if (c != pre[i])
+            return false;
+    }
+    return true;
+}
+
+void log_track_video(const char *path)
+{
+    std::string_view p = path;
+    if (has_prefix_nocase(p, "videos/"))
+        p.remove_prefix(7);
+    if (!has_prefix_nocase(p, "track_map/") || track_video_lines.fetch_add(1, std::memory_order_relaxed) >= TRACK_VIDEO_LOG_LINES)
+        return;
+    swofty::log("[videos] circuit intro opened: %s%s", path,
+                has_prefix_nocase(p, "track_map/swofty/") ? " (an added track's own)" : "");
+}
 
 void open_entry(void *player, const char *path, void *options, uint8_t a, uint8_t b, uint8_t c)
 {
     const char *use = path;
+    if (path && track_videos_logged.load(std::memory_order_relaxed))
+        log_track_video(path);
     if (path && videos_on.load(std::memory_order_relaxed)) {
         std::optional<std::string> to;
         std::string box;
@@ -493,7 +522,9 @@ static std::vector<CoreMixins> box_videos_mixins()
     std::vector<CoreMixins> out;
     if (video_hooks.gate.offered() || !code_ready())
         return out;
-    if (!swofty_core::apply::content::any_video_redirect())
+    bool redirects = swofty_core::apply::content::any_video_redirect();
+    bool track_videos = swofty_core::apply::tracks::any_track_video();
+    if (!redirects && !track_videos)
         return out;
     video_hooks.gate.offer();
     char v[16] = {};
@@ -507,6 +538,7 @@ static std::vector<CoreMixins> box_videos_mixins()
         return out;
     }
     videos_wanted = true;
+    track_videos_logged.store(track_videos, std::memory_order_relaxed);
     out.push_back({VIDEO_MIXIN, {{OPEN_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&open_entry, video_hooks.open_file.slot()}}});
     return out;
 }

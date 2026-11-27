@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_SourceHdrTargetPass_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1442df730",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void *Render_SourceHdrTargetPass_Ctor(void *self, void *allocator, void *gfx, void *props)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442e1d00 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140129b50",
+  "notes": "Whole body read: Render_GeometryPass_Ctor with 4 slots, vtable 0x145a732a0; on first instance (counter 0x146ca6c18) creates a shared 0x28-byte list (0x146ca6c00) and two materials (0x146ca6c08, 0x146ca6c10) with Render_Material_InitParamSlots. Reads props 'source', 'target', optional 'sourceHdr', a bool prop into +0x558 and a key whose presence sets +0x559; when +0x559 is 0 allocates a 0x7a0-byte state (vtable 0x145a73050) with two Gfx2 buffers (+0x758 and +0x38) into +0x550. Binds slot 0 source, 1 sourceHdr, 2 target, 3 material. Caller Render_Gfx_ConfigObject_InitResourceEntry clones the resource desc, allocates 0x560 bytes (align 0x10) and calls this ctor with {allocator, gfx, desc}, returning {allocator, object}. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.source_hdr_target_pass_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 08 01 00 00 C5 F8 29 B4 24 F0 00 00 00 4D 89 CE",
+  "match": "0x1442df730",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442df730",
+  "kind": "func_start",
+  "names": [
+   "Render_SourceHdrTargetPass_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1442e1d00",
+  "made_on_target": "0x1442e1d00",
+  "twin": "made on steam-26566308; the target 0x1442e1d00 is KB 0x1442df730: Ne_UIMessageSystem_OnMetadataAssetCleanup (0x42dbe90) and Ne_UIElementBase_HandleCommunicationMessage (0x42fe860) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1442e1d00",
+    "target": "0x1442e1d00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "492d553537bfba97482e28d1c1a74472f24321af48e3c26941c5143f6ed12cf4"
+  }
+ ]
+}

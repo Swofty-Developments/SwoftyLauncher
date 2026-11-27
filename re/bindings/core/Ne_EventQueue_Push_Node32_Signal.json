@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_EventQueue_Push_Node32_Signal",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14476f930",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_EventQueue_Push_Node32_Signal(void *queue, void *item)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1447722f0 (RacingPC lab re_groups/_decomp);xref:0x1447440c0,0x144744d10",
+  "notes": "(lib) Thread-safe queue push: if +0x68 running flag is 0 sets errno 0x58; else under critical section +0x98 allocates a 0x20 node from allocator +0x70, copies item +8/+0x10/+0x18, links it at tail (+0x58 head, +0x60 tail), then SetEvent(+0x90). Returns 0 or an errno code. Context from caller: used by car controls update, payload meaning unknown."
+ },
+ "signature": {
+  "id": "core.event_queue_push_node32_signal",
+  "section": ".xtls",
+  "pattern": "48 8D 54 24 50 E8 ?? ?? ?? ?? 31 C0",
+  "match": "0x144741e8d",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x14476f930",
+  "kind": "call",
+  "names": [
+   "Ne_EventQueue_Push_Node32_Signal"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14474484d",
+  "made_on_target": "0x1447722f0",
+  "twin": "made on steam-26566308; the target 0x1447722f0 is KB 0x14476f930: Ne_RobinHoodMap_Str_FindIndex8 (0x476e990) and Ne_HashMap_FatalStub_SkidmarksA (0x4777b10) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14474484d",
+    "target": "0x1447722f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "dbc3c5997fc841c68e4c2d95a882bc667bfb38e599ec96f14504953b5eb7bf9a"
+  }
+ ]
+}

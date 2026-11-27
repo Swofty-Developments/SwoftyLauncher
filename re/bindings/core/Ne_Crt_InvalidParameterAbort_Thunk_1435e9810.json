@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbort_Thunk_1435e9810",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1435e7280",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbort_Thunk_1435e9810(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1435e9810 (RacingPC lab re_groups/_decomp);xref:0x143541110",
+  "notes": "(thunk) Only calls Ne_Crt_InvalidParameterAbort then int3; no-return failure stub for the adjacent hash map code."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_thunk_1435e9810",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC 56 57 53 48 83 EC 30 48 89 CE 48 8D 59 08 BA 04 00 00 00 48 89 D8 66 2E 0F 1F 84 00 00 00 00 00 48 89 D1 48 81 FA 00 20 00 00 77 0C 48 8B 00 48 8D 14 09 48 85 C0 75 E8 48 69 F9 B0 01 00 00",
+  "match": "0x1435e7280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435e7280",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_InvalidParameterAbort_Thunk_1435e9810"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1435e9810",
+  "made_on_target": "0x1435e9810",
+  "twin": "made on steam-26566308; the target 0x1435e9810 is KB 0x1435e7280: Ne_HashMap_U64_Grow (0x35dc140) and Career_Upgrades_FindOrCreateRecommendedState (0x35ebbd0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1435e9810",
+    "target": "0x1435e9810"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a0c6bf79d2590b049283db49dc529df4b2b295b06330b862cc0a95237c1e0e91"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Car_Calc_MassProfileEstimate_ForVehicle",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142f5a5d0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "float Car_Calc_MassProfileEstimate_ForVehicle(void *ctx, uint8_t vehicle_idx, uint32_t arg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142f5cb60 (RacingPC lab re_groups/_decomp);xref:0x1411830e0,0x14118b860,0x141198bd0,0x14119a400",
+  "notes": "Looks up vehicle entity (ctx+0x38 -> +0x28 array) and its component (type DAT_146ceab00), picks a profile entry from the bitmap-slot table at ctx+0x40 whose +0x60 id equals component+0xab8, else the one named \"default\". Sums mass terms: car+0x540->+0x100, Car_Upgrades_CalcNonLinearMass for the matching upgrade, XOR-obfuscated floats at +0x558->+0x98/+0xa0 squared and a table value (ctx+0x48->+0x38->+0x178->+0x50[idx]); passes the total plus tyre compound (tyre component +0x9c98 -> -0x6c) to FUN_142904cb0 and scales by the XOR-decoded float at +0x548->+0x38/+0x40. Returns 0 for vehicle 0xff or missing data. Context from caller: fuel relevance criterion / fuel dynamic objective. Better context needed: what FUN_142904cb0 evaluates."
+ },
+ "signature": {
+  "id": "car.calc_mass_profile_estimate_for_vehicle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 78 29 94 24 80 00 00 00 C5 78 29 4C 24 70 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 C5 C0 57 FF",
+  "match": "0x142f5a5d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f5a5d0",
+  "kind": "func_start",
+  "names": [
+   "Car_Calc_MassProfileEstimate_ForVehicle"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f5cb60",
+  "made_on_target": "0x142f5cb60",
+  "twin": "made on steam-26566308; the target 0x142f5cb60 is KB 0x142f5a5d0: Sess_SafetyCar_IsVehicleInDeltaWindow (0x2f59da0) and Ai_SuggestedGear_ComputeForZone (0x2f5e0e0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f5cb60",
+    "target": "0x142f5cb60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c4d0465017337660ea0b982aeb7ea275d5075a84086b8e25c49e6a0f346c0b6b"
+  }
+ ]
+}

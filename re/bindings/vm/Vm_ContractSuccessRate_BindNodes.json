@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_ContractSuccessRate_BindNodes",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1419a3b30",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_ContractSuccessRate_BindNodes(void *self, void *parent)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1419a5310 (RacingPC lab re_groups/_decomp);xref:0x1419c5c20,0x1419ccce0,0x141cc5140,0x1423fc800,0x1423fda20,0x142400110",
+  "notes": "Constructs a small VM binding struct: root handle at +0x00 from parent+8, string node \"success_rate_heading\" (init \"\") at +0x20, node refs \"success_icon\" at +0x40 and \"risk_display_overlay\" at +0x60. Returns self. Shared by driver contract offer, counter offer and young driver renewal screens."
+ },
+ "signature": {
+  "id": "vm.contract_success_rate_bind_nodes",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4D 89 BE A8 01 00 00",
+  "match": "0x141cc37bf",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1419a3b30",
+  "kind": "call",
+  "names": [
+   "Vm_ContractSuccessRate_BindNodes"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141cc53bf",
+  "made_on_target": "0x1419a5310",
+  "twin": "made on steam-26566308; the target 0x1419a5310 is KB 0x1419a3b30: Vm_TeamHqDriverRenewalCard_Bind (0x19a4b00) and Vm_NotificationButton_BuildNameCommand (0x19a5b90) on either side both sit 0x17e0 above their KB addresses; the match 0x141cc53bf is KB 0x141cc37bf: Career_SponsorContractSentVM_OnAction (0x1cc4bc0) and Game_OptionsColourCorrectionVM_OnScreenActivated (0x1cc7160) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141cc53bf",
+    "target": "0x1419a5310"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "300a37f75c741a7bdfcd5cf597b62c94579277a6636a0e100555297b109115d1"
+  }
+ ]
+}

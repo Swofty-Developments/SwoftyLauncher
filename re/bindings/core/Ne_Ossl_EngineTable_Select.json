@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_EngineTable_Select",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144f847d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Ossl_EngineTable_Select(void **table, int nid)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144f87190 (RacingPC lab re_groups/_decomp);xref:0x144c920f0,0x144da6b40,0x144f8d5c0,0x144f8faa0,0x144f9eea0,0x144f9efb0,0x144f9f0c0,0x144f9f1d0",
+  "notes": "OpenSSL ossl_engine_table_select. Under the global engine lock looks up the nid pile in the table hash, returns the cached functional engine (pile+0x10) or tries each engine in the pile stack (+0x8) with unlocked init, caches the winner and sets uptodate (+0x18)."
+ },
+ "signature": {
+  "id": "core.ossl_engine_table_select",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 08 48 89 74 24 10 57 B8 40 00 00 00 E8 ?? ?? ?? ?? 48 2B E0 8B F2 48 8B F9",
+  "match": "0x144f847d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144f847d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_EngineTable_Select"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144f87190",
+  "made_on_target": "0x144f87190",
+  "twin": "made on steam-26566308; the target 0x144f87190 is KB 0x144f847d0: Ne_Crt_ReportGsFailure (0x4d94e1c) and Ne_Crt_Strstr (0x532d4b8) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144f87190",
+    "target": "0x144f87190"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "850d9ddb688322b080b4f9c69cded29f3002097b6bec8cb12aed6e25391a7193"
+  }
+ ]
+}

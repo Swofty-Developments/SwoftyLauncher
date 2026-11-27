@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_RuleManager_FindSubsystem_ByTypeKey146082ce8",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141f27670",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void *Sess_Registry_GetComponent_ByTypeKey146082ce8(void *registry)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141f29270 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141f28e10,0x14356a7f0",
+  "notes": "Renamed from Sess_RuleManager_FindSubsystem_ByTypeKey146082ce8: the argument is the shared component registry map, not the rule manager, and a caller is not a RuleManager method. Calls Ne_RobinHoodMap_U64_FindIndex(registry, &0x146082ce8), indexes the 0x10-byte slot array at registry+0x18 and returns slot+8, or 0 when the slot equals the end pointer at registry+0x20. Context from caller: Sess_RuleManager_ResolveSubsystems stores the result at its +0xa8; caller 0x141f28e10 resolves a chain of registry components into its own fields and stores this one at +0x88, aborting if null. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.rule_manager_find_subsystem_by_type_key146082ce8",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 E8 ?? ?? ?? ?? 48 C1 E0 04 48 03 46 18 48 3B 46 20 74 06 48 8B 40 08 EB 02 31 C0 48 83 C4 30 5E C3 CC CC CC CC CC CC 41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00",
+  "match": "0x141f27670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f27670",
+  "kind": "func_start",
+  "names": [
+   "Sess_RuleManager_FindSubsystem_ByTypeKey146082ce8"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141f29270",
+  "made_on_target": "0x141f29270",
+  "twin": "made on steam-26566308; the target 0x141f29270 is KB 0x141f27670: site_Game_TheatreRows_RowOffset (0x1f0d5a6) and Game_TrackSelectVM_OnScreenActivated (0x1f292b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141f29270",
+    "target": "0x141f29270"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1a53955ba30031d966f78c90e28d1d79af2e4fd4f1aa9a97e7d1ebb7d1a156ae"
+  }
+ ]
+}

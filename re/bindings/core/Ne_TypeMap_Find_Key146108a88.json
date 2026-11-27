@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_TypeMap_Find_Key146108a88",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141489280",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_TypeMap_Find_Key146108a88(void *map)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141489a60 (RacingPC lab re_groups/_decomp);xref:0x14148ab00",
+  "notes": "Looks up the fixed key 0x146108a88 with Ne_RobinHoodMap_U64_FindIndex and returns the pointer stored at entry+8 (16-byte entries at map+0x18, end at map+0x20), or 0 if absent. Service/type locator getter; which service the key denotes is not visible here."
+ },
+ "signature": {
+  "id": "core.type_map_find_key146108a88",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 E8 ?? ?? ?? ?? 48 C1 E0 04 48 03 46 18 48 3B 46 20 74 06 48 8B 40 08 EB 02 31 C0 48 83 C4 30 5E C3 CC CC CC CC CC CC E9 ?? ?? ?? ?? 98 ED 2C 98",
+  "match": "0x141489280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141489280",
+  "kind": "func_start",
+  "names": [
+   "Ne_TypeMap_Find_Key146108a88"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141489a60",
+  "made_on_target": "0x141489a60",
+  "twin": "made on steam-26566308; the target 0x141489a60 is KB 0x141489280: site_Game_GhostlapTrace_RivalLogDone (0x14837c4) and Ui_MyTeamCustomisation_BuildPages (0x14a7440) on either side both sit 0x7e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141489a60",
+    "target": "0x141489a60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fa4a29479b053b689ab51da237170b2a029de80fd771055496449844e99400dc"
+  }
+ ]
+}

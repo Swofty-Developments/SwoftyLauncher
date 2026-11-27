@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Career_RnDUpgradePurchaseErrorMsg_Construct",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1405911e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_RnDUpgradePurchaseErrorMsg_Construct(void *msg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140591220 (RacingPC lab re_groups/_decomp);xref:0x14351ed20",
+  "notes": "Constructor for the protobuf-style message f1.proto.RnDUpgradePurchaseError: builds a std::string with the type name, passes it to the base message ctor (0x144937b50), frees the temp, sets vtable 0x145632e90, zeroes +0x48..+0x80 and inits an empty std::string at +0x68 (size +0x80=0, cap +0x88... stored as [0x10]=0xf). cxx=f1.proto.RnDUpgradePurchaseError"
+ },
+ "signature": {
+  "id": "career.rn_d_upgrade_purchase_error_msg_construct",
+  "section": ".xtls",
+  "pattern": "48 89 C1 E8 ?? ?? ?? ?? 4D 85 FF 74 79",
+  "match": "0x14351c854",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x1405911e0",
+  "kind": "call",
+  "names": [
+   "Career_RnDUpgradePurchaseErrorMsg_Construct"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14351ede4",
+  "made_on_target": "0x140591220",
+  "twin": "made on steam-26566308; the target 0x140591220 is KB 0x1405911e0: Game_Analytics_WriteRndUpgradeInfo (0x5868a0) and Ai_CarProfile_Dtor (0x5ed510) on either side both sit 0x40 above their KB addresses; the match 0x14351ede4 is KB 0x14351c854: Career_Post_RnDUpgradePurchaseError (0x351ed20) and Career_Purchase_UpgradesForSimulatedTeams (0x3521060) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14351ede4",
+    "target": "0x140591220"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b0bd164e030190a7b62597662e7414e9260fae3ea03fc9daa3fed3a968e72ed0"
+  }
+ ]
+}

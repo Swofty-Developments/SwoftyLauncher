@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_PropertySet_Read_Value4",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14445da90",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int Ne_PropertySet_Read_Value4(void *props, const void *key, uint32_t *out)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144460060 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14445fd10,0x144462830",
+  "notes": "Same layered lookup as Ne_PropertySet_Read_Value16 (sources +0xf0, +0xe8, +0xe0; 0x57 when missing), type id checked against descriptor 0x14612bd80, copies one 4-byte value to *out; returns 0 or 0x16 on type mismatch. Context from caller: Ne_StaticPhysicsComponent_ReadProperties reads key 0x145613fa1 into +0x34 and two more keys into +0x38 and +0x50, substituting 0x1000100 on failure; 0x14445fd10 (sibling component property loader) reads the same key into +0x40. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "core.property_set_read_value4",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 89 44 24 2C 48 8D 15",
+  "match": "0x14445d859",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x14445da90",
+  "kind": "call",
+  "names": [
+   "Ne_PropertySet_Read_Value4"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14445fe29",
+  "made_on_target": "0x144460060",
+  "twin": "made on steam-26566308; the target 0x144460060 is KB 0x14445da90: site_Game_PhysicsWorldConfigOverrides (0x4459f0b) and Ne_WorldInstance_PreWarmTextures (0x447b2b0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14445fe29",
+    "target": "0x144460060"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7571b9b46c968ae55ba2ebfda1d1d8e32093698cfd7d278dcc83ea841887626c"
+  }
+ ]
+}

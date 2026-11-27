@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_EmplaceBack_VmHandleQuint_ElemA0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14212cff0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Vector_EmplaceBack_VmHandleQuint_ElemA0(void *vec, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14212ebf0 (RacingPC lab re_groups/_decomp);xref:0x141efba00",
+  "notes": "(lib) Vector emplace_back for a 0xa0-byte element made of five 0x20 intrusive VM node handles (vtables 0x1456613d8, 0x1456616e0, 0x1456624b8, 0x1456616e0, 0x1456fa440). Grows by 1.5x through allocator vec+0, relocates old elements by relinking the intrusive lists, copy-constructs the new element from src handles at +8,+0x28,+0x48,+0x68,+0x88, releases the old ones."
+ },
+ "signature": {
+  "id": "core.vector_emplace_back_vm_handle_quint_elem_a0",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 49 89 D6 49 89 CF",
+  "match": "0x14212cff0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14212cff0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vector_EmplaceBack_VmHandleQuint_ElemA0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14212ebf0",
+  "made_on_target": "0x14212ebf0",
+  "twin": "made on steam-26566308; the target 0x14212ebf0 is KB 0x14212cff0: Vm_FinancePeriod_Bind (0x212df10) and site_Career_RnDPerfViewModelSlotDtor (0x2172bd1) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14212ebf0",
+    "target": "0x14212ebf0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "dcbd386f16c5083009758191990805807aa8f399667c311ab12f5aa09b9b37c6"
+  }
+ ]
+}

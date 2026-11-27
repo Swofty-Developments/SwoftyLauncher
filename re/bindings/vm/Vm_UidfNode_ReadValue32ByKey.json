@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_UidfNode_ReadValue32ByKey",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144180860",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint32_t Vm_UidfNode_ReadValue32ByKey(void *nodeRef, void *keyRef, uint32_t *outValue)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144182e30 (RacingPC lab re_groups/_decomp);xref:0x144181bc0,0x144202160,0x144220620,0x14423fb80,0x144250f70,0x14425b980",
+  "notes": "Same lookup as 0x144182950 but for a 4-byte value (sink vtable 0x145660540): follows a top-bit reference to another object and reads key 0x425ed3ca there, else reads the key directly. Writes the 32-bit value to outValue and returns 0; returns 3 when the key is missing and leaves outValue untouched. Used by the UI element Init functions to read numeric properties from a uidf node."
+ },
+ "signature": {
+  "id": "vm.uidf_node_read_value32_by_key",
+  "section": ".xtls",
+  "pattern": "4C 89 F2 E8 ?? ?? ?? ?? 85 C0 75 0D",
+  "match": "0x1442006f7",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x144180860",
+  "kind": "call",
+  "names": [
+   "Vm_UidfNode_ReadValue32ByKey"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144202cc7",
+  "made_on_target": "0x144182e30",
+  "twin": "made on steam-26566308; the target 0x144182e30 is KB 0x144180860: Ne_EventBus_Unsubscribe (0x417e580) and Ne_UIAction_C_closeScreenId (0x4185c30) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144202cc7",
+    "target": "0x144182e30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "33ab4c281c7eda4a5b02060f34f6361917e05c0e1b78ad2a0426873648a9bd36"
+  }
+ ]
+}

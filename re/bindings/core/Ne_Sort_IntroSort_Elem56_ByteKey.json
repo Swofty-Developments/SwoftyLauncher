@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Sort_IntroSort_Elem56_ByteKey",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1424e54d0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Sort_IntroSort_Elem56_ByteKey(uint8_t *first, uint8_t *last, uint64_t depth_budget)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1424e70d0 (RacingPC lab re_groups/_decomp);xref:0x14247db60",
+  "notes": "(lib) Same introsort as 0x1424e5cd0 but for 0x38-byte records keyed by the first byte; partition helper FUN_1424e76c0, heap sort fallback."
+ },
+ "signature": {
+  "id": "core.sort_intro_sort_elem56_byte_key",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 D7 48 89 CE 48 89 D0",
+  "match": "0x1424e54d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424e54d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Sort_IntroSort_Elem56_ByteKey"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1424e70d0",
+  "made_on_target": "0x1424e70d0",
+  "twin": "made on steam-26566308; the target 0x1424e70d0 is KB 0x1424e54d0: Game_MessageBus_PostEntrantChangeEnd (0x24e4b00) and Sess_SortEntrantsByGarageOrder (0x24e9250) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1424e70d0",
+    "target": "0x1424e70d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "631cfe01c16172f411388b28747fb1cbd33701d269ff72be68b9b4e378b4c7c4"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_JobQueue_Push_JobToWorker",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143abdb10",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_JobQueue_Push_JobToWorker(void *queue, void **job, void *user, char flag_a, char flag_b)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ac00e0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143abfcc0,0x143ac3cf0",
+  "notes": "Increments pending count +0x160, picks a worker from the pool [+0x08]+0x48 by round-robin index +0x24 (skipping workers whose id +0xa4 is not in affinity mask +0x14; with +0x12 set it starts from the calling worker's own id), then under the worker's critsec +0x18 inserts the job {fn, arg, owner +0x168, user, flags} into its list +0x48/+0x68, updates the worker priority word +0x98 and owner +0x90 and sets its wake event +0x08 when the list was empty. Notifies the pool observer [pool+0x08] vfn +0x28, advances the round-robin index and increments pool counter +0xc0. Caller 0x143abfcc0: single-job submit that takes the queue lock and uses this unless the queue is in deferred mode; also called per item by Ne_JobQueue_SubmitJobRange. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "core.job_queue_push_job_to_worker",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 44 89 CB 4C 89 C5",
+  "match": "0x143abdb10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143abdb10",
+  "kind": "func_start",
+  "names": [
+   "Ne_JobQueue_Push_JobToWorker"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143ac00e0",
+  "made_on_target": "0x143ac00e0",
+  "twin": "made on steam-26566308; the target 0x143ac00e0 is KB 0x143abdb10: Ne_JobQueue_FindBestJob (0x3abfaa0) and Ne_Tls_GetThreadContext (0x3ac21d0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143ac00e0",
+    "target": "0x143ac00e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "59c5e199b1164495b5f5ce3de2bc1dcc7f79b2e4289b2af38649f1eab65c070d"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Collect_UpgradeNotifications_ByKind",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141285890",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Collect_UpgradeNotifications_ByKind(void *self, uint16_t day_from, uint16_t day_to, uint32_t kind)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141285ed0 (RacingPC lab re_groups/_decomp);xref:0x141288010,0x14232c650",
+  "notes": "Gets the upgrades component (k_Career_UpgradesComponentDesc) from [self+0x10]+0x1030, picks the team upgrade record in +0x298..+0x2a0 by team id (self+0x20 when flag +0x24, else self+0x26 when flag +0x2a) and calls Career_Query_EnabledUpgrades. Builds a temporary FNV-1a pointer hash set of the upgrades already referenced (+0x10) by notifications of this kind (+0x18) in the vector self+0x38..+0x40, then for each day in [day_from,day_to) and each upgrade compares the day with upgrade u16 fields +0x80, +0x9a, +0x8c and applies the kind switch 0..5 (flags +0x88, +0xa0, +0x7c, last-state byte); for each new hit allocates a 0x20 notification {vt 0x1456d3880, +8 index u16, +0xa day, +0x10 upgrade ptr, +0x18 kind} from allocator self+8 and push_backs it into self+0x38 (capacity +0x48). Context from caller: Game_ScheduleNotifications_GeneratingScheduleNotifications and Vm_TeamHqMyTeam_RefreshStatIndexRow both call it six times with kinds 1,3,4,0,2,5 for the same day range. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "career.collect_upgrade_notifications_by_kind",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 0D 00 00 C5 F8 29 BC 24 70 0D 00 00",
+  "match": "0x141285890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141285890",
+  "kind": "func_start",
+  "names": [
+   "Career_Collect_UpgradeNotifications_ByKind"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141285ed0",
+  "made_on_target": "0x141285ed0",
+  "twin": "made on steam-26566308; the target 0x141285ed0 is KB 0x141285890: Career_Read_CashFacilityValuesConfig (0x127e7b0) and Career_TeamHqAdvance_CollectAdvanceEntries (0x1286fc0) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141285ed0",
+    "target": "0x141285ed0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7848e2253a7407bed790b6f3d6c3360af8db987e332864aee65adacade6830a2"
+  }
+ ]
+}

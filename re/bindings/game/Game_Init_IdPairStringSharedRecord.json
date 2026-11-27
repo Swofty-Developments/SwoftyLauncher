@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Init_IdPairStringSharedRecord",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141b78a20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_Init_IdPairStringSharedRecord(void *rec, uint32_t id_a, uint32_t id_b, bool flag, void *str_moved, void *shared_moved)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141b7a5f0 (RacingPC lab re_groups/_decomp);xref:0x141a980d0,0x1425580c0",
+  "notes": "Constructor of a 0x48-byte record: +0x00 id_a, +0x04 id_b, +0x08 flag, +0x10 inline NE string (vtable 0x145614eb8, copied from str_moved after Ne_String_Reserve), +0x38/+0x40 shared pointer copied from shared_moved (strong count +8). Consumes both by-value args: frees the source string heap buffer and releases the source shared ptr. Returns rec. Callers allocate 0x48 bytes and wrap the result in a control block (vtable 0x145737a00): Game_F1World_BuildObjectiveFromDef passes def+8, def+0xc, index==0; Ui_TrackSelectVm_BuildTrackList passes 0x14, (i*4+4)*5, i==0 with a built label string. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.init_id_pair_string_shared_record",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8B 7C 24 78",
+  "match": "0x141b78a20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141b78a20",
+  "kind": "func_start",
+  "names": [
+   "Game_Init_IdPairStringSharedRecord"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141b7a5f0",
+  "made_on_target": "0x141b7a5f0",
+  "twin": "made on steam-26566308; the target 0x141b7a5f0 is KB 0x141b78a20: Ne_HashMap_Find_141b732f0 (0x1b74ec0) and Ui_F1World_ShowMaxUpgradeLevelWarning (0x1b93680) on either side both sit 0x1bd0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141b7a5f0",
+    "target": "0x141b7a5f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6b1562ca1fe3cbe6a3cf4c642d6da4c2e9d92db5d011daca43ac8333f4de25b9"
+  }
+ ]
+}

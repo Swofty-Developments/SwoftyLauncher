@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Update_ExpiryCountdowns_FromTimeWindows",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1419d0b70",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t Ui_Update_ExpiryCountdowns_FromTimeWindows(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1419d2350 (RacingPC lab re_groups/_decomp);xref:0x1414c5be0,0x1414c81a0,0x1415461b0",
+  "notes": "Whole body read. If 0x142bb45d0([self+0x58],1) is true it finds the window with key 1 in the hash map at [self+0x58]+0xe0..+0x114 (0x18-byte slots: key byte, start +8, end +0x10), and unless self+0x29 is set writes self+0x438 = end + clock offset ([0x1460c4240]+0x28 minus time()), sets flag self+0x61 and strings on the holder at self+0x418. Then for the window with key 0, only while time() is inside [start,end], it writes self+0x2a0 = end + offset, sets flag self+0x60 and sets the string node self+0x288 to 'hour_plus'; helpers 0x1419d2710, 0x1419d2940, 0x1419d2b40 build the widgets once. Returns time() on early exit, else 0. Caller 0x1414c5be0: screen update, calls it on its member +0x520 when +0xa50 is set. Callers 0x1414c81a0 and 0x1415461b0: thin wrappers that call it on member +0x520 / +0x730 when a pointer is set. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.update_expiry_countdowns_from_time_windows",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 20 48 89 CE 48 8B 49 58",
+  "match": "0x1419d0b70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419d0b70",
+  "kind": "func_start",
+  "names": [
+   "Ui_Update_ExpiryCountdowns_FromTimeWindows"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1419d2350",
+  "made_on_target": "0x1419d2350",
+  "twin": "made on steam-26566308; the target 0x1419d2350 is KB 0x1419d0b70: Vm_Get_VirtualHelpPromptVisible (0x19cfef0) and Ui_PurchasePopup_Init (0x19deb90) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1419d2350",
+    "target": "0x1419d2350"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "075ffe0f28cc0ea27a3a3849675a28d9a0bc499f8198d7640d05851f3e1e794b"
+  }
+ ]
+}

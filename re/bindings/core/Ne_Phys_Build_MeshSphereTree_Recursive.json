@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Phys_Build_MeshSphereTree_Recursive",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144101ff0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Phys_Build_MeshSphereTree_Recursive(void *mesh, void *nodes, int32_t *node_count, int32_t *tri_indices, uint32_t tri_count)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1441045c0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1440cc4a0",
+  "notes": "Whole body read. Takes the next 0x30-byte node (nodes + *node_count*0x30, count incremented): +0x00 centre = mean of all triangle vertices (index triples at mesh+0x188 stride 0xc, vertices at mesh+0x190 stride 0x10), +0x10 radius = max vertex distance, +0x28 pointer to one triangle whose longest edge squared exceeds (0.6*radius)^2 (that triangle is removed from the index list), +0x18/+0x20 child node pointers. Splits the rest with 0x1441043f0 along the farthest-vertex direction, recurses on the first half and loops on the second. Caller 0x1440cc4a0: builds the collision mesh object, fills the index list 0..n-1, calls this with node count 0 and then shrinks the buffer to count*0x30. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "core.phys_build_mesh_sphere_tree_recursive",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 78 29 A4 24 B0 00 00 00 C5 78 29 9C 24 A0 00 00 00 C5 78 29 94 24 90 00 00 00 C5 78 29 8C 24 80 00 00 00 C5 78 29 44 24 70 C5 F8 29 7C 24 60 C5 F8 29 74 24 50 48 89 D6",
+  "match": "0x144101ff0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144101ff0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Phys_Build_MeshSphereTree_Recursive"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1441045c0",
+  "made_on_target": "0x1441045c0",
+  "twin": "made on steam-26566308; the target 0x1441045c0 is KB 0x144101ff0: Ne_Phys_SolveRowsIterate (0x40f73b0) and Ne_PhysWorld_ResizeWorkerContexts (0x4106ee0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1441045c0",
+    "target": "0x1441045c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6b97ab6fd1aa45aa0bae884605dc53f0d33a01ac5288a955ce5c61a5f8c6c851"
+  }
+ ]
+}

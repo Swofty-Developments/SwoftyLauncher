@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_ContractTalks_AdvanceStageForDriver",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14106bdb0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_ContractTalks_AdvanceStageForDriver(void *comp, uint32_t driverId, uint16_t day)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14106ca70 (RacingPC lab re_groups/_decomp);xref:0x140d80a00",
+  "notes": "Finds the per-driver record (vector +0x460..+0x468, stride 0x5c, id at +0). Sets the next unset stage flag among +0x3c, +0x40, +0x44 with its day at +0x3e/+0x42/+0x46, clears stage 0 (+0x38 = 0xffff0000), calls FUN_14106ae70 and copies the matching message key (comp+0x3c0/+0x3c8/+0x3d0) into the string at +0x478, sets dirty flag +0x4a0. If stage 0 is already set or all three are set it resets the record and also the linked teammate record via FUN_14106c410/FUN_14106c150. Better context needed: which component owns +0x460 (called from Game_DriverContracts_NextSecretMeeting)."
+ },
+ "signature": {
+  "id": "career.contract_talks_advance_stage_for_driver",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 81 60 04 00 00",
+  "match": "0x14106bdb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14106bdb0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractTalks_AdvanceStageForDriver"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14106ca70",
+  "made_on_target": "0x14106ca70",
+  "twin": "made on steam-26566308; the target 0x14106ca70 is KB 0x14106bdb0: Career_UpgradeRef_CreateFromConfig (0x105d500) and Career_Save_UpgradeLevelFields (0x106d190) on either side both sit 0xcc0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14106ca70",
+    "target": "0x14106ca70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "201c1548bfb3fa152a04d42c0f6baba308989b797230540a96701c7414732d11"
+  }
+ ]
+}

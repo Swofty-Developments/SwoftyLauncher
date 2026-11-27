@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_ResourcePoints_SumPassiveObjectiveGains",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143506f00",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "int32_t Career_ResourcePoints_SumPassiveObjectiveGains(void **ctx, void *gain_list)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143509490 (RacingPC lab re_groups/_decomp);xref:0x143509280",
+  "notes": "For each driver object from FUN_140bb90e0 with a session block at +0x1b0, collects the indices of the 21 slots at block+0xa00 (16 bytes each, active byte +0x32) accepted by 0x14297df70, shuffles them with an MT19937 seeded from session vfunc +0x90(3) plus ctx+0x2a * 0x12365, takes up to FUN_14297dd80(block) of them, reads gamedb field \"maximum_discount\" of Game_Build_PassiveObjectiveKeyName(index), scales by Career_ResourcePoints_GetGainMultiplier and appends (type 0xc, value) to gain_list (count at +0x100). Returns the sum."
+ },
+ "signature": {
+  "id": "career.resource_points_sum_passive_objective_gains",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 38 2A 00 00",
+  "match": "0x143506f00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143506f00",
+  "kind": "func_start",
+  "names": [
+   "Career_ResourcePoints_SumPassiveObjectiveGains"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143509490",
+  "made_on_target": "0x143509490",
+  "twin": "made on steam-26566308; the target 0x143509490 is KB 0x143506f00: Career_ResourcePointsAward_ReadSaveData (0x35058a0) and Career_Adjust_RpTeamWallet (0x350aad0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143509490",
+    "target": "0x143509490"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "08276778e1f1e0bbd0c7047ece275da8f3a6b66b970ec32ee7b69cf781037379"
+  }
+ ]
+}

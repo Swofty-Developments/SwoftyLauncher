@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_ResourceDesc_SetEntriesAndBuffers",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143c20b40",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_Gfx_ResourceDesc_SetEntriesAndBuffers(void *desc, uint32_t count, void *entries12, char *stringBase, void **buf0, void **buf1, void **buf2)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c23110 (RacingPC lab re_groups/_decomp);xref:0x143c22ea0",
+  "notes": "Reserves the 8-byte vector at desc+0x70/+0x78/+0x80 for count, then for each 12-byte entry {nameOffset, a, b} pushes (a,b) and looks up stringBase+nameOffset in the string map at desc+0x88: if new, inserts refcount 1 there and name->index into the map at desc+0x20, else increments the refcount. Finally moves three owned {allocator, ptr} pairs into desc+0xd0, +0xe0, +0xf0, freeing the previous buffers."
+ },
+ "signature": {
+  "id": "render.gfx_resource_desc_set_entries_and_buffers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4D 89 CC 4C 89 C3 89 D5",
+  "match": "0x143c20b40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c20b40",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_ResourceDesc_SetEntriesAndBuffers"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c23110",
+  "made_on_target": "0x143c23110",
+  "twin": "made on steam-26566308; the target 0x143c23110 is KB 0x143c20b40: Render_Material_CountResourceSlots (0x3c09e60) and Ne_TerrainResource_GetMaterialResourcel (0x3c265a0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c23110",
+    "target": "0x143c23110"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "367cc2ab2354266828af041d54d8786b257512adf6a13bb486796049c86e9a80"
+  }
+ ]
+}

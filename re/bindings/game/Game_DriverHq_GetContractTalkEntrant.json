@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_DriverHq_GetContractTalkEntrant",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140261150",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void *Game_DriverHq_GetContractTalkEntrant(void *transition)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140261150 (RacingPC lab re_groups/_decomp);xref:0x140260dc0,0x140261b90,0x140267200",
+  "notes": "Gets the career object (g_Game_Manager+0xc0 -> +0x88 -> +0x260), type-checks it, fetches the entrant pointer list (vfunc +0x1c8 on +0x1030), finds the local player entrant by identity, requires k_Career_DriverCareerContractsManagerComponentDesc and FUN_140d83980 to be true, then collects linked entrants with Ui_Copy_MyTeamNodeArray. Returns the first collected entrant if any, else the player entrant; NULL when the career or player is missing. Better context needed: what FUN_140d83980 tests."
+ },
+ "signature": {
+  "id": "game.driver_hq_get_contract_talk_entrant",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 30 01 00 00 48 8B 05",
+  "match": "0x140261150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140261150",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverHq_GetContractTalkEntrant"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140261150",
+  "made_on_target": "0x140261150",
+  "twin": "made on steam-26566308; the target 0x140261150 is KB 0x140261150: Game_DriverHqAgentIntroTransition_Initialise (0x260dc0) and Game_DriverHqContractsTransition_Initialise (0x261b90) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140261150",
+    "target": "0x140261150"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a72006648d1f90de54b7b95fc58379fff875803ac604e52bcbd2e426a4cebe46"
+  }
+ ]
+}

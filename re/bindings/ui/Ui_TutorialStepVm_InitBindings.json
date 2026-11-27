@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_TutorialStepVm_InitBindings",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141f2f490",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_TutorialStepVm_InitBindings(void *self, void *node)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141f31090 (RacingPC lab re_groups/_decomp);xref:0x14384bd70",
+  "notes": "Creates 16 VM children on node and stores 0x20-byte handles at self+0x00 step 0x20: strings \"state\" (default \"off\"), \"action\" (default \"Menu Accept\"), \"vo_name\", \"a2f_vo_name\"; bools \"show_skip_tooltip\", \"skip_tooltip_active\", \"skip_key_listener_active\", \"tutorials_active\", \"is_first_step\", \"is_last_step\", \"keep_a2f_character\", \"wait_for_environment\"; plus a sub node at +0x160 (0x144241240) with \"point_of_interest\", \"component_path\" and bool \"registered\". Returns self. Hook point to see or change tutorial step state fields."
+ },
+ "signature": {
+  "id": "ui.tutorial_step_vm_init_bindings",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 D7 48 89 CE 48 8B 1D",
+  "match": "0x141f2f490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f2f490",
+  "kind": "func_start",
+  "names": [
+   "Ui_TutorialStepVm_InitBindings"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141f31090",
+  "made_on_target": "0x141f31090",
+  "twin": "made on steam-26566308; the target 0x141f31090 is KB 0x141f2f490: Game_DriverSelectGridVM_OnDeactivate (0x1f2eb50) and Career_Build_RnDDriverUpgradeLists (0x1f3bd50) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141f31090",
+    "target": "0x141f31090"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cf87f2e72af1d4b6c1d9e2b55dc806ac29148a07db6e5e018ad5df18252b59ca"
+  }
+ ]
+}

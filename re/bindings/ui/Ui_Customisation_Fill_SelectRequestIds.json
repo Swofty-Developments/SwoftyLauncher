@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Customisation_Fill_SelectRequestIds",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1416cb210",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Customisation_Fill_SelectRequestIds(void *self, void *request)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1416cc800 (RacingPC lab re_groups/_decomp);xref:0x141fd8f20,0x14201bee0,0x142033230",
+  "notes": "Resolves the driver with Ent_Get_Driver_Thunk (static key 0x146068bd8, or when that is invalid 0x3fff the handle at (self+0x20 -> +0x238)+0x260 falling back to +0x1b0); returns if none. In a career mode (mode at (self+0x40)+0x88 -> +0x260) with the career component and 0x14077c7d0 true and not MyTeam, it finds the local player's entrant by identity and writes entrant+0x58 to request+0xa0 (valid byte +0xa4). Otherwise it finds the entrant whose +0x50 handle matches the driver and writes +0x50 to request+8, +0x54 to +0xe and +0x58 to +0xa0 with valid bytes +0xc/+0x12/+0xa4. If the registry string ui_menu_data.customisation.context has hash 0x980a1201 the static handle 0x146068bc4 (when valid) overrides request+0xa0. request+0x8a ends true only when no entrant was found. Callers Game_CustomisationVM_BuildSelectRequest, 0x14201bee0 and 0x142033230 (both build the same customisation request on the stack) call it just before sending the request. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.customisation_fill_select_request_ids",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC D8 00 00 00 48 89 D6",
+  "match": "0x1416cb210",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416cb210",
+  "kind": "func_start",
+  "names": [
+   "Ui_Customisation_Fill_SelectRequestIds"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1416cc800",
+  "made_on_target": "0x1416cc800",
+  "twin": "made on steam-26566308; the target 0x1416cc800 is KB 0x1416cb210: Game_MyTeamCustomisation_SpawnScene (0x16ca160) and Game_MyTeamCarCustomisation_GetVideoWallContext (0x16cd540) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1416cc800",
+    "target": "0x1416cc800"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "bea7ad160939aa572a68e6de3c60da5c92b53df90992bf2794d5c08bf6e82ee3"
+  }
+ ]
+}

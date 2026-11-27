@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Std_Throw_Exception_145614e38",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140b1ced0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Std_Throw_Exception_145614e38(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140b1cf20 (RacingPC lab re_groups/_decomp);xref:0x141f5c700",
+  "notes": "(lib) Noreturn helper: calls Ne_Std_ThrowStdException with the static object at 0x145614e38 and then traps. Better context needed: which std exception type 0x145614e38 is."
+ },
+ "signature": {
+  "id": "core.std_throw_exception_145614e38",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? CC CC CC CC CC 56 48 83 EC 20 48 89 CE 48 8B 89 80 02 00 00",
+  "match": "0x141f5df46",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x140b1ced0",
+  "kind": "call",
+  "names": [
+   "Ne_Std_Throw_Exception_145614e38"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141f5fb46",
+  "made_on_target": "0x140b1cf20",
+  "twin": "made on steam-26566308; the target 0x140b1cf20 is KB 0x140b1ced0: Game_F1os_LogLargePayload_GetCalendar (0xb1b030) and Game_F1os_Create_GetCCLeaderboard (0xb25110) on either side both sit 0x50 above their KB addresses; the match 0x141f5fb46 is KB 0x141f5df46: Game_VehicleManagementVM_HandleCommand (0x1f59730) and Game_ScoreBreakdownVM_OnActivate (0x1f62710) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141f5fb46",
+    "target": "0x140b1cf20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d31226b160555a3ca47e6ee9515f941c038ed34aec5e4c2f2aeccbb1d6dafcfa"
+  }
+ ]
+}

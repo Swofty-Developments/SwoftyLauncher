@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_Standings_GetEntryIdAtPosition",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141457ac0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint32_t *Sess_Standings_GetEntryIdAtPosition(uint32_t *out_id, void *provider, uint64_t position)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1414582a0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1400fb180,0x140a7bf00,0x140a7c690",
+  "notes": "Gets a table object via provider vcall +0x190 (400), locks its critical section +0x230, walks vector +0x40..+0x48 (stride 0x20) from the back to the last non-empty element, takes the int key at the end of its inner list (+8..+0x10, stride 0x28, key +0x20), finds the record with that key and writes u32 record[+8][position] to *out_id; 0x3fff0000 (= none) when out of range or no table. Context from caller: Game_RaceHelper_GetVehicleIndexByChampPos passes a championship position and maps the returned participant id (lo u8 / hi u16) to a car index; Caller 0x140a7bf00 and 0x140a7c690: compare the id at position 0 (leader) with a given participant. Read-only hook point for the standings order. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.standings_get_entry_id_at_position",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 44 89 C3 48 89 CE 48 8B 02 48 89 D1 FF 90 90 01 00 00 48 85 C0 74 50 48 89 C7 48 8B 88 30 02 00 00 FF 15 ?? ?? ?? ?? 48 8B 47 40",
+  "match": "0x141457ac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141457ac0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Standings_GetEntryIdAtPosition"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1414582a0",
+  "made_on_target": "0x1414582a0",
+  "twin": "made on steam-26566308; the target 0x1414582a0 is KB 0x141457ac0: Career_Find_SlotIndexByKey (0x1457ff0) and Sess_Mark_EntrantListAvailable (0x1461a60) on either side both sit 0x7e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1414582a0",
+    "target": "0x1414582a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2feb644084d782e659a24a37dad5c56a2a6efaa7beb421cd557919078ff202ad"
+  }
+ ]
+}

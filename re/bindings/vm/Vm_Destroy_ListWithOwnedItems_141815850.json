@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Destroy_ListWithOwnedItems_141815850",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141814070",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Destroy_ListWithOwnedItems_141815850(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141815850 (RacingPC lab re_groups/_decomp);xref:0x14180f840,0x14180f980",
+  "notes": "Clears the Vm list node at +0x28 (Vm_Node_Clear), destroys each owned item in the vector +0x48..+0x50 of {allocator, object} pairs (virtual dtor then allocator free), frees the vector storage via allocator +0x40, then releases the Vm handles at +0x20 and +0x00. Context from caller: RnD notification spawned cards."
+ },
+ "signature": {
+  "id": "vm.destroy_list_with_owned_items_141815850",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 CE 48 8D 79 28 48 89 FA E8 ?? ?? ?? ?? 4C 8B 6E 48",
+  "match": "0x141814070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141814070",
+  "kind": "func_start",
+  "names": [
+   "Vm_Destroy_ListWithOwnedItems_141815850"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141815850",
+  "made_on_target": "0x141815850",
+  "twin": "made on steam-26566308; the target 0x141815850 is KB 0x141814070: Ui_Rnd_SetDepartmentColourIconName (0x1814e50) and site_Career_Unk141814320TypeLabel (0x1815e18) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141815850",
+    "target": "0x141815850"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1cfe6f81270c8c13c386621b06437d78d37139dd490679d63a9d51b55a054684"
+  }
+ ]
+}

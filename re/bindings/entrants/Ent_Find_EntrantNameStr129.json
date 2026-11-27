@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ent_Find_EntrantNameStr129",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142577e60",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "void *Ent_Find_EntrantNameStr129(void *self, void *out_str, void *entrant_record)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142579d90 (RacingPC lab re_groups/_decomp);xref:0x140bc0c00",
+  "notes": "Scans the hash set at self+0x178/+0x180 for an entry matching entrant_record, then looks up the int id at entry+0 in the robin-hood map at *(self+0xd8)+0x280. If found it takes a shared reference and copies the C string at object+0x18 (max 0x80 chars) into the inline 0x81 char string out (vtable 0x14568fe38); otherwise out is an empty string."
+ },
+ "signature": {
+  "id": "entrants.find_entrant_name_str129",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 48 89 D6 48 83 B9 88 01 00 00 00",
+  "match": "0x142577e60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142577e60",
+  "kind": "func_start",
+  "names": [
+   "Ent_Find_EntrantNameStr129"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142579d90",
+  "made_on_target": "0x142579d90",
+  "twin": "made on steam-26566308; the target 0x142579d90 is KB 0x142577e60: Game_FrontendSceneCar_SpawnFromLiveryData (0x254b890) and Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver (0x257cdb0) on either side both sit 0x1f30 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142579d90",
+    "target": "0x142579d90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "af7fd6411c9b7afe2e3f8581a333039abdbebe4ee1005e9f27a766f6740b5e2e"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_Vfx_Compute_RemappedScalar_VariantB",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14346e020",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Vfx_Compute_RemappedScalar_VariantB(void *self, void *unused, float *out)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1434705a0 (RacingPC lab re_groups/_decomp);xref:0x1433adef0",
+  "notes": "Same as 0x14346d2a0 with constants: range DAT_1460ce964..DAT_1460ce968, lerp from DAT_1460d0d3c to DAT_1460ce960, fallback DAT_1460d0d38, toggle DAT_1460c8f54. Input is shared buffer slot +0xc for the instance from self+0x60. Context from caller: tyre kickup particle blocks."
+ },
+ "signature": {
+  "id": "game.vfx_compute_remapped_scalar_variant_b",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? F6 84 24 D0 01 00 00 01 74 0D 48 8B 84 24 68 01 00 00 C5 8A 5E 78 20",
+  "match": "0x1433ad2bd",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x14346e020",
+  "kind": "call",
+  "names": [
+   "Game_Vfx_Compute_RemappedScalar_VariantB"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1433af83d",
+  "made_on_target": "0x1434705a0",
+  "twin": "made on steam-26566308; the target 0x1434705a0 is KB 0x14346e020: Game_F1os_CreateTask_ReconcileUserEntitlements (0x3453bf0) and Game_PitLane_GetDistanceToBox (0x34b72b0) on either side both sit 0x2580 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1433af83d",
+    "target": "0x1434705a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "96a9c6e95fd6c431b0d1506d536fd5cc03b7b9bc43cff7e21a210be9aec36aca"
+  }
+ ]
+}

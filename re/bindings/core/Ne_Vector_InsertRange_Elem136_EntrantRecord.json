@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_InsertRange_Elem136_EntrantRecord",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142570a80",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void **Ne_Vector_InsertRange_Elem136_EntrantRecord(void *vec, void **out_it, void *pos, void *first, void *last)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1425729b0 (RacingPC lab re_groups/_decomp);xref:0x14256f2b0",
+  "notes": "(lib) Range insert for a vector of 0x88-byte entrant records (vtable 0x145614e20, inner vtable 0x145614ed0 at +0x70): reallocates with 1.5x growth when capacity is short, otherwise shifts the tail in place, copy-constructing every element. Returns an iterator to the first inserted element in out_it."
+ },
+ "signature": {
+  "id": "core.vector_insert_range_elem136_entrant_record",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 CB 48 89 D7",
+  "match": "0x142570a80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142570a80",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vector_InsertRange_Elem136_EntrantRecord"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1425729b0",
+  "made_on_target": "0x1425729b0",
+  "twin": "made on steam-26566308; the target 0x1425729b0 is KB 0x142570a80: Game_FrontendSceneCar_SpawnFromLiveryData (0x254b890) and Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver (0x257cdb0) on either side both sit 0x1f30 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1425729b0",
+    "target": "0x1425729b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a61f62234580554e3ebd1e16ed07e1d21e01e2e560af1cd1fb3839028d7ff06a"
+  }
+ ]
+}

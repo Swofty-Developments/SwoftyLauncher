@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_RenownFormRowItem_Construct",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141695fd0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_RenownFormRowItem_Construct(void *item, void *parent, uint8_t player_team, uint8_t bg_highlight)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1416975c0 (RacingPC lab re_groups/_decomp);xref:0x1423d4e40",
+  "notes": "Constructs a view-model list item (base ctor 0x1442a3de0 with a constant node name at 0x1456f996e) and registers two bool VM properties with initial values from the args: player_team at +0x20 and bg_highlight at +0x40 (handles linked into the node observer list, vtable 0x145661670). Used by the renown/form small widget to flag the player's team row."
+ },
+ "signature": {
+  "id": "career.renown_form_row_item_construct",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 44 88 4C 24 2F",
+  "match": "0x141695fd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141695fd0",
+  "kind": "func_start",
+  "names": [
+   "Career_RenownFormRowItem_Construct"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1416975c0",
+  "made_on_target": "0x1416975c0",
+  "twin": "made on steam-26566308; the target 0x1416975c0 is KB 0x141695fd0: Ui_Get_AcclaimValue (0x1696c20) and FeTile_ItemBase_Populate (0x1699180) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1416975c0",
+    "target": "0x1416975c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5bb0166289db1bd0e9da6e3bbda4021ad16f343a5fedadbc985963234eb43743"
+  }
+ ]
+}

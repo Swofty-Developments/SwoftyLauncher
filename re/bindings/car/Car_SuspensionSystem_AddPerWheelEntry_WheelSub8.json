@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Car_SuspensionSystem_AddPerWheelEntry_WheelSub8",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1446b3730",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void Car_SuspensionSystem_AddPerWheelEntry_WheelSub8(void *registry, const char *group, const char *base_name, void *car, void *getter, uint32_t arg6, uint32_t arg7, uint8_t arg8)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1446b5fa0 (RacingPC lab re_groups/_decomp);xref:0x1446b4de0",
+  "notes": "Same per-wheel naming loop as 0x1446b5870 (.front/.rear plus side suffix from wheel +0x2b8/+0x2b4) but the delegate context is wheel+8 (secondary base subobject) and two numeric args are forwarded to FUN_144772830 instead of a fixed 0."
+ },
+ "signature": {
+  "id": "car.suspension_system_add_per_wheel_entry_wheel_sub8",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 01 00 00 C5 F8 29 BC 24 A0 01 00 00 C5 F8 29 B4 24 90 01 00 00 4C 89 4C 24 48 4C 89 C7",
+  "match": "0x1446b3730",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446b3730",
+  "kind": "func_start",
+  "names": [
+   "Car_SuspensionSystem_AddPerWheelEntry_WheelSub8"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1446b5fa0",
+  "made_on_target": "0x1446b5fa0",
+  "twin": "made on steam-26566308; the target 0x1446b5fa0 is KB 0x1446b3730: Car_GearBox_Update (0x46a93d0) and Car_Tyre_Step (0x46b7f90) on either side both sit 0x2870 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1446b5fa0",
+    "target": "0x1446b5fa0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "db023ac8161e9c17f82fac4190a69604f0909bef3363f440480af27f20022ef9"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Queue_EnqueueEventRecord_Size30_SetEvent",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144346140",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_Queue_EnqueueEventRecord_Size30_SetEvent(void *queue, void *record)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144348710 (RacingPC lab re_groups/_decomp);xref:0x14424fd90",
+  "notes": "Event queue push of a 0x30-byte record with vtable 145a754c0 (fields +8..+0x28 copied), appended to head +0x58 / tail +0x60 under the critical section +0xd8; always sets flag +0x6b and calls SetEvent on handle +0xd0 when it was clear, mapping Win32 errors to errno (6 -> 3). Sets errno 0x58 when the queue enabled flag +0x68 is clear, 0xc on allocation failure."
+ },
+ "signature": {
+  "id": "core.queue_enqueue_event_record_size30_set_event",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 80 79 68 00 0F 84 ?? ?? ?? ?? 48 89 D7 48 89 CE 48 8B 89 D8 00 00 00 FF 15 ?? ?? ?? ?? 48 8B 4E 70 48 8B 01 BA 30 00 00 00 41 B8 08 00 00 00",
+  "match": "0x144346140",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144346140",
+  "kind": "func_start",
+  "names": [
+   "Ne_Queue_EnqueueEventRecord_Size30_SetEvent"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144348710",
+  "made_on_target": "0x144348710",
+  "twin": "made on steam-26566308; the target 0x144348710 is KB 0x144346140: Ne_Make_StrFromBuffer (0x4339fc0) and Ne_StringMap_EmplaceNode (0x434aff0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144348710",
+    "target": "0x144348710"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f54038a9bc2fc9eec1dff96302d55b74a040e7ccacb3f592ae93fc360e80bbb6"
+  }
+ ]
+}

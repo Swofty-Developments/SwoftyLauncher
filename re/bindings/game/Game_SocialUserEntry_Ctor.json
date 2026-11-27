@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_SocialUserEntry_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14184b8c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_SocialUserEntry_Ctor(void *self, void *allocator, void **name_str, void **text_str, const char *icon_path, void *user_id, void **extra_ref)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14184d0a0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141c36400,0x141df7b70",
+  "notes": "Constructs a 0x88-byte entry: +0x0 and +0x8 take refcounted NeStr refs from name_str/text_str (refcount at +4), +0x10 is an Ne string (vtable 0x145614eb8, allocator arg, inline buffer at +0x30) filled from the C string icon_path, +0x38..+0x7f is a 0x48-byte copy of user_id, +0x80 takes the ref from extra_ref; the three by-value ref arguments are then released and zeroed. Returns self. Callers Game_SocialNotifications_Update and Game_FriendsList_OnGetFriendsDone construct it in place when pushing into 0x88-stride vectors (+0x13f8/+0x1400/+0x1418), passing the user name, a text key such as lng_wants_to_invite_you_to_play and icons like #overrides.icons.social_request.game_invite / friend_request. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.social_user_entry_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 89 CF 4C 89 C3 49 89 D7",
+  "match": "0x14184b8c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14184b8c0",
+  "kind": "func_start",
+  "names": [
+   "Game_SocialUserEntry_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14184d0a0",
+  "made_on_target": "0x14184d0a0",
+  "twin": "made on steam-26566308; the target 0x14184d0a0 is KB 0x14184b8c0: Game_SessionResults_PopulateTable (0x1836b70) and Career_Bind_SpecialistUpgradeText (0x185ad60) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14184d0a0",
+    "target": "0x14184d0a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c1676268df4d2c34de2d40cf7a48ec4a826ebd2a779e227a43cba76b56063bbc"
+  }
+ ]
+}

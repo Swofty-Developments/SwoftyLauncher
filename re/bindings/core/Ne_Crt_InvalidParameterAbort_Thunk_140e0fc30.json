@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbort_Thunk_140e0fc30",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140e0f0b0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbort_Thunk_140e0fc30(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140e0fc30 (RacingPC lab re_groups/_decomp);xref:0x140d85470,0x140d9e640,0x140e52290",
+  "notes": "(thunk) Noreturn stub: calls Ne_Crt_InvalidParameterAbort then int3. Used as the container bounds/overflow failure path."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_thunk_140e0fc30",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 52 0F 80",
+  "match": "0x140e0f0b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140e0f0b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_InvalidParameterAbort_Thunk_140e0fc30"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140e0fc30",
+  "made_on_target": "0x140e0fc30",
+  "twin": "made on steam-26566308; the target 0x140e0fc30 is KB 0x140e0f0b0: Ne_Sort_HeapSortDriverPairs (0xe0e5f0) and Ne_Crt_InvalidParameterAbortStub_140e0fd20 (0xe108a0) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140e0fc30",
+    "target": "0x140e0fc30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b8dca8a7a0eb94c8f0e79580f161e3d8cfcd68069d9ecca69af4fce65cb3544f"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_RbTree_EraseSubtree_ValVecOfVec40",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142eddcb0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_RbTree_EraseSubtree_ValVecOfVec40(void **alloc, void *node)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142ee0240 (RacingPC lab re_groups/_decomp);xref:0x142e7efd0",
+  "notes": "(lib) Recursive std::map subtree erase (isnil at node+0x19, right at +0x10, left at +0). Node value holds a vector (alloc +0x28, begin +0x30, end +0x38, cap +0x40) of 0x28-byte elements each owning an inner vector (alloc +8, begin +0x10); frees inner buffers, the vector buffer, then the node via allocator vfunc +0x38."
+ },
+ "signature": {
+  "id": "core.rb_tree_erase_subtree_val_vec_of_vec40",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 C5 F8 29 74 24 20 80 7A 19 00",
+  "match": "0x142eddcb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142eddcb0",
+  "kind": "func_start",
+  "names": [
+   "Ne_RbTree_EraseSubtree_ValVecOfVec40"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142ee0240",
+  "made_on_target": "0x142ee0240",
+  "twin": "made on steam-26566308; the target 0x142ee0240 is KB 0x142eddcb0: Career_Complete_PerkTreeNode (0x2ea8570) and Ne_Container_AbortNoReturn_142ee16c0 (0x2ee3c50) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142ee0240",
+    "target": "0x142ee0240"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e1a38482060d492e54b412e92754b8bbcc759acecd3e1c03c9d90d10f838b9a5"
+  }
+ ]
+}

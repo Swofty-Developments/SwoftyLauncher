@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_ActorSceneData_DestroyAllEntries",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1401d9b20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_ActorSceneData_DestroyAllEntries(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1401d9b20 (RacingPC lab re_groups/_decomp);xref:0x14018a550,0x1401f0f80,0x1402918b0",
+  "notes": "For six pointer arrays (data +0x10, +0x30, +0x50, +0x70, +0xb0, +0xd0 with counts +0xf0, +0xf8, +0x100, +0x108, +0x118, +0x120) calls each object's destructor vfunc 0 and frees it with allocator +0x130, zeroes the counts, then frees and nulls all seven vector buffers (including +0x90)."
+ },
+ "signature": {
+  "id": "game.actor_scene_data_destroy_all_entries",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 8B 01 48 8B 81 F0 00 00 00",
+  "match": "0x1401d9b20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401d9b20",
+  "kind": "func_start",
+  "names": [
+   "Game_ActorSceneData_DestroyAllEntries"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1401d9b20",
+  "made_on_target": "0x1401d9b20",
+  "twin": "made on steam-26566308; the target 0x1401d9b20 is KB 0x1401d9b20: Game_PelvisHeightModifier_Init (0x1d3140) and Game_Scene_UpdateInstanceTransformsBatch (0x1e7aa0) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1401d9b20",
+    "target": "0x1401d9b20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e192f7f96ac9b770d9ff87457f68b66f4202b13de42a315b5838fd9885ac1103"
+  }
+ ]
+}

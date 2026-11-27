@@ -2,13 +2,13 @@
 
 use std::io::Read;
 use std::path::{Path, PathBuf};
-use std::time::SystemTime;
+use std::time::{Duration, SystemTime};
 
 use serde::{Deserialize, Serialize};
 
 use crate::STEAM_APP_ID;
 
-use super::LOADER_MARK;
+use super::{LOADER_FALLBACK, LOADER_LOG, LOADER_MARK};
 
 pub const END_FILE: &str = "end.json";
 pub const STOP_FILE: &str = "stop_requested";
@@ -159,6 +159,75 @@ impl LogMark {
 
     pub fn replaced(path: &Path, before: Option<&Self>) -> bool {
         Self::read(path).is_some_and(|now| before != Some(&now))
+    }
+}
+
+/// Where this session's loader log is: the game folder's `loader.log` once this session's game has replaced the
+/// one from before the launch, else the fallback in the data folder, which a loader the game folder refuses
+/// writes instead. The fallback counts only when it was written since the launch and, if it names a launch
+/// request, names this session's, so an earlier session's fallback is never taken for this one.
+#[derive(Debug, Clone)]
+pub struct LoaderLog {
+    game: PathBuf,
+    before: Option<LogMark>,
+    fallback: PathBuf,
+    request: Option<String>,
+    launched: SystemTime,
+}
+
+const FALLBACK_HEAD: u64 = 4096;
+const CLOCK_SLACK: Duration = Duration::from_secs(2);
+const REQUEST_MARK: &str = "launch request ";
+
+impl LoaderLog {
+    pub fn new(
+        game: &Path,
+        before: Option<LogMark>,
+        data: &Path,
+        request: Option<String>,
+        launched: SystemTime,
+    ) -> Self {
+        Self {
+            game: game.join(LOADER_LOG),
+            before,
+            fallback: data.join(LOADER_FALLBACK),
+            request: request.filter(|r| !r.is_empty()),
+            launched,
+        }
+    }
+
+    pub fn game_log(&self) -> &Path {
+        &self.game
+    }
+
+    pub fn current(&self) -> Option<PathBuf> {
+        if LogMark::replaced(&self.game, self.before.as_ref()) {
+            return Some(self.game.clone());
+        }
+        self.fallback_is_ours().then(|| self.fallback.clone())
+    }
+
+    fn fallback_is_ours(&self) -> bool {
+        if !written_since(&self.fallback, self.launched - CLOCK_SLACK) {
+            return false;
+        }
+        let Some(want) = &self.request else {
+            return true;
+        };
+        let mut head = Vec::new();
+        let read =
+            std::fs::File::open(&self.fallback).and_then(|f| f.take(FALLBACK_HEAD).read_to_end(&mut head));
+        if read.is_err() {
+            return false;
+        }
+        let head = String::from_utf8_lossy(&head);
+        match head.find(REQUEST_MARK) {
+            Some(at) => head[at + REQUEST_MARK.len()..]
+                .split(|c: char| !c.is_ascii_alphanumeric())
+                .next()
+                .is_some_and(|id| id == want),
+            None => true,
+        }
     }
 }
 

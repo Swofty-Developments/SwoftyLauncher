@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodNodeMapCStr_Rehash_Node168",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d65160",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodNodeMapCStr_Rehash_Node168(void *map, uint64_t new_bucket_count, char free_old)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d65ce0 (RacingPC lab re_groups/_decomp);xref:0x140ca0fd0",
+  "notes": "(lib) Rehash of a node-based robin-hood map (8-byte slots pointing to pooled 0xa8-byte nodes, key C string at node+0x10): allocates n*9+8 bytes via allocator map+0x18, re-inserts all node pointers using FNV-1a 64 * map+0x20 (fields +0x28 slots, +0x30 info, +0x38 size, +0x40 mask, +0x48 max load, +0x50/+0x54 info inc/shift). Old slot buffer is freed when free_old or too small, otherwise carved into 0xa8 nodes and donated to the node pool (+0x8 free list, +0x10 block list)."
+ },
+ "signature": {
+  "id": "core.robin_hood_node_map_c_str_rehash_node168",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 BE B3 01 00 00 00 01 00 00 4C 8B 64 24 58",
+  "match": "0x140ca3751",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x140d65160",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodNodeMapCStr_Rehash_Node168"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140ca4211",
+  "made_on_target": "0x140d65ce0",
+  "twin": "made on steam-26566308; the target 0x140d65ce0 is KB 0x140d65160: Ne_Vector24_PushBackMove (0xd34330) and Career_DeptEvent_CheckStoredUpgradeForDriver (0xd6d5c0) on either side both sit 0xb80 above their KB addresses; the match 0x140ca4211 is KB 0x140ca3751: Career_CostCap_ReadSaveData (0xc9e9c0) and Career_DeptEvent_GetDriverMagicOffset (0xcb0d30) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140ca4211",
+    "target": "0x140d65ce0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "acf867889a75fd73c70342667e55ceaea9841eab58ad75d92650314f13b3e004"
+  }
+ ]
+}

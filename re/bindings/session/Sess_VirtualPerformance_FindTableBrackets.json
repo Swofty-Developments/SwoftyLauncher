@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_VirtualPerformance_FindTableBrackets",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1438a8070",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_VirtualPerformance_FindTableBrackets(void *unused_this, void *tables, void *cache, int32_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1438aa600 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142f6ad40,0x142f6b110,0x143695e30",
+  "notes": "Nested ordered-map bracket search with a cache. key[0] picks the entry of the 16-byte array at tables+0x48, key[5] and key[1] are int keys for two std::map lower_bound levels (nodes stored at cache+8 and +0x10), key[2], key[3], key[6], key[7] are numeric keys for bracket pairs found by FUN_1438a93d0 / FUN_1438a9560 / FUN_1438a96f0 / FUN_1438a9880 and key[4] is an int map key; the low/high node pairs go to cache+0x18, +0x28.., +0x48.., +0x68.., +0xa8... A level is reused when the cached key still matches or the value is still inside the cached pair (node value at +0x20), and cache+4 keeps the last key[0]. First arg is not used. Caller 0x142f6ad40: builds the 8-int key from per-vehicle state (wet-tyre flag, +0xb30..+0xb38) for the 0x188-byte table of vehicle byte +0xb24 before a stepped pace integration; 0x142f6b110 and 0x143695e30 (Sess_Unk_1436938a0) do the same before interpolating. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.virtual_performance_find_table_brackets",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4C 89 CE 4C 89 C7 41 8B 40 04",
+  "match": "0x1438a8070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438a8070",
+  "kind": "func_start",
+  "names": [
+   "Sess_VirtualPerformance_FindTableBrackets"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1438aa600",
+  "made_on_target": "0x1438aa600",
+  "twin": "made on steam-26566308; the target 0x1438aa600 is KB 0x1438a8070: site_Sess_AiRecords_NameHash (0x38a6227) and Sess_VirtualPerformance_CalcPace (0x38ac2a0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1438aa600",
+    "target": "0x1438aa600"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "94c1674c8e7d43f10714d833f321ceeafbaf904ca421fed418d79c5eb500e46b"
+  }
+ ]
+}

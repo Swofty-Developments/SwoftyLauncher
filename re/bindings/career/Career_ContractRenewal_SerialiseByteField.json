@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_SerialiseByteField",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d8b550",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint32_t Career_ContractRenewal_SerialiseByteField(void *writer, uint8_t *value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d8c0d0 (RacingPC lab re_groups/_decomp);xref:0x140d8a450",
+  "notes": "Creates a reflected field (key string at 0x145692e8c, type desc global 0x14612b7c8) with Gdb_Write_ReflectedFieldA, sets it to the zero-extended byte *value and appends the field object to the writer's child array (count u16 at +0x10, array +0x08). Returns the error code (0 = ok)."
+ },
+ "signature": {
+  "id": "career.contract_renewal_serialise_byte_field",
+  "section": ".xtls",
+  "pattern": "4C 89 FA E8 ?? ?? ?? ?? 89 C1 48 89 C8",
+  "match": "0x140d8b1b9",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x140d8b550",
+  "kind": "call",
+  "names": [
+   "Career_ContractRenewal_SerialiseByteField"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140d8bd39",
+  "made_on_target": "0x140d8c0d0",
+  "twin": "made on steam-26566308; the target 0x140d8c0d0 is KB 0x140d8b550: Career_ContractRenewal_Serialise (0xd8a450) and Career_Record_DriverMove (0xd8fd70) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140d8bd39",
+    "target": "0x140d8c0d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a18093802c43658293c57f51d7b0981539336bb1751651cb2cf9185a2994f0df"
+  }
+ ]
+}

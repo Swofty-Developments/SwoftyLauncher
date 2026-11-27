@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Sess_Get_MaxTimeSinceVehicleEvent",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14360f020",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "float Sess_Get_MaxTimeSinceVehicleEvent(void *self, uint8_t vehicle_idx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1436115b0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142a56ff0,0x142f59870",
+  "notes": "Whole body read. Needs [self+0x190] != 0 and byte [[self+0x188]+0x108] == 1, else 0. For each pointer in the vector [self+0x188]+0x48..+0x50: index u32 at +0x38 picks a 0x48-byte record in [[self+0x190]+0x60], whose inner vector +0x10 (0x14-byte elems) is indexed by vehicle_idx; when flag byte +4 has bit 8 and the float time at +0xc is nonzero, elapsed = session time (clock [[self+0x190]+0x88]+0x230: +0x60, or +0x70 plus scaled QueryPerformanceCounter time when +0x98 is set) minus that time. Returns the maximum elapsed over all entries. Callers: Game_Engineer_OnSafetyCarMessage 0x142a56ff0 tests the result < 1.0 s; Sess_SafetyCar_ComputeTargetSpeed 0x142f59870 passes [sc+0x120]+0x50 and divides by +0x1e4 for a 0..1 ramp. Context from caller: the object is the safety car tether state. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.get_max_time_since_vehicle_event",
+  "section": ".xtls",
+  "pattern": "0F B6 50 08 E8 ?? ?? ?? ?? C5 F8 2E 05",
+  "match": "0x142a55c22",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x4"
+  },
+  "target": "0x14360f020",
+  "kind": "call",
+  "names": [
+   "Sess_Get_MaxTimeSinceVehicleEvent"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142a57fe2",
+  "made_on_target": "0x1436115b0",
+  "twin": "made on steam-26566308; the target 0x1436115b0 is KB 0x14360f020: Sess_SafetyCarTether_IsVehicleAttached (0x360e1c0) and Game_CinematicSafetyCar_HideHud (0x3613520) on either side both sit 0x2590 above their KB addresses; the match 0x142a57fe2 is KB 0x142a55c22: Hud_PushProIncidentPointsMessage (0x2a53080) and Game_Input_OnControlSchemeAdded (0x2a60690) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142a57fe2",
+    "target": "0x1436115b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "410ed245c927569920a8e1c62e631d6819112c2e91239d9f43ff42ea5820fff1"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_EmplaceBack_Elem48_Str2SubVec",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142255410",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_Vector_EmplaceBack_Elem48_Str2SubVec(void *vec, void *sub_allocator)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142257010 (RacingPC lab re_groups/_decomp);xref:0x142241600",
+  "notes": "(lib) Vector emplace_back for element 0x30: +0x0 NeStr \"0000\", +0x8 NeStr \"0000\", +0x10 allocator pointer (param_2), +0x18/+0x20/+0x28 empty nested vector. On growth (1.5x) moves old elements, then destroys the old ones including their nested vector of 0x28 elements (4 NeStr each). Context from caller: MyTeam homescreen state groups."
+ },
+ "signature": {
+  "id": "core.vector_emplace_back_elem48_str2_sub_vec",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 D3 48 89 CE 4C 8B 71 10",
+  "match": "0x142255410",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142255410",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vector_EmplaceBack_Elem48_Str2SubVec"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142257010",
+  "made_on_target": "0x142257010",
+  "twin": "made on steam-26566308; the target 0x142257010 is KB 0x142255410: Game_DataGathererPlayers_Update (0x21f3000) and Career_MyTeamSetupVM_ResetStepSelection (0x22684b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142257010",
+    "target": "0x142257010"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "07feaea8a168e4ba30495b44ff806e419b394479fde5a8a1c9d08ade86f6b761"
+  }
+ ]
+}

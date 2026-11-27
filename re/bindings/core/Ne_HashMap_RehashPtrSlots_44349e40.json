@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_RehashPtrSlots_44349e40",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144347870",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_HashMap_RehashPtrSlots_44349e40(void *map, uint64_t newBuckets, char freeOld)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144349e40 (RacingPC lab re_groups/_decomp);xref:0x144179a40",
+  "notes": "(lib) Robin-hood hash map rehash for 8-byte pointer slots: +0x28 slots, +0x30 info bytes, +0x38 count, +0x40 mask, +0x48 max load (80 percent), +0x50 info increment (0x20), +0x54 info shift, +0x20 hash multiplier, +0x18 allocator. Allocates newBuckets*9+8 bytes, reinserts every occupied slot hashing the uint32 key at *slot, then frees the old block or threads it onto the free lists +0x8/+0x10 in 0x28-byte nodes."
+ },
+ "signature": {
+  "id": "core.hash_map_rehash_ptr_slots_44349e40",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 8B 7C 24 30 8B 44 24 3C",
+  "match": "0x144177898",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x144347870",
+  "kind": "call",
+  "names": [
+   "Ne_HashMap_RehashPtrSlots_44349e40"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144179e68",
+  "made_on_target": "0x144349e40",
+  "twin": "made on steam-26566308; the target 0x144349e40 is KB 0x144347870: Ne_Make_StrFromBuffer (0x4339fc0) and Ne_StringMap_EmplaceNode (0x434aff0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144179e68",
+    "target": "0x144349e40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f98cf1e9aac28586e8ceced63ee6a659e142678954d8e93302a31352ea1b21e7"
+  }
+ ]
+}

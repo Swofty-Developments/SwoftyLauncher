@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Element_AddUniqueStr_Recursive",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1442fa530",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Element_AddUniqueStr_Recursive(void *element, void **str, uint8_t replace_first)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442fcb00 (RacingPC lab re_groups/_decomp);xref:0x1442fc140,0x1442fdac0,0x1442fe860",
+  "notes": "Lazily allocates the 0x20-byte string vector at element+0x168 ({allocator, begin, end, cap}) and pushes *str. If it already exists: with replace_first != 0 it assigns the refcounted string to the first slot; with 0 it scans begin..end for an equal string (length bits at +6, pointer / hash / strcmp compare) and only push_backs via Ne_Vector_PushBack_IntrusivePtr when absent (the TLS / stack-trace block before the push is allocator debug tracing). Then calls itself for every child in the vector at element+0x178 (+8..+0x10) with the same arguments. Context from caller: 0x1442fc140 and 0x1442fdac0 call it with 0 and then notify 0x1441fd4f0(uisys vt+0x50, element, element+0x168, 0x597902, 0x1505); Ne_UIElementBase_HandleCommunicationMessage calls it with 1 for the children. Caller 0x1442fc140: sets a string on the element from a message and propagates it; caller 0x1442fdac0: applies a state record (string, colour, timing fields) to the element. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.element_add_unique_str_recursive",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 44 89 C3 48 89 D6",
+  "match": "0x1442fa530",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442fa530",
+  "kind": "func_start",
+  "names": [
+   "Ui_Element_AddUniqueStr_Recursive"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1442fcb00",
+  "made_on_target": "0x1442fcb00",
+  "twin": "made on steam-26566308; the target 0x1442fcb00 is KB 0x1442fa530: Ne_UIMessageSystem_OnMetadataAssetCleanup (0x42dbe90) and Ne_UIElementBase_HandleCommunicationMessage (0x42fe860) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1442fcb00",
+    "target": "0x1442fcb00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "474f9e96de7d6d9dec0d2df3b2f569b13cc900e9ff200d0a2aab9d67c21111fa"
+  }
+ ]
+}

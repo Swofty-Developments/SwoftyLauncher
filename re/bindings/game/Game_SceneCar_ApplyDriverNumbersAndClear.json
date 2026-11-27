@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_SceneCar_ApplyDriverNumbersAndClear",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1428e8cb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_SceneCar_ApplyDriverNumbersAndClear(void *car, void *numbers)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1428eb070 (RacingPC lab re_groups/_decomp);xref:0x142013fb0",
+  "notes": "Copies numbers[0x60] elements of 0x30 bytes (key u32 +0x10, 16 bytes +0x18, two u32 +0x28/+0x2c) into a stack array, calls Game_FrontendSceneComponentCar_SetCarCustomDriverNumbers(car, car+0x1d0, array), then runs each source element's virtual destructor and sets the count to 0."
+ },
+ "signature": {
+  "id": "game.scene_car_apply_driver_numbers_and_clear",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 90 00 00 00 48 89 D6 48 8B 42 60",
+  "match": "0x1428e8cb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428e8cb0",
+  "kind": "func_start",
+  "names": [
+   "Game_SceneCar_ApplyDriverNumbersAndClear"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1428eb070",
+  "made_on_target": "0x1428eb070",
+  "twin": "made on steam-26566308; the target 0x1428eb070 is KB 0x1428e8cb0: Game_FrontendSceneManager_SetCarVisible (0x28eaa90) and Game_FrontendSceneManager_SetupObjectInternal (0x28ee9e0) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1428eb070",
+    "target": "0x1428eb070"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2330d66da218ff73a18e758fc72dc5e36ac8e27a819e236c69c2f8bdbb8e23d7"
+  }
+ ]
+}

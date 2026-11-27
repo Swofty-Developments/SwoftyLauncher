@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_BankAccount_CollectEntryPtrs_List2B8",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140c68e20",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_BankAccount_CollectEntryPtrs_List2B8(void *self, void *outVec, uint32_t ownerId)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140c698e0 (RacingPC lab re_groups/_decomp);xref:0x143739d20",
+  "notes": "Same as 0x140c69750 but walks the second record list at self+0x2B8..+0x2C0: matches id at +0x28, collects pointers to 0x14-byte entries from each 0x1B0 sub-record (+0x40..+0x48) into outVec. Returns outVec. Better context needed: which transaction category this list holds."
+ },
+ "signature": {
+  "id": "career.bank_account_collect_entry_ptrs_list2_b8",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 D6 48 8B B9 10 02 00 00 48 89 3A C5 F8 57 C0 C5 F8 11 42 08 48 C7 42 18 00 00 00 00 48 8B 81 B8 02 00 00",
+  "match": "0x140c68e20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c68e20",
+  "kind": "func_start",
+  "names": [
+   "Career_BankAccount_CollectEntryPtrs_List2B8"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140c698e0",
+  "made_on_target": "0x140c698e0",
+  "twin": "made on steam-26566308; the target 0x140c698e0 is KB 0x140c68e20: Career_Bank_CollectLedgerEntriesInRange (0xc694a0) and Career_Bank_ReadAccount (0xc6de90) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140c698e0",
+    "target": "0x140c698e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2c897ef8b4ab10273beb1a3e9545de7d42c9af2ce283920e3149b6b543621a1e"
+  }
+ ]
+}

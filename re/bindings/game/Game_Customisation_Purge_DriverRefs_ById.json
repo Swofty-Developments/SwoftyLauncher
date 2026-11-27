@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Customisation_Purge_DriverRefs_ById",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1414458c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Customisation_Purge_DriverRefs_ById(void *self, uint32_t packedId)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1414460a0 (RacingPC lab re_groups/_decomp);xref:0x140fe65c0,0x141a22030,0x142057170",
+  "notes": "If id type byte is non-zero: walks list +0x30, and in each node's inner tree (node+0x20) erases every entry whose id (+0x28 byte, +0x2a u16) equals packedId via 0x1414461e0. Then if current id at +0x1b0 matches, asks 0x1414468c0 for a replacement; if its index is 0x3fff builds a driver with 0x141446a60 and Ent_EntrantsSystem_AddDriver(+0x280), else stores the replacement to +0x1b0 when Ent_Get_Driver finds it."
+ },
+ "signature": {
+  "id": "game.customisation_purge_driver_refs_by_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC E0 05 00 00",
+  "match": "0x1414458c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414458c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Customisation_Purge_DriverRefs_ById"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1414460a0",
+  "made_on_target": "0x1414460a0",
+  "twin": "made on steam-26566308; the target 0x1414460a0 is KB 0x1414458c0: Game_DecalGeneration_ReadBackCompressed (0x14387c0) and Ne_FlagMaskSet_SetBit (0x144e040) on either side both sit 0x7e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1414460a0",
+    "target": "0x1414460a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0467b1f5dae115f8f982bd337adc1f2b197d6b3dc943954a388c82f7af0c2b84"
+  }
+ ]
+}

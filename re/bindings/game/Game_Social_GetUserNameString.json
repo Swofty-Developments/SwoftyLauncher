@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Social_GetUserNameString",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1432cc760",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_Social_GetUserNameString(void *self, void *out_str, const char *user_id, uint8_t prefer_override)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1432cecf0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141c36400,0x141df7b70,0x141e01a30",
+  "notes": "Initialises out_str as an empty Ne string (vtable 0x145614eb8, allocator self+0x8). If prefer_override is set it FNV-1a hashes (id+0x18 ^ id+0x20), looks that up in the hash map at self+0x298..0x2c8 and copies the node string (+0x28, len +0x20); a non-empty result is returned. Otherwise it looks the user id up in the map at self+0x248..0x278 (id type byte 3 or 7 special-cased, else Ne_UserId_Equals) and copies the node string (+0x60, len +0x58). Returns out_str (empty if unknown). Callers Game_SocialNotifications_Update, Game_FriendsList_OnGetFriendsDone and Game_FriendsList_SocialHubFriendsTabBaseViewModel copy the 0x40-byte id to the stack, call with 0 or 1 and turn the result into the display name NeStr of a list entry. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.social_get_user_name_string",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 C7 48 89 D6 48 89 CB 48 8B 49 08",
+  "match": "0x1432cc760",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432cc760",
+  "kind": "func_start",
+  "names": [
+   "Game_Social_GetUserNameString"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1432cecf0",
+  "made_on_target": "0x1432cecf0",
+  "twin": "made on steam-26566308; the target 0x1432cecf0 is KB 0x1432cc760: Game_F1osTask_ProcessFriendsReply_Vt145834f90 (0x32cba50) and Game_F1osTask_FinishLocked_PlayerSearch (0x32d0b30) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1432cecf0",
+    "target": "0x1432cecf0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "200234487ef4c5f2939bf18b97733d098fe55752e35d962db4d667a925b937d1"
+  }
+ ]
+}

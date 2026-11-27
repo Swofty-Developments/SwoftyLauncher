@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_MoveAssign_Range_Elem352",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1423ab6c0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_MoveAssign_Range_Elem352(void *first, void *last, void *dest)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1423ad2c0 (RacingPC lab re_groups/_decomp);xref:0x1422c1af0,0x14232cde0",
+  "notes": "Range move-assign of 0x160-byte view-model structs: eight node handles at +0x08..+0xe8 (0x20 apart) via Vm_MoveAssign_NodeHandle, a vector at +0x100..+0x118 of 0xc0-byte elements (six node handles each, released with Vm_Release_Node then swapped or re-allocated depending on allocator equality), then handles at +0x128 and +0x148. Pure container plumbing, not a useful hook."
+ },
+ "signature": {
+  "id": "vm.move_assign_range_elem352",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 54 24 28",
+  "match": "0x1423ab6c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423ab6c0",
+  "kind": "func_start",
+  "names": [
+   "Vm_MoveAssign_Range_Elem352"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1423ad2c0",
+  "made_on_target": "0x1423ad2c0",
+  "twin": "made on steam-26566308; the target 0x1423ad2c0 is KB 0x1423ab6c0: Vm_TeamHqAdvanceItem_ReleaseNodes_3aaca0 (0x23ac8a0) and Vm_ContractRow_Destroy (0x23ae250) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1423ad2c0",
+    "target": "0x1423ad2c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5b0672da72a4f78c5aefdb8a5cf5362ea50a7e93f2b7b82773337d2f6d3990c8"
+  }
+ ]
+}

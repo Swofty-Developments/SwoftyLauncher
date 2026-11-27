@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Check_NamedEntryFlagBitForEntity",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14078da40",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "uint8_t Game_Check_NamedEntryFlagBitForEntity(void *self, uint32_t entity_handle, uint32_t bit)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14078da80 (RacingPC lab re_groups/_decomp);xref:0x143241550",
+  "notes": "Resolves the handle with Sess_ResolveEntityHandle(+0x58) and takes its name string +0x68; scans object list (+0x5d8)->+0x88..+0x90 comparing each object's name (u16 id +0x44 resolved through chunked name table 0x1460c0900, 0x78 per chunk) and returns bit `bit` of the matching object's flags +0x28. Returns 1 when the entity or list is missing or no name matches. Context from caller: ForceDropInSpectator."
+ },
+ "signature": {
+  "id": "game.check_named_entry_flag_bit_for_entity",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 30 44 89 C6",
+  "match": "0x14078da40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14078da40",
+  "kind": "func_start",
+  "names": [
+   "Game_Check_NamedEntryFlagBitForEntity"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14078da80",
+  "made_on_target": "0x14078da80",
+  "twin": "made on steam-26566308; the target 0x14078da80 is KB 0x14078da40: Sess_Entrant_IsTeamDriverMatch (0x78d910) and Game_CareerWizard_StartsInF1 (0x78de10) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14078da80",
+    "target": "0x14078da80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ee6e4e604dc8a1a3828f1b8f429e3e561b6bfd2aaa6742fbeed12809525568f9"
+  }
+ ]
+}

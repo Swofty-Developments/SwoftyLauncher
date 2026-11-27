@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_TileList_ClearItemsBatched",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143839b10",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_TileList_ClearItemsBatched(void *self, char no_event)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14383c0a0 (RacingPC lab re_groups/_decomp);xref:0x143832480,0x143832ab0,0x143832b70,0x14383b950,0x1438350f0",
+  "notes": "Clears bit 0x10 at self+0x11b and self+0xb0, then handles up to self+0x98 items of the list self+0x130..+0x138 starting at cursor self+0xa8: each item id (vt+0x10) is looked up in the hash map at self+0x1d0 and the item is removed (0x144243680(item,1,1) plus Vm_Screen_LogOnScreenDeactivated, clearing self+0x108/+0x110 if they point at it) when bit 8 of +0x11b is set or its map state at +0xc is 1 or 3. If items remain it sets bits 4 and 0x10 and advances the cursor; otherwise it empties the vectors at +0x130, +0x150, +0x170, resets the hash set at +0x1a8 (and the map at +0x1f0 when bit 8), zeroes the cursor, calls 0x14383e440 and raises node event 0x146105588 (bit 8) or 0x146105590 unless no_event. Callers: the node event handler 0x143832480 and the two teardown paths 0x143832ab0/0x143832b70 set bit 8 first (full clear, the latter two with no_event=1); the tick 0x14383b950 calls it again while bit 4 is set to continue the batch. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.tile_list_clear_items_batched",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 88 54 24 2B",
+  "match": "0x143839b10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143839b10",
+  "kind": "func_start",
+  "names": [
+   "Ui_TileList_ClearItemsBatched"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14383c0a0",
+  "made_on_target": "0x14383c0a0",
+  "twin": "made on steam-26566308; the target 0x14383c0a0 is KB 0x143839b10: site_Game_TileListSelect_ChildNext (0x383b5de) and Game_TileList_PushChildSelection_Thunk (0x383d920) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14383c0a0",
+    "target": "0x14383c0a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "381a107c9e4de3bd9e511c12bbb5aa6c43be2ec06eef8edb4eb9e1600c948b55"
+  }
+ ]
+}

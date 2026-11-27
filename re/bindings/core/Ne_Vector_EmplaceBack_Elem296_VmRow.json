@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_EmplaceBack_Elem296_VmRow",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141ff10d0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Vector_EmplaceBack_Elem296_VmRow(void *vec, void *arg, uint8_t *flag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141ff2cd0 (RacingPC lab re_groups/_decomp);xref:0x141ff0620",
+  "notes": "(lib) std::vector emplace_back for 0x128-byte rows of nine linked VM node handles (+0x00..+0x100) plus a byte at +0x120. Constructs the new row with 0x141fefb00(slot, arg, *flag); on growth (1.5x) relinks every handle to the new storage, destroys the old range via 0x14214ccb0 and frees it."
+ },
+ "signature": {
+  "id": "core.vector_emplace_back_elem296_vm_row",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 C3 48 89 D7 48 89 CE 48 8B 49 10",
+  "match": "0x141ff10d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ff10d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vector_EmplaceBack_Elem296_VmRow"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141ff2cd0",
+  "made_on_target": "0x141ff2cd0",
+  "twin": "made on steam-26566308; the target 0x141ff2cd0 is KB 0x141ff10d0: Ui_SponsorLogoBinding_Build (0x1fe42f0) and Game_SponsorLoadout_BuildList (0x1ff3ba0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141ff2cd0",
+    "target": "0x141ff2cd0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4aa377458e831cbdf3b738e2c31827dae49a1c2f54ebb5086d137af20ae57a06"
+  }
+ ]
+}

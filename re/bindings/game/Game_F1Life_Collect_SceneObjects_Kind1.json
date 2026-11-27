@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_F1Life_Collect_SceneObjects_Kind1",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142544390",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_F1Life_Collect_SceneObjects_Kind1(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1425462c0 (RacingPC lab re_groups/_decomp);xref:0x1425445b0",
+  "notes": "Clears vector +0x1a10..+0x1a18, collects objects of kind 1 from registry (+0x48)+0x148 via 0x140378fe0 into a temp vector (allocator +0x10), sorts it with 0x1426b74d0 and 0x1426b7ce0, hands it to 0x1425468f0(self, temp, self+0x1a08) and frees the temp."
+ },
+ "signature": {
+  "id": "game.f1_life_collect_scene_objects_kind1",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 48 89 CF 48 8D B1 08 1A 00 00",
+  "match": "0x142544390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142544390",
+  "kind": "func_start",
+  "names": [
+   "Game_F1Life_Collect_SceneObjects_Kind1"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1425462c0",
+  "made_on_target": "0x1425462c0",
+  "twin": "made on steam-26566308; the target 0x1425462c0 is KB 0x142544390: Game_VoPlaySoundEffectNode_Execute (0x25289b0) and Game_FrontendSceneObject_RespawnAll (0x2549cb0) on either side both sit 0x1f30 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1425462c0",
+    "target": "0x1425462c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "37cdb2a71944c5bfcbd5a8b75fe5e546c6dbcc1eb0d0e4b3f91b4a3bf2e9b4df"
+  }
+ ]
+}

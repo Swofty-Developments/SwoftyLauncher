@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Snd_StreamManager_StartItemById",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140a2a950",
+  "level": "L2",
+  "subsystem": "audio",
+  "proto": "uint32_t Snd_StreamManager_StartItemById(void *mgr, int32_t id, uint8_t prepare)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140a2a9a0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1401facd0,0x140ac9500",
+  "notes": "If mgr+0xc11 is set, locks mgr+0x878 and searches the item vector mgr+0x8b0..0x8b8 for item+0x8c == id; returns 0 if not found or if state item+0x144 is 6, 8, 9 or 10. With prepare!=0 it stamps the clock (mgr+0x8 vtable+0x68) into the main voice (+0x8 -> +0xb0) and the chained voices at item+0x10/+0x18 (+0xb8) and applies a settings block via 0x140bfa0d0 (mode-object component 0x14605d348 +0x2a8, else default 0x146058348/0x14605a348). Then starts the item with 0x140a31d60(mgr,item,mgr+0x868,0), sets state 6, stamps +0xa8, updates mgr+0xba4 and records item+0x98 in the map at mgr+0xba8 keyed by item+0x78; returns the start result. Callers: Game_SkinnedActor_PlayAudioStream (provided audioID, prepare=0; falls back to another path on 0) and Game_TalkingPoints_PlayItem (prepare=1). 0x1401fbb40 holds an inlined prepare=0 copy, not a call. Good hook point for stream starts by id. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "audio.stream_manager_start_item_by_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 80 B9 11 0C 00 00 00",
+  "match": "0x140a2a950",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140a2a950",
+  "kind": "func_start",
+  "names": [
+   "Snd_StreamManager_StartItemById"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140a2a9a0",
+  "made_on_target": "0x140a2a9a0",
+  "twin": "made on steam-26566308; the target 0x140a2a9a0 is KB 0x140a2a950: Sess_Restart_ResetGridLineup (0xa12580) and Game_SpeechSystem_PostLine (0xa30bb0) on either side both sit 0x50 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140a2a9a0",
+    "target": "0x140a2a9a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "92f57a01493325a15b8242ab6115fc695ef50648833d534c5907c4cd5cb8d49a"
+  }
+ ]
+}

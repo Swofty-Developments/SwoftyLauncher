@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_GameTransactionSystem_FindItemById",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142a80290",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_GameTransactionSystem_FindItemById(void *self, void *outSharedPtr, int32_t itemId)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142a82650 (RacingPC lab re_groups/_decomp);xref:0x142e675f0,0x142e690e0",
+  "notes": "Walks the shared_ptr vector +0x28..+0x30 (16-byte elements) and compares the first int of each object with itemId. On a match with a control block returns a ref-counted copy in outSharedPtr; otherwise outSharedPtr is zeroed (an entry without control block also yields null)."
+ },
+ "signature": {
+  "id": "game.game_transaction_system_find_item_by_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 48 89 D6 4C 8B 71 28",
+  "match": "0x142a80290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a80290",
+  "kind": "func_start",
+  "names": [
+   "Game_GameTransactionSystem_FindItemById"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142a82650",
+  "made_on_target": "0x142a82650",
+  "twin": "made on steam-26566308; the target 0x142a82650 is KB 0x142a80290: Game_GameInputModule_ApplyRebindableGameplayActionsToActionMap (0x2a7d950) and Game_CustomisationDecals_DestroySetProxy (0x2a949a0) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142a82650",
+    "target": "0x142a82650"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "45a2c0f2f14f1ddd1dd9406e093069a15a28183dd2339246f339e62e196fbb76"
+  }
+ ]
+}

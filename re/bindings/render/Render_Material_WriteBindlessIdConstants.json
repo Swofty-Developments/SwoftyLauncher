@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Material_WriteBindlessIdConstants",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143c0b9e0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_Material_WriteBindlessIdConstants(void *material, uint8_t use_default)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c0dfb0 (RacingPC lab re_groups/_decomp);xref:0x143c0c6d0,0x143c0bf20",
+  "notes": "Only if +0x1ad set: finds the parameter block with hash 0xF02111DDBE4FE1DC in vector +0x100..+0x108 (0x38 stride), then for each 0x48-byte param (range block+0x20..+0x28) copies size +0x20 bytes into constant data at +0xe8 + offset +0x28. Non-texture params copy inline value +0x2c; texture params (flag +0x40 bit1, type 1) write the default texture bindless index (resource+0x28 -> +0x50 -> +0x160, looked up via +0x18 vtable +8 with key 0x1458c4808) when unresolved or use_default. Marks buffer dirty at (+0x28)+0x2070 and bumps +0x1b0."
+ },
+ "signature": {
+  "id": "render.material_write_bindless_id_constants",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 80 B9 AD 01 00 00 00",
+  "match": "0x143c0b9e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c0b9e0",
+  "kind": "func_start",
+  "names": [
+   "Render_Material_WriteBindlessIdConstants"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c0dfb0",
+  "made_on_target": "0x143c0dfb0",
+  "twin": "made on steam-26566308; the target 0x143c0dfb0 is KB 0x143c0b9e0: Render_Material_CountResourceSlots (0x3c09e60) and Ne_TerrainResource_GetMaterialResourcel (0x3c265a0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c0dfb0",
+    "target": "0x143c0dfb0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e6d928621cf0da068b1ff6b50f45c6aa1ad76dc9cf7de8b1c6c0f0b0cd72b372"
+  }
+ ]
+}

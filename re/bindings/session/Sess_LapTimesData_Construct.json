@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_LapTimesData_Construct",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140987660",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void *Sess_LapTimesData_Construct(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1409876b0 (RacingPC lab re_groups/_decomp);xref:0x142f0ed80,0x142f35470",
+  "notes": "Constructor of the per-car lap times block (about 0x9CB8 bytes), returns self. Builds 200 lap records of 200 bytes at +0x8 with Sess_LapRecord_Construct and writes the lap index into byte 0 of each; zeroes uint16 +0x0 and byte +0x9C48, sets uint16 +0x9CB0 = 0xFFFF. Six obfuscated int32 fields at +0x9C50, +0x9C60, +0x9C70, +0x9C80, +0x9C90, +0x9CA0 each have an 8-byte random key at +8 (two g_Car_ObfRng draws, RNG lazily seeded from QueryPerformanceCounter) and are initialised to the key low dword, i.e. plain value 0; decode as stored XOR key low dword. Good hook for knowing when a car's lap table is created."
+ },
+ "signature": {
+  "id": "session.lap_times_data_construct",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 08 01 00 00 C5 F8 29 B4 24 F0 00 00 00 48 89 CE 4C 8D 71 08",
+  "match": "0x140987660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140987660",
+  "kind": "func_start",
+  "names": [
+   "Sess_LapTimesData_Construct"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1409876b0",
+  "made_on_target": "0x1409876b0",
+  "twin": "made on steam-26566308; the target 0x1409876b0 is KB 0x140987660: Sess_LapRecord_Construct (0x984f70) and Sess_LapRecords_SortByTime (0x98cbc0) on either side both sit 0x50 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1409876b0",
+    "target": "0x1409876b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c904034fb91754e1feca1f670bde15bc199f41875f42a941462de4d815ac156b"
+  }
+ ]
+}

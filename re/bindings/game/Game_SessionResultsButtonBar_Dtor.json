@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_SessionResultsButtonBar_Dtor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141955100",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_SessionResultsButtonBar_Dtor(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1419568e0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141914f40,0x1422a9750,0x1422aa670",
+  "notes": "Destructor of the 0xf0-byte button bar: if bound (+0xe8) releases the selected_button node (+0xd0), destroys the button entry vector (+0xb0..+0xc0) through the allocator at +0xa8 and releases the list node (+0x90); then sets vtable 0x14571c948 and drops the three refcounted strings at +0x78, +0x70, +0x68. Same teardown as the start of Game_SessionResultsButtonBar_BindAndPopulate. Callers: 0x141914f40 is the deleting destructor (calls this, then frees if flag), OnTabActivated and 0x1422aa670 (the view model's deactivate/cleanup) loop it over vm+0x970 with count vm+0xa60. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.session_results_button_bar_dtor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 CE 80 B9 E8 00 00 00 00",
+  "match": "0x141955100",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141955100",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionResultsButtonBar_Dtor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1419568e0",
+  "made_on_target": "0x1419568e0",
+  "twin": "made on steam-26566308; the target 0x1419568e0 is KB 0x141955100: Ne_Std_ThrowVectorSubscriptError (0x1952cb0) and Ui_Play_FacilityStageCutsceneByIndex (0x19707c0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1419568e0",
+    "target": "0x1419568e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f3461e55071a5a4839f9c4a866cc9f95cc6358211e6aa87c0697a8775ab9c1fd"
+  }
+ ]
+}

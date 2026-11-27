@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ent_TeamSetup_ReadNameAndDateTime",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14276f8e0",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "void *Ent_TeamSetup_ReadNameAndDateTime(void *out, void *row, const char *label)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142771c60 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142772120",
+  "notes": "Whole body read. Gdb_Find_RowByLabel(row, child, label); out is an inline string {vt 0x1456156a0, cap 0x200, ptr, chars at +0x18} plus a time at out+0x218. Reads field 'name' of the child row (XOR-decoded with k_Gdb_StringXorKey) into the string, then joins the child row's two 0x100 name parts with '.', finds the 'date_time' sub-row (label 0x145637597), Gdb_Read_DateTimeRowAsTm -> tm, converts with 0x14534d1fc (mktime-like, -1 -> 0) and stores the time at out+0x218. Caller Ent_Parse_TeamSetupRow 0x142772120 calls it with labels first_entry, last_entry, first_win, last_win and copies the name (0x200 bytes) and the time qword into the parsed team record. Context from caller: team history milestones. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "entrants.team_setup_read_name_and_date_time",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 08 00 00 48 89 CE 48 8D 9C 24 80 06 00 00",
+  "match": "0x14276f8e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14276f8e0",
+  "kind": "func_start",
+  "names": [
+   "Ent_TeamSetup_ReadNameAndDateTime"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142771c60",
+  "made_on_target": "0x142771c60",
+  "twin": "made on steam-26566308; the target 0x142771c60 is KB 0x14276f8e0: Game_F1WRankedComponent_Init (0x274a180) and site_Career_TeamDeptEnumStore (0x27765d8) on either side both sit 0x2380 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142771c60",
+    "target": "0x142771c60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a52f3f2f2050d0afbedc93a186dd0cee61e5f495b9ef69841ef055197c872394"
+  }
+ ]
+}

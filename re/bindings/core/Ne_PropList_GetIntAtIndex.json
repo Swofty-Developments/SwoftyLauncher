@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_PropList_GetIntAtIndex",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d45150",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_PropList_GetIntAtIndex(void *list, uint64_t index, uint32_t *out)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d45cd0 (RacingPC lab re_groups/_decomp);xref:0x141072f10,0x142a6bee0",
+  "notes": "Reads element index from a property list (count uint16 at +0x10, pointer array at +0x08), checks the element type descriptor equals 0x14612bf38 (32-bit int) and copies the value to out. Returns 0, or error 0x22 (index out of range), 0x57 (null entry), 0x58 (type mismatch), each logged to the TLS errno trace ring."
+ },
+ "signature": {
+  "id": "core.prop_list_get_int_at_index",
+  "section": ".xtls",
+  "pattern": "C5 F8 77 E8 ?? ?? ?? ?? 89 C3 85 C0",
+  "match": "0x142a6a115",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x140d45150",
+  "kind": "call",
+  "names": [
+   "Ne_PropList_GetIntAtIndex"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142a6c4d5",
+  "made_on_target": "0x140d45cd0",
+  "twin": "made on steam-26566308; the target 0x140d45cd0 is KB 0x140d45150: Ne_Vector24_PushBackMove (0xd34330) and Career_DeptEvent_CheckStoredUpgradeForDriver (0xd6d5c0) on either side both sit 0xb80 above their KB addresses; the match 0x142a6c4d5 is KB 0x142a6a115: Game_Input_OnControlSchemeAdded (0x2a60690) and Game_GameInputModule_ApplyRebindableGameplayActionsToActionMap (0x2a7d950) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142a6c4d5",
+    "target": "0x140d45cd0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d8e6d30e9688cc7810a5989be067dca9ca660f10dbd79aaca2e671eaccbe0e53"
+  }
+ ]
+}

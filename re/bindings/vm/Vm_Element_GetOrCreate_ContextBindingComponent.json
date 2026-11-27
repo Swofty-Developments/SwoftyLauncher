@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_Element_GetOrCreate_ContextBindingComponent",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1442079d0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_Element_GetOrCreate_ContextBindingComponent(void *element)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144209fa0 (RacingPC lab re_groups/_decomp);xref:0x1437f46a0,0x143815d80,0x1438239c0",
+  "notes": "Scans the component vector element+0x30..+0x38 for a component whose type chain contains 0x146ca32e0 and returns it. Otherwise allocates 0xa0 bytes from the UI-system allocator, constructs it (vt 0x14588d190, +0x18 = empty hashed-name ptr 0x1456155b2, +0x48 = -1), stores the element id (vt+0x10) at +0x94 and the +0x40 id of the 0x146ca5498-type component at +0x98, push_backs it into the vector (grow x1.5, allocator 0x1461089a8) and returns it. Context from caller: the result is passed straight to 0x14417ed20 (set path) or gets +0x48 written and flag 4 set at +0xa followed by 0x14417f410. Caller 0x143815d80: OSD timer-pill / race-flags panel setup; caller 0x1438239c0: scroll/list entry update. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.element_get_or_create_context_binding_component",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 89 70 48 80 48 0A 04",
+  "match": "0x1437f2f68",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1442079d0",
+  "kind": "call",
+  "names": [
+   "Vm_Element_GetOrCreate_ContextBindingComponent"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1437f54f8",
+  "made_on_target": "0x144209fa0",
+  "twin": "made on steam-26566308; the target 0x144209fa0 is KB 0x1442079d0: Ne_Time_BreakDownMicroseconds (0x41f15f0) and Vm_Node_Clear (0x420f330) on either side both sit 0x25d0 above their KB addresses; the match 0x1437f54f8 is KB 0x1437f2f68: Game_TrackSurface_DryLineStrength (0x37cff90) and site_Game_TileListSelect_ChildStep (0x383b560) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1437f54f8",
+    "target": "0x144209fa0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8b6f3a77fcfae03692e561fa4ff6c915b1cbebd5b566bb1d7d74ee9ba04fd09b"
+  }
+ ]
+}

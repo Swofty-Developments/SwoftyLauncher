@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Context_CopyTextureRegion",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143a05e20",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "uint64_t Render_Gfx2Context_CopyTextureRegion(void *ctx, void *texA, uint32_t a3, uint32_t a4, uint32_t a5, uint32_t a6, uint32_t a7, void *texB, uint32_t a9, uint32_t a10, uint32_t a11, uint32_t a12, uint32_t a13, uint32_t width, uint32_t height, uint32_t depth)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a083f0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143a08620,0x143c3d5a0,0x143c9d500",
+  "notes": "Resolves the native resource of both textures for the current frame index (tex+0x1c0+idx*0x20, fallback tex+0x200[ctx+0x16f0]*0x30+0x18+idx*8); returns 0xe if either is missing. Adds both resource records (tex+0x2a8[idx], if +0x10 set) to the command list's used-resource set, calls cmd vt+0x188, and when cmd+0x20 <= 2 forwards all 16 arguments to 0x143a07de0 with the native list cmd+0x78; returns its result. Callers: 0x143a08620 copies every mip/slice of one texture into another (extent from the source mip size); Render_CloudGenPass_Execute copies slices inside pass textures +0x468/+0x470; 0x143c9d500 (pass execute) copies sub-rectangles between its targets. texA is most likely the destination (the argument order of callers), not proven in this body. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.gfx2_context_copy_texture_region",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 44 89 CE",
+  "match": "0x143a05e20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a05e20",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Context_CopyTextureRegion"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143a083f0",
+  "made_on_target": "0x143a083f0",
+  "twin": "made on steam-26566308; the target 0x143a083f0 is KB 0x143a05e20: Ne_WindowWin_SetOnMinimised (0x39ffe20) and Ne_Gfx2CommandQueue_PushProfileMarker (0x3a0a2c0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a083f0",
+    "target": "0x143a083f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f6ec5ac165346dbbb17d3345f5af3f1628bba5830685f1bece0eb5f8557130b7"
+  }
+ ]
+}

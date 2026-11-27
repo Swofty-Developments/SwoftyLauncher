@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Update_EpisodeTimerNodes",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14189f710",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Update_EpisodeTimerNodes(void *ctx, void *node_holder, void *career, int32_t state, bool show_timer, uint32_t episode_index)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1418a0ef0 (RacingPC lab re_groups/_decomp);xref:0x14173b4b0,0x14173c620,0x1418a2690",
+  "notes": "Under the node at node_holder+8 creates/resolves a token node (0x145613fa1), strings episode_timer and extra_text (default lng_left) and bools show_timer (= show_timer arg), tile_show_icon and table_show_timer_text. If career is null it stops there. state 2 with a career save found (Career_Find_CareerSaveByPredicate on ctx[1]): token from gamedb challenge_career / state_colours_0 field one_shot, extra_text replaced, icon and timer text false, then for save slot episode_index it sets show_timer true if any sub item (stride 0x18, byte +0xc) is unset, else formats a localised text. Other states: token from g_Gdb_Database key 0x10d41be9a7a75da3; state 1 sets icon and timer text true; state 0 sets both false and writes lng_cc_open_date formatted from the time at (ctx[0]+0x68 episode table +0x5708, stride 0x80, +0x58) into episode_timer. Callers 0x14173b4b0 (challenge career item update) and FeTile_ChallengeCareerItem_Populate pass state 1; 0x1418a2690 (builds the full episode tile) passes the computed state. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.update_episode_timer_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 03 00 00 C5 F8 29 B4 24 30 03 00 00 44 89 CF 4C 89 C3",
+  "match": "0x14189f710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14189f710",
+  "kind": "func_start",
+  "names": [
+   "Ui_Update_EpisodeTimerNodes"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1418a0ef0",
+  "made_on_target": "0x1418a0ef0",
+  "twin": "made on steam-26566308; the target 0x1418a0ef0 is KB 0x14189f710: site_Career_RnDPerfGotoName (0x18965e3) and Career_RenownForm_BuildRenownText (0x18aea30) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1418a0ef0",
+    "target": "0x1418a0ef0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f183948f7bd296954c80d6b2f053b3028e302a1e4e4d9aa11391760dcbd48190"
+  }
+ ]
+}

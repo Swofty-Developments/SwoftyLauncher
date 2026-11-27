@@ -14,6 +14,14 @@ impl Opener {
 
 pub(super) enum View {}
 
+pub(super) enum Closing {}
+
+impl Closing {
+    pub(super) fn finish(self) {
+        match self {}
+    }
+}
+
 pub(super) enum Backend {}
 
 impl Backend {
@@ -29,7 +37,7 @@ impl Backend {
         match *self {}
     }
 
-    pub(super) fn close(&mut self, _: Unit) {
+    pub(super) fn close(&mut self, _: Unit) -> Option<Closing> {
         match *self {}
     }
 

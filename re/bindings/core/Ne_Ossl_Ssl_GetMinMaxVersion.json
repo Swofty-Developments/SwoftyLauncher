@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_Ssl_GetMinMaxVersion",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144f27d50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int Ne_Ossl_Ssl_GetMinMaxVersion(void *ssl, int *min_version, int *max_version, int *real_max)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144f2a710 (RacingPC lab re_groups/_decomp);xref:0x144f298b0",
+  "notes": "OpenSSL ssl_get_min_max_version. For version-flexible methods (0x10000 TLS, 0x1ffff DTLS) walks the version table, skipping versions below the configured minimum (+0x9ec), failing the security check, above max (+0x9f0) or disabled by options (+0x9e0); writes min/max and returns 0 or 0xbf (no protocols available). Fixed methods return their own version."
+ },
+ "signature": {
+  "id": "core.ossl_ssl_get_min_max_version",
+  "section": ".xtls",
+  "pattern": "4C 89 44 24 18 48 89 54 24 10 57 41 55 41 56 B8 50 00 00 00",
+  "match": "0x144f27d50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144f27d50",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_Ssl_GetMinMaxVersion"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144f2a710",
+  "made_on_target": "0x144f2a710",
+  "twin": "made on steam-26566308; the target 0x144f2a710 is KB 0x144f27d50: Ne_Crt_ReportGsFailure (0x4d94e1c) and Ne_Crt_Strstr (0x532d4b8) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144f2a710",
+    "target": "0x144f2a710"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e4d2211a79b97feaf922e4ae913f2ff4f5ea50101fd1ffce6cc677cfc1576788"
+  }
+ ]
+}

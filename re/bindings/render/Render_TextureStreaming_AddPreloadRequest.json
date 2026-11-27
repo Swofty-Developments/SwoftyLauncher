@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_TextureStreaming_AddPreloadRequest",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143bf3a90",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_TextureStreaming_AddPreloadRequest(void *streamer, float *tex_entry, uint64_t unused, float priority, uint32_t hint_bits, float scale)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143bf6060 (RacingPC lab re_groups/_decomp);xref:0x143d42b80,0x143d42890",
+  "notes": "Updates a streamed texture entry: merges/clears preload hint bits in byte +0x34 (bits 0..5, clear mask in hint_bits>>6), computes preload density from entry[8] times a per-hint factor (table 0x1458c3660), stores it in entry[10], scale in entry[11], raises density entry[2], priority entry[1] and deficit entry[0], sets atomic dirty bit at +0x24 and if newly dirty appends the entry to streamer vector +0x148 under SRW lock +0x590. Logs \"PRELOAD REQUEST\"/\"PRELOAD RELEASE\" on channels TEXTURE_STREAMING_PRELOAD_REQUESTS / _CLEAR_REQUESTS. Hook to force texture preloading."
+ },
+ "signature": {
+  "id": "render.texture_streaming_add_preload_request",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 78 29 8C 24 B0 00 00 00 C5 78 29 84 24 A0 00 00 00 C5 F8 29 BC 24 90 00 00 00 C5 F8 29 B4 24 80 00 00 00 48 85 D2",
+  "match": "0x143bf3a90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bf3a90",
+  "kind": "func_start",
+  "names": [
+   "Render_TextureStreaming_AddPreloadRequest"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143bf6060",
+  "made_on_target": "0x143bf6060",
+  "twin": "made on steam-26566308; the target 0x143bf6060 is KB 0x143bf3a90: Render_Texture_CreateFromResource (0x3bf0140) and Ne_PoolList_DestroyNodes (0x3bff4a0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143bf6060",
+    "target": "0x143bf6060"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c4b1e998147c4fa9b066aea256154a94e8849416ab8d23cd00e4ad8086abe52f"
+  }
+ ]
+}

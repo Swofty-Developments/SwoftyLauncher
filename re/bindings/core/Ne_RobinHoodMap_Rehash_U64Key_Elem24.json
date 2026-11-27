@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_Rehash_U64Key_Elem24",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143efac10",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodMap_Rehash_U64Key_Elem24(void *map, uint64_t newBuckets)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143efd1e0 (RacingPC lab re_groups/_decomp)",
+  "notes": "(lib) robin_hood flat-map rehash for 0x18-byte elements keyed by the first uint64 (times multiplier at +0x10): allocs 0x19 bytes per slot plus 8, reinserts all old entries with robin-hood shifting, frees the old table unless it is the inline sentinel at map+0x30."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_rehash_u64_key_elem24",
+  "section": ".xtls",
+  "pattern": "4C 89 E1 E8 ?? ?? ?? ?? 48 89 EB FF C3",
+  "match": "0x143d3c3f6",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x143efac10",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_Rehash_U64Key_Elem24"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143d3e9c6",
+  "made_on_target": "0x143efd1e0",
+  "twin": "made on steam-26566308; the target 0x143efd1e0 is KB 0x143efac10: Ne_HashMap_FatalStub_ModelMaterial (0x3efa950) and Render_BackBuffer_CopyToCpu (0x3f0c1e0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143d3e9c6",
+    "target": "0x143efd1e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5a4a6be1e13fbb33044d51d08fcea3ecd45e4a90007f0dc35760b323cfc60aed"
+  }
+ ]
+}

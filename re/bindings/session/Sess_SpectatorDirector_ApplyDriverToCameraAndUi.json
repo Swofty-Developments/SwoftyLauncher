@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_SpectatorDirector_ApplyDriverToCameraAndUi",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142e1a270",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_SpectatorDirector_ApplyDriverToCameraAndUi(void *self, uint32_t driver)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142e1c800 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142e1b360,0x142e1c2e0",
+  "notes": "Finds a named camera (string 0x14565dc9e) in the collection at (self+0x20)+0x38+0x70, gathers its two components and calls Game_RacingCameraArbitrator_RequiresCrossfade for view index self+0x140, zeroes the (self+0x30)+0x80[view] slot and clears bit 8 of (self+0x30)+0x54. Then, if the current driver byte self+0xd6 is in range, takes the driver's UI node from (self+0x38)+0x170 tables (+0x3d8/+0x3f8) and writes it with Ne_Property_SetUIDBRefIfChanged into the property at +0xa30 (view 0) or +0xa50 (other view), storing the driver index at +0xb6c or +0xb70. Callers: Sess_SpectatorDirector_Update when driver changes with camera mode 0, and Sess_SpectatorDirector_SetCurrent in its camera == 0 branch. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.spectator_director_apply_driver_to_camera_and_ui",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 89 D3 48 89 CE 4C 8B 71 20",
+  "match": "0x142e1a270",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e1a270",
+  "kind": "func_start",
+  "names": [
+   "Sess_SpectatorDirector_ApplyDriverToCameraAndUi"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142e1c800",
+  "made_on_target": "0x142e1c800",
+  "twin": "made on steam-26566308; the target 0x142e1c800 is KB 0x142e1a270: Sess_SpectatorDirector_Update (0x2e1b360) and Game_UIThumbnailSystem_FindDriverCustomisationWill (0x2e32ff0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142e1c800",
+    "target": "0x142e1c800"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a78a3be15423f0340627efb98ba436c0f28311b514490057595797604bda14e5"
+  }
+ ]
+}

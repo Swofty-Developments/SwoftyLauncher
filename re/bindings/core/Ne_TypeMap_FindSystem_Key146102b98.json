@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_TypeMap_FindSystem_Key146102b98",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140606520",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_TypeMap_FindSystem_Key146102b98(void *map)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140606560 (RacingPC lab re_groups/_decomp);xref:0x14148ab00,0x141d5f510",
+  "notes": "Calls Ne_RobinHoodMap_U64_FindIndex(map, &key) with the fixed type key 0x146102b98, indexes the 0x10-byte entry array at map+0x18 and returns entry+8 or 0 when the slot equals the end pointer map+0x20. Typed service-locator getter used by Game_HudVM_ResolveSystems and Game_Register_DriverSuitScreens."
+ },
+ "signature": {
+  "id": "core.type_map_find_system_key146102b98",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 E8 ?? ?? ?? ?? 48 C1 E0 04 48 03 46 18 48 3B 46 20 74 06 48 8B 40 08 EB 02 31 C0 48 83 C4 30 5E C3 CC CC CC CC CC CC E9 ?? ?? ?? ?? 0F 84",
+  "match": "0x140606520",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140606520",
+  "kind": "func_start",
+  "names": [
+   "Ne_TypeMap_FindSystem_Key146102b98"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140606560",
+  "made_on_target": "0x140606560",
+  "twin": "made on steam-26566308; the target 0x140606560 is KB 0x140606520: Ai_Create_VehicleController (0x6042c0) and Ai_Eval_ClampedTestSpeed (0x6068e0) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140606560",
+    "target": "0x140606560"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "66c3a47615a44d1f2e4812b7c9bdba03c937bcebdab6f44a9caac4e63da874ec"
+  }
+ ]
+}

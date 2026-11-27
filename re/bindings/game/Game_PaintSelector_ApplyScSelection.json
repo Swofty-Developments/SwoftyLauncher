@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_PaintSelector_ApplyScSelection",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1416bf080",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_PaintSelector_ApplyScSelection(void *selector, void *source)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1416c0670 (RacingPC lab re_groups/_decomp);xref:0x14207d920,0x14208fda0",
+  "notes": "Finds the child index of the selection node at +0x3c0 in the list at +0x3a0 (idxA) and of the selection at +0x88 in the list at +0xb8 (idxB), reads u32 source+0x230[idxA] (vector +0x230..+0x238, default 0xffff0000 when out of range) and calls 0x1416c0830(selector, idxB, value). No call statement seen in the listed callers: 0x141a4c860, 0x142003790 and 0x142004ab0 contain this body inline (return address 0x1416c0817), i.e. shared tail code. Context from caller: 0x141a4c860 runs it for command hash 0xd72227f6 (-0x28ddd80a); 0xffff0000 looks like an empty packed key. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.paint_selector_apply_sc_selection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 30 48 89 D7 48 89 CE 48 C7 44 24 28 00 00 00 00 48 8B 81 C0 03 00 00",
+  "match": "0x1416bf080",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416bf080",
+  "kind": "func_start",
+  "names": [
+   "Game_PaintSelector_ApplyScSelection"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1416c0670",
+  "made_on_target": "0x1416c0670",
+  "twin": "made on steam-26566308; the target 0x1416c0670 is KB 0x1416bf080: Ui_Rnd_BuildGotoDepartmentButtonA (0x16b82c0) and Game_MyTeamCarCustomisation_BuildPreviewState (0x16c8140) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1416c0670",
+    "target": "0x1416c0670"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "060585d8747adcd606d2b19cf6f06be9a15d643211035b7548db36e0be819785"
+  }
+ ]
+}

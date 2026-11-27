@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_TryEmplace_U64Key_U32Zero",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143f0f980",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_HashMap_TryEmplace_U64Key_U32Zero(void *map, void *outPair, const uint64_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143f11f50 (RacingPC lab re_groups/_decomp);xref:0x143e88320",
+  "notes": "(lib) MSVC unordered_map style try_emplace: FNV-1a over the 8 key bytes, bucket array +0x28, mask +0x40, size +0x18, max load factor float at +0x0; allocates a 0x20 node (key +0x10, u32 value +0x18 = 0), rehashes when over load. Writes (node, inserted) to outPair."
+ },
+ "signature": {
+  "id": "core.hash_map_try_emplace_u64_key_u32_zero",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 84 24 30 01 00 00 C7 40 18 00 00 00 00",
+  "match": "0x143e88729",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x143f0f980",
+  "kind": "call",
+  "names": [
+   "Ne_HashMap_TryEmplace_U64Key_U32Zero"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143e8acf9",
+  "made_on_target": "0x143f11f50",
+  "twin": "made on steam-26566308; the target 0x143f11f50 is KB 0x143f0f980: Render_BackBuffer_CopyToCpu (0x3f0c1e0) and Ne_Sort_Introsort_Pair16_A (0x3f131e0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143e8acf9",
+    "target": "0x143f11f50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "50f267d2157cf7d0d54cd15bd0ed6d16883e5cfa6bac99c6d7890c7607d73ef7"
+  }
+ ]
+}

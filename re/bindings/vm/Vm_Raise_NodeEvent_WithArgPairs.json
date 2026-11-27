@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Raise_NodeEvent_WithArgPairs",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144204f70",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Raise_NodeEvent_WithArgPairs(void *el, uint32_t *eventId, void *key1, void *val1, void *key2, void *val2)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144207540 (RacingPC lab re_groups/_decomp);xref:0x1442301a0,0x144231b00",
+  "notes": "Whole body read: finds the component of type 0x146ca6820 in el+0x30..+0x38, scans its handler list (component-0x18..-0x10) for the entry whose +0x28 equals *eventId, and for every target in entry +0x10..+0x18 calls 0x144382b00(target,key1,val1) and 0x144382b00(target,key2,val2); then always calls Vm_Raise_NodeEvent(g_Vm_UiSystem->vf+0x48()+0x230, el, eventId, 0, 0). The decompile shows the list scan starting at the second entry (possible decompiler artifact). Callers: 0x1442301a0 Vm_Unk_14422dbd0 passes event 0x146ca3fa0 or 0x146ca3fac with two uint args; 0x144231b00 Vm_UiControllerPrompt_Update passes a hashed event id (0x7c97d2e2, 0xc28afa9b, 0x1306048a ...) with a pointer and a uint arg. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.raise_node_event_with_arg_pairs",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 4C 24 28 48 89 54 24 30 48 8B 69 30",
+  "match": "0x144204f70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144204f70",
+  "kind": "func_start",
+  "names": [
+   "Vm_Raise_NodeEvent_WithArgPairs"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144207540",
+  "made_on_target": "0x144207540",
+  "twin": "made on steam-26566308; the target 0x144207540 is KB 0x144204f70: Ne_Time_BreakDownMicroseconds (0x41f15f0) and Vm_Node_Clear (0x420f330) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144207540",
+    "target": "0x144207540"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5b6c29ffcb61313eca9c78e3bedefb19fd4167f7e858c9a46010813af17c4513"
+  }
+ ]
+}

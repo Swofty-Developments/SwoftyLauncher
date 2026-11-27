@@ -396,14 +396,14 @@ The parts:
 | `replay` | `art/screens/theatre/replay_highlights.idf` | `elements_null`, all but `replay_interface` | `replays_and_highlights` in `screens/replays_and_highlights.ui` |
 | `spectator` | `art/osd/components/spectator_mode/spec_driver_position_table.idf` and `art/osd/screens/spectator_mode_2.idf` | `Scene Root`; `Scene Root`, `session_timer` only | `hud_spectator_2.content` in `screens/hud_spectator_2.ui`, through `spectator_mode_2 > driver_position_table` and `spectator_mode_2` |
 | `lap_counter` | `art/osd/components/lap_counter/lap_counter.idf` | `Scene Root` | `hud_lap_counter.osd_visibility_option` |
-| `flag_box` | `art/osd/components/message_system/race_condition_flag_message.idf` | `boundless` | `hud_left_notification_dynamic.osd_visibility_option.left_notification.left_message` and its `_p2` twin |
-| `notifications` | `art/osd/components/message_system/message_system.idf` | `Scene Root` | `hud_notifications_dynamic.osd_visibility_option.hud_notifications_dynamic` and its `_p2` twin |
+| `flag_box` | `art/osd/components/message_system/race_condition_flag_message.idf` | `boundless` | `hud_left_notification_dynamic.osd_visibility_option.left_notification.left_message` and its `_p2` twin; spectator `hud_spectator_2.content` through `spectator_mode_2 > race_condition_flag_message` |
+| `notifications` | `art/osd/components/message_system/message_system.idf` and `art/osd/components/spectator_mode/spec_race_control_message.idf` | `Scene Root`; `Scene Root` | `hud_notifications_dynamic.osd_visibility_option.hud_notifications_dynamic` and its `_p2` twin; spectator `hud_spectator_2.content` through `spectator_mode_2 > race_control_message` |
 | `session_timer` | `art/osd/components/session_timer/q_session_timer.idf` | `boundless` | `hud_session_timer_dynamic.session_timer` |
-| `minimap` | `art/osd/components/minimap/minimap_combined.idf` | `Scene Root` | `hud_dynamic_minimap.osd_visibility_option.map` |
+| `minimap` | `art/osd/components/minimap/minimap_combined.idf`, `art/osd/components/minimap/minimap.idf` and `art/osd/components/full_track_map/full_track_map.idf` | `Scene Root`; `Scene Root`; `Scene Root` | `hud_dynamic_minimap.osd_visibility_option.map`; spectator `hud_spectator_2.content` through `spectator_mode_2 > mini_map` and `spectator_mode_2 > track_map` |
 
-Scenes are `eaid://ui_package/…` paths; the dials' and the standings' template is `templates/hud_dynamic_templates.ui`. The dial parts hide the dial in the race HUD and the spectator HUD; the spectator screen's own minimap (`mini_map`, `track_map` in `spectator_mode_2.idf`) is not a part.
+Scenes are `eaid://ui_package/…` paths; the dials' and the standings' template is `templates/hud_dynamic_templates.ui`. The dial, `flag_box`, `notifications` and `minimap` parts hide the part in the race HUD and the spectator HUD, the spectator screen's race control banner and its minimap and full track map among them. The minimap's and the full track map's scenes are also inside `minimap_combined.idf`; the race HUD binds only the null of `minimap_combined.idf`, so the nulls inside them stay at their default there and show.
 
-For each part the composer puts one null `<prefix>_yield` inside the element of the table and moves that element's children into it, and adds a group `<prefix>_yield_<part>` under each template node with one node `v_yield` (`v_yield_1` for a part's second scene) whose `visible` is NOT the leaf, default true:
+For each part the composer puts one null `<prefix>_yield` inside the element of the table and moves that element's children into it, and adds a group `<prefix>_yield_<part>` under each template node with one node `v_yield` (`v_yield_1`, `v_yield_2` … for a part's further scenes) whose `visible` is NOT the leaf, default true:
 
 ```text
 dial_complete.idf

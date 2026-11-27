@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_TrackSelectionVm_UpdateRoundToggleFlags",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141c31540",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_TrackSelectionVm_UpdateRoundToggleFlags(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141c33140 (RacingPC lab re_groups/_decomp);xref:0x141c329c0",
+  "notes": "Reads uint \"round_number\" from the node at (self+0x270)+0x68, indexes the per-round array at (self+0x270)+0x28 (stride 0xa0) and reads the bool property at entry+0x88. If true writes bool false to (self+0x270)+0xe8 and true to +0x108; otherwise true to +0xe8 and false to +0x108 (Vm_NodeSet_Bool). Looks like add/remove button visibility for the highlighted round."
+ },
+ "signature": {
+  "id": "ui.track_selection_vm_update_round_toggle_flags",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8B 81 70 02 00 00",
+  "match": "0x141c31540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c31540",
+  "kind": "func_start",
+  "names": [
+   "Ui_TrackSelectionVm_UpdateRoundToggleFlags"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141c33140",
+  "made_on_target": "0x141c33140",
+  "twin": "made on steam-26566308; the target 0x141c33140 is KB 0x141c31540: Sess_SpectatorHud_Show (0x1c263a0) and Game_SocialNotifications_Update (0x1c36400) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141c33140",
+    "target": "0x141c33140"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cc12e65b8d3a4361f532424bed0a479293768a65e0952f1d5e9014b25ffd325a"
+  }
+ ]
+}

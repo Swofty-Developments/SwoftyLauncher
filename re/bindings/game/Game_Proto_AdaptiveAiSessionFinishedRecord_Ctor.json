@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_Proto_AdaptiveAiSessionFinishedRecord_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1403e1810",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_Proto_AdaptiveAiSessionFinishedRecord_Ctor(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1403e1850 (RacingPC lab re_groups/_decomp);xref:0x140774f30",
+  "notes": "Builds a temporary std::string \"f1.proto.AdaptiveAISessionFinishedRecord\", passes it to the proto message base ctor (0x144937b50), frees the temp, sets vtable 0x1456215d0 and zeroes fields +0x48..+0x61 and +0x64. cxx=f1.proto.AdaptiveAISessionFinishedRecord. Fields of this record are the adaptive AI telemetry payload. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "game.proto_adaptive_ai_session_finished_record_ctor",
+  "section": ".xtls",
+  "pattern": "48 8D 54 24 30 48 89 C1 E8 ?? ?? ?? ?? 48 8B 86 18 0A 02 00",
+  "match": "0x1407754f4",
+  "anchor": "0x9",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x8"
+  },
+  "target": "0x1403e1810",
+  "kind": "call",
+  "names": [
+   "Game_Proto_AdaptiveAiSessionFinishedRecord_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140775534",
+  "made_on_target": "0x1403e1850",
+  "twin": "made on steam-26566308; the target 0x1403e1850 is KB 0x1403e1810: Game_Analytics_WriteBaseCtx (0x3dcce0) and Ai_Write_AdaptiveAiSessionRecord (0x3e1a50) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140775534",
+    "target": "0x1403e1850"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1cc5e4390961b257fc2da55c8250ffa050a3de96d19b80dd3a8a8dd48596f29f"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_SessionDirectorLapTimesTable_Teardown",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1419054b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_SessionDirectorLapTimesTable_Teardown(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141906c90 (RacingPC lab re_groups/_decomp);xref:0x141d55c80,0x1422a6470,0x1422a6fe0",
+  "notes": "If built flag +0x168 set, FUN_14192b820(self+0x88) destroys the table bindings and clears the flag; then releases the two VM node handles at +0x68 and +0x48 (unlink + Vm_Release_Node). Pairs with 0x141907300 (same +0x168/+0x88 fields). Note a caller is a Hud lap-recorded subscriber, so the struct may be shared."
+ },
+ "signature": {
+  "id": "game.session_director_lap_times_table_teardown",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 80 B9 68 01 00 00 00",
+  "match": "0x1419054b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419054b0",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionDirectorLapTimesTable_Teardown"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141906c90",
+  "made_on_target": "0x141906c90",
+  "twin": "made on steam-26566308; the target 0x141906c90 is KB 0x1419054b0: Ui_Purchase_SelectTierButton (0x18e10c0) and Ui_Rnd_SetUpgradeRewards (0x1921af0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141906c90",
+    "target": "0x141906c90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e07afc27bcf5fd1a46188a7fc078b0ab174205b06d602f6fb085575776219592"
+  }
+ ]
+}

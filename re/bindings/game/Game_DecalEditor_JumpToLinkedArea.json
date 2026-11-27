@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_DecalEditor_JumpToLinkedArea",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141ffd1b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_DecalEditor_JumpToLinkedArea(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141ffedb0 (RacingPC lab re_groups/_decomp);xref:0x141fffaf0",
+  "notes": "If vm+0x420 is set: gets the current area view (0x141ff8ca0), finds its area id (+0x80) in the customisation area table ([vm+0x290]+0x98..+0xa0, stride 0x108, id at +0xc) and reads the linked area id at +0x40 (-1 = none); looks that id up in the view vector vm+0x408..+0x410 (stride 0x128, id +0x80) and moves the selection by (index - vm+0x550) via 0x141ff8920; then scans that view's slots (+0x110..+0x118, stride 0x260, weak ptr +0x250/+0x258) for the first empty one and sets the view's selected-slot property (+0x48) to the node of the slot just before it (Ne_Property_SetUIDBRefIfChanged). Return value is not meaningful. Caller Game_DecalEditor_DispatchSlotAction calls it in the mirror branch after Game_CustomisationDecals_MirrorEditorDecalNode + WriteBackEditorDecals + 0x141fff1e0, only when feature flag bits (byte3 0x80 / byte4 0x01) are not both set, so the UI follows the mirrored decal to the opposite area. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.decal_editor_jump_to_linked_area",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 80 B9 20 04 00 00 00",
+  "match": "0x141ffd1b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ffd1b0",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalEditor_JumpToLinkedArea"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141ffedb0",
+  "made_on_target": "0x141ffedb0",
+  "twin": "made on steam-26566308; the target 0x141ffedb0 is KB 0x141ffd1b0: Ui_MyTeamDecalEditor_Page (0x1ff64f0) and Game_CarDecals_BuildList (0x2001470) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141ffedb0",
+    "target": "0x141ffedb0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b17c295acce31533a9d4951bb75cd0f355ece8227232887f34dfc0e589ab92c1"
+  }
+ ]
+}

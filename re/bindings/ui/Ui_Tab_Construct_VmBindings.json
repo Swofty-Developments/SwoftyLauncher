@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Tab_Construct_VmBindings",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14188f020",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Tab_Construct_VmBindings(void *self, void *parent, void *index_arg, const char *display_name)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141890800 (RacingPC lab re_groups/_decomp);xref:0x1417efb70",
+  "notes": "Builds a tab view-model entry: child holder +0x00 (0x1442a3de0, name 0x145715298 under parent+8), list item holder +0x20 (0x144241240 with index_arg), child holder +0x40 (name 0x145611a7d), then bindings on the +0x20 node: current_option (node ref) +0x60, is_active=0 +0x80, is_visible=1 +0xa0, is_enabled=1 +0xc0, has_new=0 +0xe0, display_name string +0x100. Returns self. Caller Ui_Tabs_AddTab is the owning class."
+ },
+ "signature": {
+  "id": "ui.tab_construct_vm_bindings",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 C5 F8 29 74 24 50 4C 89 CF 4C 89 C3 48 89 CE 48 8B 42 08",
+  "match": "0x14188f020",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14188f020",
+  "kind": "func_start",
+  "names": [
+   "Ui_Tab_Construct_VmBindings"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141890800",
+  "made_on_target": "0x141890800",
+  "twin": "made on steam-26566308; the target 0x141890800 is KB 0x14188f020: site_Game_TeamSelect_NumberResult (0x187b4d2) and Game_Refresh_PerformanceComparison (0x1892170) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141890800",
+    "target": "0x141890800"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f3ed7a2f248ac78cf7b156d20b21dea3edb2b0731ef4b0199e14380f88e8fc12"
+  }
+ ]
+}

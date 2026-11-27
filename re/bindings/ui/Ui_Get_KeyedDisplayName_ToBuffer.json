@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Get_KeyedDisplayName_ToBuffer",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142a6b3d0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t Ui_Get_KeyedDisplayName_ToBuffer(void **key, void *localiser, char *out, uint64_t outSize)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142a6d790 (RacingPC lab re_groups/_decomp);xref:0x141da41c0,0x141e9d5f0,0x142a63f70",
+  "notes": "Under the lock at (0x14607b850)+0x20 looks up the interned string pointer *key (djb2 hash) in the global map and takes the C string at entry+0xa8 (\"Unknown\" if the entry vanishes); if absent or empty it falls back to a VM registry node resolved from a printf path of *key. If localiser is non-null and the text starts with the 4-char prefix at 0x145756ca2 it is translated through localiser vtable +0x20. Copies the result into out (bounded by outSize) and returns 1, or writes an empty string and returns 0. Context from caller: input device names for settings and calibration profile."
+ },
+ "signature": {
+  "id": "ui.get_keyed_display_name_to_buffer",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 03 00 00 4C 89 CF",
+  "match": "0x142a6b3d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a6b3d0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Get_KeyedDisplayName_ToBuffer"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142a6d790",
+  "made_on_target": "0x142a6d790",
+  "twin": "made on steam-26566308; the target 0x142a6d790 is KB 0x142a6b3d0: Game_Input_OnControlSchemeAdded (0x2a60690) and Game_GameInputModule_ApplyRebindableGameplayActionsToActionMap (0x2a7d950) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142a6d790",
+    "target": "0x142a6d790"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "38c57b1188bf4b318450e9c7cb31ff0b15d23954e9f4a7a3a39d4410c49a73b1"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_Proto_Record_Set_String_0x60",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1404737b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Proto_Record_Set_String_0x60(void *self, const char *text)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1404737f0 (RacingPC lab re_groups/_decomp);xref:0x140718d20",
+  "notes": "If text is non-null builds a std::string copy (SSO below 16 chars, heap otherwise), frees the previous heap buffer of the std::string at self+0x60 and move-assigns the new one (ptr/inline +0x60, size +0x70, cap +0x78). Context from caller: a string field of EngineComponentFittedRecord."
+ },
+ "signature": {
+  "id": "game.proto_record_set_string_0x60",
+  "section": ".xtls",
+  "pattern": "4C 89 F2 E8 ?? ?? ?? ?? C5 FA 10 43 1C",
+  "match": "0x140718e8b",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x1404737b0",
+  "kind": "call",
+  "names": [
+   "Game_Proto_Record_Set_String_0x60"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140718ecb",
+  "made_on_target": "0x1404737f0",
+  "twin": "made on steam-26566308; the target 0x1404737f0 is KB 0x1404737b0: Game_Analytics_BakedLiverySponsor_WriteJson (0x4201d0) and Ne_RbTree_EraseSubtree (0x557390) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140718ecb",
+    "target": "0x1404737f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fb8877c3444f6178c67583a25b19ddfce77733eb76839423a7ba5f4a3f3239b6"
+  }
+ ]
+}

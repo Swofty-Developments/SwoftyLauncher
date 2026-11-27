@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Lookup_ThreeProviderChain",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143fa2d80",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Lookup_ThreeProviderChain(void **providers, void *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143fa5350 (RacingPC lab re_groups/_decomp);xref:0x142ea2e80",
+  "notes": "Tries vcall +8 (lookup by key) on providers[2], then providers[1], then providers[0], returning the first non-null result. Game_CompoundModelSet_ParseModelConfig uses it to resolve a config entry through layered sources (override first, base last)."
+ },
+ "signature": {
+  "id": "core.lookup_three_provider_chain",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF 48 8B 49 10 48 85 C9 74 0E",
+  "match": "0x143fa2d80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fa2d80",
+  "kind": "func_start",
+  "names": [
+   "Ne_Lookup_ThreeProviderChain"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143fa5350",
+  "made_on_target": "0x143fa5350",
+  "twin": "made on steam-26566308; the target 0x143fa5350 is KB 0x143fa2d80: Ne_ErrorContext_SetCode (0x3fa0730) and Ne_Component_ResolveProviderChain2 (0x3fa53b0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143fa5350",
+    "target": "0x143fa5350"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "eec920f4e13593444b3ce18365c18cc6cd4b4558d566e78fef4b499c07db7c6a"
+  }
+ ]
+}

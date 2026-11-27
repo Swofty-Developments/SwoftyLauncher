@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Element_AddComponentByTypeId",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144246490",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_Element_AddComponentByTypeId(void *element, uint32_t type_id)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144248a60 (RacingPC lab re_groups/_decomp);xref:0x14417a840,0x144183b90,0x144202160",
+  "notes": "Looks up a component factory for type_id in the registry at UiSystem(vfunc +0x48)+0x10 via 0x144163a40, instantiates it with vfunc +8(element), calls the new component's vfunc +0x20(element) and push_backs the pointer into the element's component vector (+0x30 begin, +0x38 end, +0x40 capacity, growth 1.5x through the allocator at 0x1461089a8). Returns the component. No null check on a missing factory."
+ },
+ "signature": {
+  "id": "vm.element_add_component_by_type_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 89 D7 48 89 CE 48 8B 0D",
+  "match": "0x144246490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144246490",
+  "kind": "func_start",
+  "names": [
+   "Vm_Element_AddComponentByTypeId"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144248a60",
+  "made_on_target": "0x144248a60",
+  "twin": "made on steam-26566308; the target 0x144248a60 is KB 0x144246490: Ne_UINodeBase_ParentVisible (0x423c610) and Ne_UINodeBase_SetElementVisibility (0x4249e10) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144248a60",
+    "target": "0x144248a60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "59306affdd28f72a48429cf069f5b970565389daa7f6fda4192d99cd44a80197"
+  }
+ ]
+}

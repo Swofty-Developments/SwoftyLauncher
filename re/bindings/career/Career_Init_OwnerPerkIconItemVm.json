@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Init_OwnerPerkIconItemVm",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1423d1490",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void *Career_Init_OwnerPerkIconItemVm(void *self, void *vm_node)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1423d3090 (RacingPC lab re_groups/_decomp);xref:0x1423cc530,0x1423ce510",
+  "notes": "VM item constructor: runs base ctor FUN_141932920, sets vtable 0x145787fc8 and creates held nodes \"num_more\" (string, +0x88), \"icon_tex\" (string, +0xa8), an unsigned node (name 0x145790cc1, initial 0xff, +0xc8) and \"relative\" (bool true, +0xe8)."
+ },
+ "signature": {
+  "id": "career.init_owner_perk_icon_item_vm",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 D7 48 89 CE E8 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 06 48 8B 1D",
+  "match": "0x1423d1490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423d1490",
+  "kind": "func_start",
+  "names": [
+   "Career_Init_OwnerPerkIconItemVm"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1423d3090",
+  "made_on_target": "0x1423d3090",
+  "twin": "made on steam-26566308; the target 0x1423d3090 is KB 0x1423d1490: Career_MyTeamManagement_Events (0x23cc530) and Career_Enter_PersonnelTopLevel (0x23d3d60) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1423d3090",
+    "target": "0x1423d3090"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fd03cc59fc89eebb08c3141a86344752e352580fd52740a1bc297b7fde9ef68a"
+  }
+ ]
+}

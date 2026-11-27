@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Ffb_FullForceThread_ProcessQueue",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x145319b60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Ffb_FullForceThread_ProcessQueue(void *thread)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14531c520 (RacingPC lab re_groups/_decomp);xref:0x14531c3f0",
+  "notes": "Worker loop body of the FullForce haptic thread. Swaps the pending command deque (+0x38..+0x58) into a local under lock +0x30, copies each command's int16 sample vector (cmd+0x28..+0x30) into the global sample buffer at 0x145f8e628, moves counters +0x64 (queued) to +0x68 (playing), then sends 4-sample steps as 0x640409ff packets with sequence byte +0x60 through device +0x28 vtbl+8. Stop event +0x80 aborts with log 'Play Stop requested!' and calls Game_Ffb_FullForceThread_ClearSound."
+ },
+ "signature": {
+  "id": "game.ffb_full_force_thread_process_queue",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 10 48 89 74 24 18 48 89 7C 24 20 55 41 54 41 55 41 56 41 57 48 8D 6C 24 C9 48 81 EC F0 00 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 45 27",
+  "match": "0x145319b60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x145319b60",
+  "kind": "func_start",
+  "names": [
+   "Game_Ffb_FullForceThread_ProcessQueue"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14531c520",
+  "made_on_target": "0x14531c520",
+  "twin": "made on steam-26566308; the target 0x14531c520 is KB 0x145319b60: Ne_Crt_ReportGsFailure (0x4d94e1c) and Ne_Crt_Strstr (0x532d4b8) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14531c520",
+    "target": "0x14531c520"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5292470bc87f71c5fe96161bd780f35fdfbf4a34408efe5de925437f1b46d627"
+  }
+ ]
+}

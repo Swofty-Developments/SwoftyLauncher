@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Read_UserIdField_FromObject",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1431673f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int Game_Read_UserIdField_FromObject(void *out_id, void *bag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143169980 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140bc4440,0x140fe77d0,0x140fe7b50",
+  "notes": "Whole body read. Finds child key 0x1458214e7 in the property bag (missing -> error 0x57, type not 0x14612bf38 -> 0x58, both written to the TLS error chain and the errno trace ring), reads its u32 flags, reads blob key 0x1458214f3 into a 0x400 stack buffer (0x143934670), deserialises a 0x40-byte id block from it as a bit stream (0x1441256d0) into out+0x08..+0x47 and stores the flags at out+0x48. If flag 0x10000000 is set and the id equals a default id block, it is replaced by the id from [[g_Game_Manager+0x140]+0x198]+0x1c0 vcall +0x38 and flags become 0x10000000. Returns 0 or the error code. Caller 0x140bc4440: loads a saved list of bags and pushes each id block into the vector at self+0x388; callers 0x140fe77d0/0x140fe7b50: rebuild an id-keyed map from a property list. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.read_user_id_field_from_object",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC E8 04 00 00 C5 F8 29 B4 24 D0 04 00 00 48 89 D3 48 89 CE",
+  "match": "0x1431673f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431673f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_UserIdField_FromObject"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143169980",
+  "made_on_target": "0x143169980",
+  "twin": "made on steam-26566308; the target 0x143169980 is KB 0x1431673f0: Game_InviteManager_OnJoinCompleted_2 (0x3168220) and Game_PlayerSetSubsystem_Init (0x316b2b0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143169980",
+    "target": "0x143169980"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "caa12e836e7387a721bc2669a31c411d40a84e0e1d51a515239302ae35024ef7"
+  }
+ ]
+}

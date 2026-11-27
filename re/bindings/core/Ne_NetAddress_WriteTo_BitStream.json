@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_NetAddress_WriteTo_BitStream",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1440afc10",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_NetAddress_WriteTo_BitStream(const uint8_t *addr, void *bitStream)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1440b21e0 (RacingPC lab re_groups/_decomp);xref:0x14407e600,0x14407ef00",
+  "notes": "Writes the address type byte addr[0] as 8 bits into the bit stream (buffer +0x8, capacity bytes +0x1c, bit cursor +0x20, debug tag flag +0x29). Type 0 writes a 64-bit value from a local; type 2 writes the C string at addr+0x20 plus an 8-bit zero terminator; type 1 builds a sockaddr_in from IPv4 bytes addr+4..7 and port addr+8 (htons, snprintf, inet_pton) and writes it with 0x143aee4f0, returning success. Context from caller: used when reporting connections to clients."
+ },
+ "signature": {
+  "id": "core.net_address_write_to_bit_stream",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 48 89 D6 48 89 CF 0F B6 19 80 7A 29 00",
+  "match": "0x1440afc10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440afc10",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetAddress_WriteTo_BitStream"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1440b21e0",
+  "made_on_target": "0x1440b21e0",
+  "twin": "made on steam-26566308; the target 0x1440b21e0 is KB 0x1440afc10: Ne_NetReliableAsyncSocket_DeletingDtor (0x40b06d0) and Ne_Phys_BuildConvexHullShapeBlob (0x40c0330) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1440b21e0",
+    "target": "0x1440b21e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d308afc981b25fd3d0278f53b9a842d539ddc69eeb759c6961e0299e6a38d0d6"
+  }
+ ]
+}

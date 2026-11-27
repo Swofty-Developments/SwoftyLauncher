@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_CStrKey_FindIndex",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14398f260",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_RobinHoodMap_CStrKey_FindIndex(void *map, const char **key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439917f0 (RacingPC lab re_groups/_decomp);xref:0x14398e800",
+  "notes": "(lib) Robin-hood map lookup keyed by C string: FNV-1a 64 hash times seed +0x10, probes meta bytes +0x20 two at a time comparing info values, strcmp against 16-byte entries at +0x18. Returns slot index, or end index ((meta-entries)>>4, or 0 for empty map) when not found."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_c_str_key_find_index",
+  "section": ".xtls",
+  "pattern": "48 89 D9 E8 ?? ?? ?? ?? 49 89 C6 49 C1 E6 04",
+  "match": "0x14398c470",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x14398f260",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_CStrKey_FindIndex"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14398ea00",
+  "made_on_target": "0x1439917f0",
+  "twin": "made on steam-26566308; the target 0x1439917f0 is KB 0x14398f260: Ne_EventQueue_DispatchPending (0x398e800) and Ne_Gfx2Renderer_ConstructDevice (0x3993680) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14398ea00",
+    "target": "0x1439917f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1ce05aaa69a8353bac01a5275bfe3003afab988e02da54212421aef32cc7f701"
+  }
+ ]
+}

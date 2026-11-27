@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_DepthSourceLightBufferPass_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143d32310",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void *Render_DepthSourceLightBufferPass_Ctor(void *self, void *allocator, void *gfx, void *desc)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143d348e0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140100be0,0x142fb2580",
+  "notes": "Calls Render_GeometryPass_Ctor with 4 bind slots, sets vtable 0x1459b3ec0, creates a shared 0x210-byte material on first instance (refcount 0x146545990) and binds \"depth_source\" to slot 1, optional \"surface\" to slot 2 and \"lightBuffer\" to slot 3. An optional int key sets the bool at self+0x550, a 0x98-byte helper object is allocated and stored at +0x558, and a name formatted from the field at self+0x528 is hashed into +0x560. Caller 0x140100be0: factory that clones the desc arrays, allocates 0x570 bytes and returns an {allocator, pass} pair. The call from 0x142fb2580 was not visible in its decompile. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.depth_source_light_buffer_pass_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC E8 00 00 00 C5 F8 29 B4 24 D0 00 00 00 4C 89 CF",
+  "match": "0x143d32310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d32310",
+  "kind": "func_start",
+  "names": [
+   "Render_DepthSourceLightBufferPass_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143d348e0",
+  "made_on_target": "0x143d348e0",
+  "twin": "made on steam-26566308; the target 0x143d348e0 is KB 0x143d32310: Ne_FogSet_SetFogData (0x3d31480) and Ne_MipTailGenerator_CreateResources (0x3d360a0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143d348e0",
+    "target": "0x143d348e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2b588ac825cde8de31edf9b3e4a8d8ecd1699e773520eb2604a6b00773ee8517"
+  }
+ ]
+}

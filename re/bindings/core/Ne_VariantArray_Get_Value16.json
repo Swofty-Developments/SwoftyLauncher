@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_VariantArray_Get_Value16",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140974130",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "uint32_t Ne_VariantArray_Get_Value16(void *arr, uint64_t index, uint16_t *out)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140974180 (RacingPC lab re_groups/_decomp);xref:0x1407c1e90,0x140da7280,0x1424946b0,0x142500e70",
+  "notes": "(lib) Typed getter on a variant array (count u16 +0x10, element ptrs +0x8): checks index (errno 0x22), null element (0x57) and that the element type id equals type desc 0x14612be68 (else 0x58), then copies the 2-byte value from vfunc +0x30. Returns 0 on success; errors are also logged to the errno trace ring."
+ },
+ "signature": {
+  "id": "core.variant_array_get_value16",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 0F B7 41 10 48 39 D0 76 57 48 8B 41 08 48 8B 3C D0 48 85 FF 0F 84 ?? ?? ?? ?? 4C 89 C6 48 8B 07 48 89 F9 FF 50 08 48 8B 10 48 89 C1 FF 52 10 89 C3 48 8B 05 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? FF 50 10 39 C3 0F 85 ?? ?? ?? ?? 48 8B 07 48 89 F9 FF 50 30 0F B7 00",
+  "match": "0x140974130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140974130",
+  "kind": "func_start",
+  "names": [
+   "Ne_VariantArray_Get_Value16"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140974180",
+  "made_on_target": "0x140974180",
+  "twin": "made on steam-26566308; the target 0x140974180 is KB 0x140974130: Vm_NodeSet_Bool (0x973e70) and Vm_Set_Bool (0x975e00) on either side both sit 0x50 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140974180",
+    "target": "0x140974180"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "894b5365f7ca13caae6464093673c401d38313056e17257fb7ef452d0231e3ea"
+  }
+ ]
+}

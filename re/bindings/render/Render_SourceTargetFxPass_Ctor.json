@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_SourceTargetFxPass_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143c39570",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "void *Render_SourceTargetFxPass_Ctor(void *self, void *allocator, void *gfx, void *props)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c3bb40 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140104f70",
+  "notes": "Calls Render_GeometryPass_Ctor with 3 slots, sets vtable 0x1458c7f10, hashes two literal names into +0x550/+0x560, creates the shared 0x210-byte material once (refcount 0x1464d43f8, ptr 0x1464d43f0), binds slot 0 material, slot 1 props 'target', slot 2 props 'source' via binder at +0x20, and allocates a 0x98-byte state object (vtable 0x1458c7e30, floats 0.8 and 1.0 at +0x88) into +0x570. Caller Render_Gfx_BuildConfigObject decompile timed out, so its use is known only from the KB name (config pass factory). Better context needed: the literal strings at 0x1458c7f38/0x1458c7f5c would give the effect name ('Fx' is a guess). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.source_target_fx_pass_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 50 4C 89 CF 4D 89 C6 48 89 CE C7 44 24 20 03 00 00 00",
+  "match": "0x143c39570",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c39570",
+  "kind": "func_start",
+  "names": [
+   "Render_SourceTargetFxPass_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c3bb40",
+  "made_on_target": "0x143c3bb40",
+  "twin": "made on steam-26566308; the target 0x143c3bb40 is KB 0x143c39570: Ne_TerrainResource_GetMaterialResourcel (0x3c265a0) and Render_CloudGenerator_Update (0x3c3cef0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c3bb40",
+    "target": "0x143c3bb40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "626ef7eb3bc840dd199b4b23bc2b1e3c92ad0cbbc18d3c2873bca3936f8174a1"
+  }
+ ]
+}

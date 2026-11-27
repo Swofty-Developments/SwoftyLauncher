@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_Race_IsVehicleOutOrCriticallyDamaged",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142f29310",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "uint64_t Sess_Race_IsVehicleOutOrCriticallyDamaged(void *self, uint8_t veh_idx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142f2b8a0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142f2ba60",
+  "notes": "Resolves the vehicle record via self+0xa0[idx] (fallback scan +0x88..+0x90). Returns 1 if record+0x31 has flag 0x40. Otherwise needs idx < 0x1b, entity component at rec+0x18 -> +0x58, state from (self+0x1b0)+0x2d8 table (stride 0x70, +0x78) in 3..5 for type 0 or 1..5 for type 1 (type at (self+0x1b0)+0x68+idx*0x10 -> +0xc); then returns 1 if any item in component+0x5c8 list +0xb0..+0xb8 has byte +0x38 set, or if the sum of three clamped ratios (+0x50/+0x38 capped at 2, +0x48/+0x34 and +0x4c/+0x34 capped at 1) reaches the float at 0x145f9845c. Callers: Sess_SafetyCar_CanVehicleRejoin returns the inverse of it when the unlap state is not 1; 0x141033810 (large per-vehicle update that fills 0x200-byte rows) uses it as the result flag after Sess_Rules_CanVehicleUnlap succeeds. Stays L1: that the ratios are damage is inferred, not shown. Self is the same object the SafetyCar methods take. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.race_is_vehicle_out_or_critically_damaged",
+  "section": ".xtls",
+  "pattern": "56 80 FA FF 0F 84 ?? ?? ?? ?? 44 0F B6 C2",
+  "match": "0x142f29310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f29310",
+  "kind": "func_start",
+  "names": [
+   "Sess_Race_IsVehicleOutOrCriticallyDamaged"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f2b8a0",
+  "made_on_target": "0x142f2b8a0",
+  "twin": "made on steam-26566308; the target 0x142f2b8a0 is KB 0x142f29310: Sess_RaceState_VehicleHasNamedEntry (0x2f2b450) and Sess_SafetyCar_CanVehicleRejoin (0x2f2ba60) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f2b8a0",
+    "target": "0x142f2b8a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "71c8d29ff1b57b7566bfe04b0f39c90906646ef9523778a4e0a9c8543d150e5a"
+  }
+ ]
+}

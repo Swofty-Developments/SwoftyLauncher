@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationReplicationManager_BuildLocalData",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142537320",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_CustomisationReplicationManager_BuildLocalData(void *self, void *out_data)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142539250 (RacingPC lab re_groups/_decomp);xref:0x142534f40,0x142544780,0x142547950",
+  "notes": "Fills the replication payload out_data: builds a default set (0x141403d20 on self+0x38), copies the local DriverCustomisation slots (key (self+0x30)+0x1b4; falls back to defaults if any slot id is -1) to out+0x28..+0x1ac, picks up to 3 random other wear sets twice with a time-seeded MT state (records at out+0x1c8 stride 0xf8 and out+0x4b0 stride 0xa8, padded with defaults), copies the Driver record (names, 0x310 blob) to out+0x690..+0x9d8 and the Badge to out+0x1670.., gathers per-category vehicle customisations (out+0xd00/+0xf50, up to 3 each), stamps out+8, then inserts or updates the entry keyed by the local user id in the map at self+0xa0. Callers each construct the payload with 0x14252cda0 first: 0x142534f40 then serialises and sends it, 0x142544780 and 0x142547950 pass their +0x68 manager pointer and then send to peers. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.customisation_replication_manager_build_local_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 D0 00 00",
+  "match": "0x142537320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142537320",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationReplicationManager_BuildLocalData"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142539250",
+  "made_on_target": "0x142539250",
+  "twin": "made on steam-26566308; the target 0x142539250 is KB 0x142537320: Game_VoPlaySoundEffectNode_Execute (0x25289b0) and Game_FrontendSceneObject_RespawnAll (0x2549cb0) on either side both sit 0x1f30 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142539250",
+    "target": "0x142539250"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5f63abc627331ddb59cbe3a3b2dca595e50c72cec4a983a5bc0f2874858ddec0"
+  }
+ ]
+}

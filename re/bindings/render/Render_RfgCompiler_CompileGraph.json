@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_RfgCompiler_CompileGraph",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143bd44f0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_RfgCompiler_CompileGraph(void *compiler, const uint8_t *flags, void *outCmdList)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143bd6ac0 (RacingPC lab re_groups/_decomp);xref:0x143bd53c0",
+  "notes": "Render-frame-graph compiler core (caller FUN_143bd53c0 passes rfg+0x160, flag bytes, rfg+0xe8). compiler[0]=owner graph (resources +0x30 elem 0x180, accesses +0x70 elem 0x28, passes +0x90 ptr array); stores flags at [1] and output at [2]. Steps: sizes per-pass nodes [8] (0x80) and per-resource info [4] (0x38: mips, layers*6 for cubes, planes, subresource count), builds per-subresource state chains [0x10] (0x2c) and pass dependency edges (FUN_143be0680/FUN_143be07f0), optional culling of unreferenced passes (flags[2], node+0x21), topological sort picking lowest index into order [0x1c], cross-queue sync points (node+0x48..+0x64, 4 queues), resource lifetimes (res+0x20 first, +0x24 last pass), state transitions (FUN_143be09c0/FUN_143be0b90, list [0x24]), then emits the command list as (type | index<<32) with type 0=pass, 1=alias/clear node, 2=queue marker. flags[3],[4],[5],[7],[8] enable text dumps through the logger at owner+0x478; flags[0] enables transition merging."
+ },
+ "signature": {
+  "id": "render.rfg_compiler_compile_graph",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 C5 F8 29 B4 24 30 01 00 00 48 89 CE 48 89 51 08",
+  "match": "0x143bd44f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bd44f0",
+  "kind": "func_start",
+  "names": [
+   "Render_RfgCompiler_CompileGraph"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143bd6ac0",
+  "made_on_target": "0x143bd6ac0",
+  "twin": "made on steam-26566308; the target 0x143bd6ac0 is KB 0x143bd44f0: Ne_RenderGraph_ResolveHandleFlag (0x3bc7890) and Ne_RenderGraph_BuildPassFlagsDesc (0x3bde9b0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143bd6ac0",
+    "target": "0x143bd6ac0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "db2edd06b0176f83ed2a7f44273c6d6999edf61373341282a05dc640efe93df5"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_FileSystem_AsyncRequest_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143f41f10",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_FileSystem_AsyncRequest_Ctor(void *self, void *owner, void *arg, uint32_t flags, void **parentRef)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143f444e0 (RacingPC lab re_groups/_decomp);xref:0x143f36ed0,0x143f37ff0,0x143f3aed0,0x143f3b970,0x143f3f280,0x143f40bb0",
+  "notes": "Constructs refcounted request (vtbl 0x145a43250): +0x08 refcount 0, +0x10 arg, +0x18 owner, +0x20 event object (CreateEventW manual reset) with handle at +0x28, +0x30 status=0x24 (pending), +0x38 parent ref (addref under global CS 0x146046868), +0x50 flags, +0x58 result, +0x60/+0x68 callback fn/ctx, +0x70 state bits. Releases the caller temp ref."
+ },
+ "signature": {
+  "id": "core.file_system_async_request_ctor",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 44 89 CF 48 89 CE",
+  "match": "0x143f41f10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143f41f10",
+  "kind": "func_start",
+  "names": [
+   "Ne_FileSystem_AsyncRequest_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143f444e0",
+  "made_on_target": "0x143f444e0",
+  "twin": "made on steam-26566308; the target 0x143f444e0 is KB 0x143f41f10: Ne_FileSystem_OpenStream (0x3f3b970) and Ne_PathBuf_Construct (0x3f446e0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143f444e0",
+    "target": "0x143f444e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "df63c758b59decd350540dffe997c2aea07bd2fb6566348b0ec43c9b60c522e3"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_CreateTrackedObject_42d0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1439d7190",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void *Render_Gfx2Device_CreateTrackedObject_42d0(void *device, void *desc)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439d9760 (RacingPC lab re_groups/_decomp);xref:0x1439d4160,0x143d360a0,0x1445b7ea0",
+  "notes": "Under device CS (+0x2668) allocates a 0x98-byte object from allocator +0x150, constructs it from desc (0x1439d9810), registers it in tracking set +0x42d0 and appends it to the per-key list in map device+0x300 keyed by desc+0x20. Returns the object. Better context needed: object type."
+ },
+ "signature": {
+  "id": "render.gfx2_device_create_tracked_object_42d0",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 D7 48 89 CE 48 8B 89 68 26 00 00 FF 15 ?? ?? ?? ?? 48 8B 8E 50 01 00 00 48 8B 01 BA 98 00 00 00",
+  "match": "0x1439d7190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439d7190",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_CreateTrackedObject_42d0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1439d9760",
+  "made_on_target": "0x1439d9760",
+  "twin": "made on steam-26566308; the target 0x1439d9760 is KB 0x1439d7190: Render_Gfx2Buffer_Construct (0x39d7ce0) and Ne_Load_SlUpgradeInterface (0x39e6f90) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1439d9760",
+    "target": "0x1439d9760"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5e174e1d0cfa3fe4b6ca42eb2f7797eb104be10b57c8087f3ae5a4b1af9e43bf"
+  }
+ ]
+}

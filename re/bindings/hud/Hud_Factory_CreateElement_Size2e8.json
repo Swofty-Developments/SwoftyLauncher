@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Hud_Factory_CreateElement_Size2e8",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1414d0de0",
+  "level": "L2",
+  "subsystem": "hud",
+  "proto": "void Hud_Factory_CreateElement_Size2e8(void *factory, void *a2, void **name, void **a4, void *a5, void **a6)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1414d15c0 (RacingPC lab re_groups/_decomp);xref:0x1414c84b0",
+  "notes": "Allocates 0x2e8 bytes from factory+8, constructs with the shared element base ctor func_0x1414df550(obj, a2, name chars or empty, *a4, a5, *a6) and push_backs the pointer into the vector at factory+0x18/+0x20/+0x28 (1.5x growth, allocator factory+0x10). Context from caller: Game_Read_MfdConfig builds MFD/HUD elements with it."
+ },
+ "signature": {
+  "id": "hud.factory_create_element_size2e8",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 4D 89 CF 4D 89 C6 48 89 D3 48 89 CE 48 8B 49 08 48 8B 01 BA E8 02 00 00",
+  "match": "0x1414d0de0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414d0de0",
+  "kind": "func_start",
+  "names": [
+   "Hud_Factory_CreateElement_Size2e8"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1414d15c0",
+  "made_on_target": "0x1414d15c0",
+  "twin": "made on steam-26566308; the target 0x1414d15c0 is KB 0x1414d0de0: Career_Bind_ResourcePointIcons (0x14c6b90) and Ui_Init_TeamHqTabButtonData_B (0x14d6980) on either side both sit 0x7e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1414d15c0",
+    "target": "0x1414d15c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f7087dda9b3afd595d4f71e146ca950d2703850643ebdf6021735050101e258d"
+  }
+ ]
+}

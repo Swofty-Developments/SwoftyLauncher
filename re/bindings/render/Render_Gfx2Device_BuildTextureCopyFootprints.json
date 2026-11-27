@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_BuildTextureCopyFootprints",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1439e42e0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_Gfx2Device_BuildTextureCopyFootprints(void *device, void **out_owned, void *tex_desc)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439e68b0 (RacingPC lab re_groups/_decomp);xref:0x143cc94d0",
+  "notes": "Converts engine texture desc (width +0x18, height +0x1c, depth +0x20, mips +0x24, array +0x28, dim +0x2c, format +0x30, samples +0x34, flags +0x38) into a D3D12-style resource desc, allocates a 0x40-byte footprint block with 3 arrays (rows u32, rowsizes u64, 0x20-byte per-subresource records) for mips*array*planes subresources and calls native device (device+0x508) vtable +0x130 (GetCopyableFootprints). Stores total bytes at +0x08 and returns {allocator, block} in out."
+ },
+ "signature": {
+  "id": "render.gfx2_device_build_texture_copy_footprints",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 41 55 41 54 56 57 53 48 83 EC 48 48 8D 6C 24 40 4C 89 C7",
+  "match": "0x1439e42e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439e42e0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_BuildTextureCopyFootprints"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1439e68b0",
+  "made_on_target": "0x1439e68b0",
+  "twin": "made on steam-26566308; the target 0x1439e68b0 is KB 0x1439e42e0: Render_Gfx2Buffer_Construct (0x39d7ce0) and Ne_Load_SlUpgradeInterface (0x39e6f90) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1439e68b0",
+    "target": "0x1439e68b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8fb6953797be0af03ceed26b02faa25a93b0d1e7a14643d49ae5fd493f9dbb62"
+  }
+ ]
+}

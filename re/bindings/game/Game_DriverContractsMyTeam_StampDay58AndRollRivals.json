@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_DriverContractsMyTeam_StampDay58AndRollRivals",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140dbae10",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_DriverContractsMyTeam_StampDay58AndRollRivals(void *comp, void *contract_entry)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140dbb990 (RacingPC lab re_groups/_decomp);xref:0x140dbc7c0",
+  "notes": "Like the +0x56 variant but writes the career day to entry+0x58 and posts message 0x145698fe0 {driver id, local team id}; then seeds an MT19937 from mode vfn+0x90(2) + packed driver id + 0x539 and, if the roll (0..1) is below the float at comp+0x418, sets entry+0x66 = 1 and posts message 0x145698ff0 for every other entrant in mode +0x2e0..+0x2e8 whose byte +0x80 is < 2 or unset. comp+0x418 is the probability to tune; outcome meaning needs caller context."
+ },
+ "signature": {
+  "id": "game.driver_contracts_my_team_stamp_day58_and_roll_rivals",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 28 0A 00 00",
+  "match": "0x140dbae10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140dbae10",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverContractsMyTeam_StampDay58AndRollRivals"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140dbb990",
+  "made_on_target": "0x140dbb990",
+  "twin": "made on steam-26566308; the target 0x140dbb990 is KB 0x140dbae10: Career_DriverContractsMyTeam_PostApproachMessages (0xdb81e0) and Career_DriverContracts_BuildDriverContractQuote (0xdbc210) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140dbb990",
+    "target": "0x140dbb990"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "77d797037da543b7d6c37c41b5995b688bb74985dc7eed1501c177f42bdfb49a"
+  }
+ ]
+}

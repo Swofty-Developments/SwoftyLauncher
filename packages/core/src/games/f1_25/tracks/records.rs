@@ -19,6 +19,7 @@ pub struct RecordTrack {
     pub base: Option<String>,
     pub slot: Option<String>,
     pub files: Option<String>,
+    pub video: Option<String>,
 }
 
 /// The `track` records the addon's data files (`data_files`, relative to `dir`) add, in file
@@ -54,6 +55,7 @@ pub fn record_tracks(dir: &Path, addon: &str, data_files: &[String]) -> Vec<Reco
                 base: s("base"),
                 slot: s("slot"),
                 files: s("files"),
+                video: s("video"),
             });
         }
     }

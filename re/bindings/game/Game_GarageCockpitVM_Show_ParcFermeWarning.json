@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_GarageCockpitVM_Show_ParcFermeWarning",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141bc2100",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_GarageCockpitVM_Show_ParcFermeWarning(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141bc3d00 (RacingPC lab re_groups/_decomp);xref:0x141bc6d30",
+  "notes": "Skipped when *(*(vm+800)+0x10)+0x38 is a non-empty string. Otherwise displays UI message \"garage_cockpit_parc_ferme_warning\" (when *(*(vm+0x2a8)+0x88)+0x260 is null) or a message id copied from *(*(0x140ac1530(vm+0x2d8)+0x70)+0x10), with callback FUN_141bc7e00; listener handle stored at vm+0x318."
+ },
+ "signature": {
+  "id": "game.garage_cockpit_vm_show_parc_ferme_warning",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC E8 00 00 00 48 89 CB 48 8B 81 20 03 00 00",
+  "match": "0x141bc2100",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141bc2100",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageCockpitVM_Show_ParcFermeWarning"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141bc3d00",
+  "made_on_target": "0x141bc3d00",
+  "twin": "made on steam-26566308; the target 0x141bc3d00 is KB 0x141bc2100: Game_FrontendTransitionVM_OnScreenActivated (0x1bb97f0) and site_Game_GrandPrixContinueVm_F1wCarCheck (0x1bd06f2) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141bc3d00",
+    "target": "0x141bc3d00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2414b7c68f50e15348dca2f6b714f3c22aeef7b5b2c6c42aab1c83f56762f202"
+  }
+ ]
+}

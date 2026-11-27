@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_HashedName_Make_LowercaseMd5",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143b31ab0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "uint64_t *Ne_HashedName_Make_LowercaseMd5(uint64_t *out, const char *str)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143b34080 (RacingPC lab re_groups/_decomp)",
+  "notes": "(lib) Lowercases up to 0x3ff chars of str into a stack buffer, runs MD5 (IV 0x67452301.. via 0x14029b280), byte-swaps the first 8 digest bytes into out[0] and stores the original string pointer in out[1]. This is the engine resource-name hash; useful to compute ids for named render targets."
+ },
+ "signature": {
+  "id": "core.hashed_name_make_lowercase_md5",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 50 04 00 00 48 89 D6",
+  "match": "0x143b31ab0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b31ab0",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashedName_Make_LowercaseMd5"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143b34080",
+  "made_on_target": "0x143b34080",
+  "twin": "made on steam-26566308; the target 0x143b34080 is KB 0x143b31ab0: Game_Renderer_CreateRenderPasses (0x3b1a140) and Ne_HashMap_FatalStub_ParticleResourcePack (0x3b48e20) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143b34080",
+    "target": "0x143b34080"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3ae61ee3cf9fce0a84f81019470b0940a2f54e429bd9c831f13be07719e2e6c5"
+  }
+ ]
+}

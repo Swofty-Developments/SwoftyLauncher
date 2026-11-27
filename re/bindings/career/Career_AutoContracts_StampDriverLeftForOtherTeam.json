@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_AutoContracts_StampDriverLeftForOtherTeam",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140db8790",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_AutoContracts_StampDriverLeftForOtherTeam(void *self, uint32_t driver_id, uint32_t new_team_id)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140db9310 (RacingPC lab re_groups/_decomp);xref:0x140c59be0",
+  "notes": "Resolves the player entrant (Game_Manager+0x140 -> +0x198 -> +0x1c0 vcall 0x38) in the entrant list (self+0x278)+0x2e0..0x2e8 and reads team_stat_id (default 0x3fff0000). If new_team_id differs from the player team, scans the 0x68-stride table at self+0x4cc (count self+0x6f0) for id match at +0x4dc/+0x4de and writes +0x4cc = day (minutes at (self+0x2a8)+0x2b0 divided by 1440), +0x4ce = 0xffff, +0x4e0 = new_team_id."
+ },
+ "signature": {
+  "id": "career.auto_contracts_stamp_driver_left_for_other_team",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 44 89 C6",
+  "match": "0x140db8790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140db8790",
+  "kind": "func_start",
+  "names": [
+   "Career_AutoContracts_StampDriverLeftForOtherTeam"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140db9310",
+  "made_on_target": "0x140db9310",
+  "twin": "made on steam-26566308; the target 0x140db9310 is KB 0x140db8790: Career_DriverContractsMyTeam_PostApproachMessages (0xdb81e0) and Career_DriverContracts_BuildDriverContractQuote (0xdbc210) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140db9310",
+    "target": "0x140db9310"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ee5fadbec0e1204859948296d8d3e0f470a32157824e0cae9dfd36bc09798329"
+  }
+ ]
+}

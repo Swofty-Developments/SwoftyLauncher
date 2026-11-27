@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_GarageMonitorTyreSelectVM_ShowWeatherWarning",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141f90ee0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_GarageMonitorTyreSelectVM_ShowWeatherWarning(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141f92ae0 (RacingPC lab re_groups/_decomp);xref:0x141f95a60",
+  "notes": "Gets the UI message service (vm+0x640 -> +0x10, vtable+0x58) and calls Game_UiMessage_DisplayMessage with id \"practice_program_weather_warning\" and callback FUN_141f92ba0 bound to vm; stores the listener handle at vm+0x6230."
+ },
+ "signature": {
+  "id": "game.garage_monitor_tyre_select_vm_show_weather_warning",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC E8 00 00 00 48 89 CE 48 8B 89 40 06 00 00 48 8B 41 10 48 83 C1 10 FF 50 58 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 30 48 89 74 24 38 48 8D 4C 24 68",
+  "match": "0x141f90ee0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f90ee0",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageMonitorTyreSelectVM_ShowWeatherWarning"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141f92ae0",
+  "made_on_target": "0x141f92ae0",
+  "twin": "made on steam-26566308; the target 0x141f92ae0 is KB 0x141f90ee0: Game_ScoreBreakdownVM_OnDeactivate (0x1f657b0) and Game_GarageMonitorTvFeedVM_OnActivate (0x1fa26e0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141f92ae0",
+    "target": "0x141f92ae0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c6076e95892ce55d9fe6f3443acb008769f9ef4f9802d2e92806e4e00fc79741"
+  }
+ ]
+}

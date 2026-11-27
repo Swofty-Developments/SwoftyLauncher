@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_ContractTalks_RollStartForDriver",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14106bf60",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_ContractTalks_RollStartForDriver(void *comp, uint32_t driverId, uint8_t tier, uint16_t day)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14106cc20 (RacingPC lab re_groups/_decomp);xref:0x140d80a00",
+  "notes": "Finds the per-driver record (vector +0x460, stride 0x5c), seeds MT19937 from comp+0x280 and rolls 1..100; threshold is float table comp+0x2f0 indexed by tier 0..2. If threshold > roll it sets stage 0 flag +0x38=1 with day +0x3a, clears stages +0x3c/+0x40/+0x44, calls FUN_14106ae70 and copies message key comp+0x3b8 to string +0x478; otherwise copies key comp+0x3b0. Sets dirty flag +0x4a0. The three floats at +0x2f0 are percent chances and a good tuning point. Better context needed: owning component."
+ },
+ "signature": {
+  "id": "career.contract_talks_roll_start_for_driver",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC F0 09 00 00",
+  "match": "0x14106bf60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14106bf60",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractTalks_RollStartForDriver"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14106cc20",
+  "made_on_target": "0x14106cc20",
+  "twin": "made on steam-26566308; the target 0x14106cc20 is KB 0x14106bf60: Career_UpgradeRef_CreateFromConfig (0x105d500) and Career_Save_UpgradeLevelFields (0x106d190) on either side both sit 0xcc0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14106cc20",
+    "target": "0x14106cc20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "dc1873d9db87185d156c97fab855e331f227e6fa305faf887f9a88073307500f"
+  }
+ ]
+}

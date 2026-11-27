@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Flush_PendingElementRemovals",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144167000",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Flush_PendingElementRemovals(void *walker)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1441695d0 (RacingPC lab re_groups/_decomp);xref:0x1444a5630",
+  "notes": "Renamed from Ui_EngineModule_Flush_PendingElementRemovals: the object is not the engine module but the walker at module+0x80, so the class prefix was caller-only. For each entry in the vector walker+0x60..+0x68: elem = [entry+0x10], parent = elem+0x1a0; if the parent has +0x198 bit 0x20 and exactly one child, the parent is removed instead. Calls 0x144169990(walker, elem) and elem vt+0x30, erases elem from the parent child vector ([parent+0x178]+8..+0x10; error code 2 traced if absent), clears elem+0x1a0, sets +0x199 bit 4 and [elem+0x1a8]+8 bit 0x10, marks the parent with Ui_Mark_ElementAndAncestors_Flag170 and ancestors +0x170 bit 0x1000000, then looks up the element factory by type id (vt+0x18; 'eText' special-cased) in the UI system registry under lock and calls factory vt+0x10(elem). Finally resets +0x68 = +0x60. Context from caller: Ui_EngineModule_Update runs it once per frame just before Ui_LayoutTrees_WalkAll(walker). Hook point for element destruction. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.flush_pending_element_removals",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE 48 8B 41 68",
+  "match": "0x144167000",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144167000",
+  "kind": "func_start",
+  "names": [
+   "Ui_Flush_PendingElementRemovals"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1441695d0",
+  "made_on_target": "0x1441695d0",
+  "twin": "made on steam-26566308; the target 0x1441695d0 is KB 0x144167000: Ne_Ref_AssignIntrusiveRc16 (0x4167e30) and Ne_IntrusivePtr_Assign (0x416d7f0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1441695d0",
+    "target": "0x1441695d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "13783f4b105a493b0aa0d6b72ca94196e187fd693fada29b6e1e9b4adb4ddfe9"
+  }
+ ]
+}

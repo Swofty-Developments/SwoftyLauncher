@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_AsyncQueue_Enqueue_Node24",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141b6d790",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_AsyncQueue_Enqueue_Node24(void *queue, const void *msg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141b6f360 (RacingPC lab re_groups/_decomp);xref:0x141a70160,0x141d99350",
+  "notes": "If queue+0x68 (running flag) is 0 returns error 0x58; otherwise enters the critical section at queue+0x98, allocates a 0x18-byte node (vtable 0x145737918, qword from msg+8, dword from msg+0x10) from allocator queue+0x70, links it at the tail (head +0x58, tail +0x60), leaves the lock and signals the event at queue+0x88. Returns 0, or 0xc (ENOMEM) on allocation failure; errors go to the errno trace ring."
+ },
+ "signature": {
+  "id": "core.async_queue_enqueue_node24",
+  "section": ".xtls",
+  "pattern": "48 8D 54 24 60 E8 ?? ?? ?? ?? EB 2A",
+  "match": "0x141a6f786",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x141b6d790",
+  "kind": "call",
+  "names": [
+   "Ne_AsyncQueue_Enqueue_Node24"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141a70f66",
+  "made_on_target": "0x141b6f360",
+  "twin": "made on steam-26566308; the target 0x141b6f360 is KB 0x141b6d790: Ui_Release_TopLevelFacilityNodes (0x1b6e8c0) and Ne_HashMap_Find_141b732f0 (0x1b74ec0) on either side both sit 0x1bd0 above their KB addresses; the match 0x141a70f66 is KB 0x141a6f786: site_FeTile_EraTilesBuilt (0x1a70f08) and Game_F1WorldActivityContainer_OnExit (0x1a78b20) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141a70f66",
+    "target": "0x141b6f360"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "48bc61d4a5a16a5cf52c4654b68cf98ce2fdac442aa81419b0f2fe5366bf7290"
+  }
+ ]
+}

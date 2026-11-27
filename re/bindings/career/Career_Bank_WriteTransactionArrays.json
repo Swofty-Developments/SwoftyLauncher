@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Bank_WriteTransactionArrays",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140c6e280",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Bank_WriteTransactionArrays(void *save_node, const void *account)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140c6ed40 (RacingPC lab re_groups/_decomp);xref:0x140c6e770",
+  "notes": "Ensures the save node child capacity is at least 3, creates three reflected array fields (keys 0x145685538, 0x145685549, 0x14568555d), reserves them to the transaction count, then for each 20-byte record at account+8..+0x10 writes u32 (+4), u64 (+8) and a packed u32 (type | byte+0x10 << 8 | bool+0x11 << 16). Returns 0 or 0xc on alloc failure. Mirror of 0x140c6f6e0."
+ },
+ "signature": {
+  "id": "career.bank_write_transaction_arrays",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 89 D6 49 89 CE",
+  "match": "0x140c6e280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c6e280",
+  "kind": "func_start",
+  "names": [
+   "Career_Bank_WriteTransactionArrays"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140c6ed40",
+  "made_on_target": "0x140c6ed40",
+  "twin": "made on steam-26566308; the target 0x140c6ed40 is KB 0x140c6e280: Career_Bank_WriteAccount (0xc6e770) and Career_Bank_WriteBudgetData (0xc6fa10) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140c6ed40",
+    "target": "0x140c6ed40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a0ad7461c2cb7eae7ff0355051c770251563cd2d48f7da60f64ab39ae0fa2c70"
+  }
+ ]
+}

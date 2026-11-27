@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamDriverMarket_UpdateSelectedDriverBool",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1423052a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_MyTeamDriverMarket_UpdateSelectedDriverBool(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142306ea0 (RacingPC lab re_groups/_decomp);xref:0x142301ef0,0x142308150",
+  "notes": "For the focused driver card (key +0xe98) computes a bool: false when the pending record at manager (+0x2d90) +0x478 targets this driver with state byte +0xc == 3 or when Career_Unk_140dbdeb0 returns <= 0; otherwise true only if the driver key is not in the manager's key list (+0x4dc, 0x68-byte stride, count +0x6f0). Writes it to bool node +0x6d0 base +0x2370. Better context needed: likely an approach/offer-available flag."
+ },
+ "signature": {
+  "id": "game.my_team_driver_market_update_selected_driver_bool",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 49 89 CD 48 8B 99 90 2D 00 00",
+  "match": "0x1423052a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423052a0",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamDriverMarket_UpdateSelectedDriverBool"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142306ea0",
+  "made_on_target": "0x142306ea0",
+  "twin": "made on steam-26566308; the target 0x142306ea0 is KB 0x1423052a0: Game_MyTeamDriverMarket_Open (0x2301ef0) and Game_MyTeamDriverMarket_Close (0x23072e0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142306ea0",
+    "target": "0x142306ea0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "632c699d25e8b66ef88ac0c632e196285a39b9491a0cbc67e22db2b16b36c5f6"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_Conf_ModuleAdd",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144ca0bd0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "int Ne_Ossl_Conf_ModuleAdd(const char *name, void *init_fn, void *finish_fn)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144ca3590 (RacingPC lab re_groups/_decomp);xref:0x14518cf70",
+  "notes": "OpenSSL CONF_module_add pattern: calls the module add helper FUN_144ca3b00(NULL,name,init,finish) and returns whether it produced a module."
+ },
+ "signature": {
+  "id": "core.ossl_conf_module_add",
+  "section": ".xtls",
+  "pattern": "B8 28 00 00 00 E8 ?? ?? ?? ?? 48 2B E0 4D 8B C8 4C 8B C2 48 8B D1",
+  "match": "0x144ca0bd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144ca0bd0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_Conf_ModuleAdd"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144ca3590",
+  "made_on_target": "0x144ca3590",
+  "twin": "made on steam-26566308; the target 0x144ca3590 is KB 0x144ca0bd0: Ne_Crt_SecurityCookieFailure (0x4c964a0) and Ne_Wwise_ConvolutionReverb_Init (0x4cb02b0) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144ca3590",
+    "target": "0x144ca3590"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1d1269a1d28e6128ba2e927f88a56bc955b7063f2c01256ac793685dcdac07f9"
+  }
+ ]
+}

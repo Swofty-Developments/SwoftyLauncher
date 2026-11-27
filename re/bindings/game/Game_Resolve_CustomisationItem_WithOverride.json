@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_Resolve_CustomisationItem_WithOverride",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1424fc8d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Resolve_CustomisationItem_WithOverride(void *self, void *out_item, void *source)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1424fe4d0 (RacingPC lab re_groups/_decomp);xref:0x1420107b0,0x142013fb0",
+  "notes": "Writes a 0x30-byte item record (key u32 at +0x10, 16 bytes at +0x18, u32 +0x28, u32 +0x2c). Null source gives the null key 0xffff0000. Otherwise searches the override table self+0x10 (count at self+0x1810, stride 0x30) for the same type byte (source+0x18) and id u16 (source+0x1a) and copies that entry; if none matches it copies key source+0x18, 16 bytes source+0x34 and u32 source+0x50. Context from caller: override table is the livery preview selection; good hook to substitute a livery item. Independent re-check (lab blind verifier 2026-11-27): partial, better name Game_Resolve_ItemFromEntryTable_OrDefault: Looks up param_3's 3-byte id in the same 0x30-byte entry table (+0x10, count +0x1810) and copies the entry if found, else builds a default from param_3; 'override' and 'customisation' semantics are not shown by the code."
+ },
+ "signature": {
+  "id": "game.resolve_customisation_item_with_override",
+  "section": ".xtls",
+  "pattern": "49 89 F8 E8 ?? ?? ?? ?? 44 8B 4F 30",
+  "match": "0x14200f375",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x1424fc8d0",
+  "kind": "call",
+  "names": [
+   "Game_Resolve_CustomisationItem_WithOverride"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142010f75",
+  "made_on_target": "0x1424fe4d0",
+  "twin": "made on steam-26566308; the target 0x1424fe4d0 is KB 0x1424fc8d0: Game_EntrantsUi_BuildCharacterRef (0x24f3970) and site_Game_MyTeamVehicleBases_SaveRecord (0x2508cbf) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142010f75",
+    "target": "0x1424fe4d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "78ca55bc19f8fb05b08eb98967b1524818a28a708bca5275edefd9637498d638"
+  }
+ ]
+}

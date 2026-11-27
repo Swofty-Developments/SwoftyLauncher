@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Sort_Introsort_PtrByWeightedScore",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140fba280",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Sort_Introsort_PtrByWeightedScore(void **first, void **last, int64_t depth_budget, void *ctx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140fbae00 (RacingPC lab re_groups/_decomp)",
+  "notes": "(lib) std::sort style introsort (median-of-3/ninther via FUN_140fbbea0, heapsort fallback via FUN_140fbbbb0 when depth budget hits 0, insertion sort below 33 elements, recursion on the smaller half) over an array of pointers. Comparator is inlined: score = w * elem.f32[+4] * weighted_mean where weighted_mean = sum((elem.f32[+8] + e.value) * e.weight) / sum(e.weight) over 16-byte entries in elem vector +0x18..+0x20, and w = ctx.f32[+0x24] if elem.byte[0] <= 10 else 1 - ctx.f32[+0x24]; sorted by descending score. Better context needed: caller not identified, so the element type (likely a rated item with category id > 10 split) is unidentified."
+ },
+ "signature": {
+  "id": "core.sort_introsort_ptr_by_weighted_score",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 78 29 9C 24 90 00 00 00 C5 78 29 94 24 80 00 00 00 C5 78 29 4C 24 70 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 4C 89 CE",
+  "match": "0x140fba280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fba280",
+  "kind": "func_start",
+  "names": [
+   "Ne_Sort_Introsort_PtrByWeightedScore"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140fbae00",
+  "made_on_target": "0x140fbae00",
+  "twin": "made on steam-26566308; the target 0x140fbae00 is KB 0x140fba280: Career_Format_MoraleDepartmentEffectText (0xfa0f30) and Career_Init_MyTeamRewardTypeRegistry (0xfc14c0) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140fbae00",
+    "target": "0x140fbae00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "91ece6ee7340dbd25fb7eceab8519baab5f49b7885bd8d5217a829aa3174f1b4"
+  }
+ ]
+}

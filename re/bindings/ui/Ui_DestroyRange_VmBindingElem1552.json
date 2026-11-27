@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_DestroyRange_VmBindingElem1552",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1423b7f10",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_DestroyRange_VmBindingElem1552(void *first, void *last)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1423b9b10 (RacingPC lab re_groups/_decomp);xref:0x1423383d0",
+  "notes": "Destroys a range of 0x610 byte elements. Each element releases about 35 VM node handles (vtable reset to base handle, unlink from the node list at node +0x28, Vm_Release_Node) at +0x0, +0x28 ... +0x5f0, two NeStr at +0x388/+0x390 and a sub-object at +0x468 via FUN_14161a5a0. Context from caller: Rivalries page item list."
+ },
+ "signature": {
+  "id": "ui.destroy_range_vm_binding_elem1552",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 C5 F8 29 74 24 20 48 39 D1 0F 84 ?? ?? ?? ?? 48 89 D6 48 89 CF 48 8D 1D ?? ?? ?? ?? C5 C8 57 F6 66 BD FF FF EB 26 48 8B 0D ?? ?? ?? ?? 49 8B 16 E8 ?? ?? ?? ?? 49 C7 06 00 00 00 00 48 81 C7 10 06 00 00",
+  "match": "0x1423b7f10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423b7f10",
+  "kind": "func_start",
+  "names": [
+   "Ui_DestroyRange_VmBindingElem1552"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1423b9b10",
+  "made_on_target": "0x1423b9b10",
+  "twin": "made on steam-26566308; the target 0x1423b9b10 is KB 0x1423b7f10: Vm_ContractRow_Destroy (0x23ae250) and Ne_Queue_EnqueueEventRecord (0x23bd920) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1423b9b10",
+    "target": "0x1423b9b10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c54740e747524d8757a7da36d6853c41f62aea8611ab622f843b8339fc4f2035"
+  }
+ ]
+}

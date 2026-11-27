@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_CopyConstruct_Elem16_140d41300",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d40780",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_RobinHoodMap_CopyConstruct_Elem16_140d41300(void *dst, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d41300 (RacingPC lab re_groups/_decomp);xref:0x140c5bae0",
+  "notes": "(lib) Copy constructor of a robin-hood map with 16-byte trivially copyable elements: copies allocator +0x08, default multiplier 0xc4ceb9fe1a85ec53, and if src is non-empty allocates (n)*0x11+8 bytes and memcpy's data plus info bytes along with count/mask/max/info fields."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_copy_construct_elem16_140d41300",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 8C 24 B0 00 00 00 49 89 8D 80 00 00 00",
+  "match": "0x140c5bd9b",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x140d40780",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_CopyConstruct_Elem16_140d41300"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140c5c85b",
+  "made_on_target": "0x140d41300",
+  "twin": "made on steam-26566308; the target 0x140d41300 is KB 0x140d40780: Ne_Vector24_PushBackMove (0xd34330) and Career_DeptEvent_CheckStoredUpgradeForDriver (0xd6d5c0) on either side both sit 0xb80 above their KB addresses; the match 0x140c5c85b is KB 0x140c5bd9b: Career_Load_PendingDriverContract (0xc5bae0) and Career_Bank_ReadSaveData (0xc5e450) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140c5c85b",
+    "target": "0x140d41300"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "df68e537215ad35835e85eca3019c1b756f92e7fda1f45a319801a5b99c166f0"
+  }
+ ]
+}

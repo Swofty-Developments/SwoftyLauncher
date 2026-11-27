@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamCarCustomisationVM_SetupMenuState",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141fd8ed0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_MyTeamCarCustomisationVM_SetupMenuState(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141fdaad0 (RacingPC lab re_groups/_decomp);xref:0x1420951e0",
+  "notes": "Rebuilds the screen state: Game_MyTeamCarCustomisation_BuildPreviewState(self+0x310), resolves the assigned vehicle customisation (g_FeTile_AssignedVehicleCustomisationKey, +0x11c loadout key) and whether it is the current loadout, caches the CareerSponsors component at +0x470 and team key at +0x480 when Ui_Get_CustomisationContext() is 2 or 3, releases and re-creates four node handles at +0x288..+0x300 (flag +0x308), then sets bools \"can_go_back\", \"driver_numbers_visible\" (feature flag bit 30), and \"copy_from_available\" (more than one saved set matching g_FeTile_SelectedCareerContent, or 0 in career contexts). Registers three menu options through FUN_141fdc060 with enabled/visible bytes derived from unlock-map lookups (self+0x440/+0x448) and sponsor data, posts a bus message with the team key in MyTeam mode, and clears +0x549 and +0x553. Caller Game_MyTeamCarCustomisation_Enter calls it once on screen entry right after building the preview state. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.my_team_car_customisation_vm_setup_menu_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 18 4B 00 00 E8 ?? ?? ?? ?? 48 29 C4 48 89 CE 4C 8D A9 10 03 00 00",
+  "match": "0x141fd8ed0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141fd8ed0",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamCarCustomisationVM_SetupMenuState"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141fdaad0",
+  "made_on_target": "0x141fdaad0",
+  "twin": "made on steam-26566308; the target 0x141fdaad0 is KB 0x141fd8ed0: Game_LiveryAssignVM_OnDeactivate (0x1fd6980) and Ui_SponsorLogoBinding_Build (0x1fe42f0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141fdaad0",
+    "target": "0x141fdaad0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0541c79698500e156884a4c481368e0bd567bb70d9874fcb16685bba9ab3eb14"
+  }
+ ]
+}

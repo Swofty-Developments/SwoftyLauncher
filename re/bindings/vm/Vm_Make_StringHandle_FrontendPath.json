@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_Make_StringHandle_FrontendPath",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141d92eb0",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "void *Vm_Make_StringHandle_DefaultFrontend(void *out_handle, const char **path)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141d94ab0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141d93e30",
+  "notes": "Renamed from Vm_Make_StringHandle_FrontendPath: the node path is *path (arg 3), while \"frontend\" is passed in the value slot of Game_VmBinding_ResolveStringNode (same position as the value in Vm_Set_String), so it is the default string and not a path. Resolves the string node *path under the g_Vm_Registry root (+8), links out_handle+8..+0x18 into the node's handle list (+0x28) with a refcount bump at +0x24, sets vtable 0x1456616e0 and returns out_handle. Context from caller: Game_SessionResultsContainerViewModel_SetupNextState builds the handle for path 0x14565ff30 and at once overwrites it with Vm_Holder_SetCStr(0x1456140ab) when a feature flag and *(sys+0x291) are set. Better context needed: the exact meaning of arg 4 of Game_VmBinding_ResolveStringNode. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.make_string_handle_frontend_path",
+  "section": ".xtls",
+  "pattern": "48 8D 54 24 20 48 89 F9 E8 ?? ?? ?? ?? 48 8D 15",
+  "match": "0x141d92dfc",
+  "anchor": "0x9",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x8"
+  },
+  "target": "0x141d92eb0",
+  "kind": "call",
+  "names": [
+   "Vm_Make_StringHandle_FrontendPath"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141d949fc",
+  "made_on_target": "0x141d94ab0",
+  "twin": "made on steam-26566308; the target 0x141d94ab0 is KB 0x141d92eb0: Game_F1WorldRewards_PopulateXpScreen (0x1d83970) and Game_SettingsControlsScreenViewModel_ApplyFilterRebuildList (0x1da5390) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141d949fc",
+    "target": "0x141d94ab0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9d2fb5a55b2cf36d526510d2fd4190f0b8c076878602857dbbbf599040e4da2a"
+  }
+ ]
+}

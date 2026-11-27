@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Destroy_OwnedExtraBlock_At10",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1441fe730",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Destroy_OwnedExtraBlock_At10(void *obj)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144200d00 (RacingPC lab re_groups/_decomp);xref:0x1438093f0,0x143815d80,0x143832480",
+  "notes": "Returns if obj+0x10 is null. Otherwise it destroys the block there: walks the hash map (slots +0x18, ctrl +0x20, count +0x28) calling the virtual destructor of each value and freeing it with the allocator at block+8, resets the map, releases the refcounted string at +0x58, destroys the array object at +0x50 (u16 count at +0x10, each element vt+8 then vt+0x20, dtor, free) with allocator +0x48, frees the map storage and the block, and zeroes obj+0x10. Callers 0x1438093f0 and 0x143815d80 build a 0x18-byte event/argument struct on the stack, pass it to vt+0x190 and vt+0x198 of a hub object and then call this to free its lazily created extra block; 0x143832480 does the same after 0x144200c80(&local, self). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.destroy_owned_extra_block_at10",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 8B 79 10",
+  "match": "0x1441fe730",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441fe730",
+  "kind": "func_start",
+  "names": [
+   "Vm_Destroy_OwnedExtraBlock_At10"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144200d00",
+  "made_on_target": "0x144200d00",
+  "twin": "made on steam-26566308; the target 0x144200d00 is KB 0x1441fe730: Ne_Time_BreakDownMicroseconds (0x41f15f0) and Vm_Node_Clear (0x420f330) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144200d00",
+    "target": "0x144200d00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "64bd8fb7c0e05ca55934a3a8801af7ab7f37f7bd40fc5e2c53989bd6e24cafbb"
+  }
+ ]
+}

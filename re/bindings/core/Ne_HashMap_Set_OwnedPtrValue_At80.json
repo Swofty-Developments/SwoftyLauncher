@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_Set_OwnedPtrValue_At80",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14398c450",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_HashMap_Set_OwnedPtrValue_At80(void *owner, uint64_t key, void *value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14398e9e0 (RacingPC lab re_groups/_decomp);xref:0x1437d66c0,0x143a70940,0x143a71220,0x143a71750,0x143a72060,0x143a723a0,0x143a72910,0x1441c6ad0",
+  "notes": "(lib) Insert-or-replace in the hash map at owner+0x80 (entries +0x98..+0xa0, 16 bytes {key, value}): FUN_1439917f0 finds the key; if present frees the old value through allocator owner+0x78 (vcall +0x38) and stores the new one; if absent inserts via FUN_143991940 (growing with FUN_143991f10 when it reports 0). Used to register per-event-type handlers on the Gfx2 renderer event queue."
+ },
+ "signature": {
+  "id": "core.hash_map_set_owned_ptr_value_at80",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 4C 89 C7 48 89 CE 48 89 54 24 20",
+  "match": "0x14398c450",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14398c450",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_Set_OwnedPtrValue_At80"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14398e9e0",
+  "made_on_target": "0x14398e9e0",
+  "twin": "made on steam-26566308; the target 0x14398e9e0 is KB 0x14398c450: Ne_EventQueue_DispatchPending (0x398e800) and Ne_Gfx2Renderer_ConstructDevice (0x3993680) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14398e9e0",
+    "target": "0x14398e9e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "53e33b891413a4cbf6a3f6a1bf353914b0aae3e239207c08a0697a34177e5b48"
+  }
+ ]
+}

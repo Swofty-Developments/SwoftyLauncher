@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Invoke_IndexedVfunc1B8_UntilZero",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14420a250",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Invoke_IndexedVfunc1B8_UntilZero(void *obj)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14420c820 (RacingPC lab re_groups/_decomp);xref:0x144242460",
+  "notes": "Whole body read: n = 0x14420c890() (arguments not recovered, presumably obj); for i = 0..n-1 calls obj->vf+0x1b8(obj,i) and stops at the first call that returns 0. No fields are read or written here. Caller 0x144242460 Vm_Unk_14423fe90 (per-frame update of a list/scroll element) calls it on the primary object when its bound node chain does not resolve to a live node. Context from caller: likely tries items in order until one refuses (e.g. focus/select); the vfunc role is not shown. Better context needed: body of vtable slot +0x1b8 and of 0x14420c890. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.invoke_indexed_vfunc1_b8_until_zero",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE E8 ?? ?? ?? ?? 48 85 C0 74 4C",
+  "match": "0x14420a250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14420a250",
+  "kind": "func_start",
+  "names": [
+   "Vm_Invoke_IndexedVfunc1B8_UntilZero"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14420c820",
+  "made_on_target": "0x14420c820",
+  "twin": "made on steam-26566308; the target 0x14420c820 is KB 0x14420a250: Ne_Time_BreakDownMicroseconds (0x41f15f0) and Vm_Node_Clear (0x420f330) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14420c820",
+    "target": "0x14420c820"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "dfb46fc9a94f9623909f3e01339756db5b369b1ce7e2969e35b0f6cb4d3d44b7"
+  }
+ ]
+}

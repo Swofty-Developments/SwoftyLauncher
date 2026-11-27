@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_FacilityUpgrades_NavigateIntoVariant",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1423e1e00",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_FacilityUpgrades_NavigateIntoVariant(void *self, uint8_t variant)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1423e3a00 (RacingPC lab re_groups/_decomp);xref:0x1423e0bd0,0x1423e3630",
+  "notes": "Builds a route parameter map (allocator self+0x270) with key OverrideTargetVariant set to the variant name from the 10-entry string table at 0x145790ee8 (empty string if variant >= 10), fires the UI route navigate_into_variant through Vm_Fire_Route(self+0x28, self, ...), then destroys the map. Hook to redirect which facility variant screen opens."
+ },
+ "signature": {
+  "id": "career.facility_upgrades_navigate_into_variant",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 88 00 00 00 48 89 CE 48 8B 81 70 02 00 00",
+  "match": "0x1423e1e00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423e1e00",
+  "kind": "func_start",
+  "names": [
+   "Career_FacilityUpgrades_NavigateIntoVariant"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1423e3a00",
+  "made_on_target": "0x1423e3a00",
+  "twin": "made on steam-26566308; the target 0x1423e3a00 is KB 0x1423e1e00: Career_Build_FacilityUpgradeList (0x23e1590) and Career_Update_FacilityUpgradeButton (0x23e3cb0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1423e3a00",
+    "target": "0x1423e3a00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "000cc4701cf1b8ca07f5035e3d478f8c3c230e020670a2535875dd60909f1ae7"
+  }
+ ]
+}

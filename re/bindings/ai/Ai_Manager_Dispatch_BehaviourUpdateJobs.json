@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ai_Manager_Dispatch_BehaviourUpdateJobs",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140605900",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Manager_Dispatch_BehaviourUpdateJobs(void *mgr, float dt)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140605940 (RacingPC lab re_groups/_decomp);xref:0x140605410",
+  "notes": "Increments global counter DAT_14610a8ec. If controller vector mgr+0x50..+0x58 is non-empty, iterates behaviour index b over the vector at (controllers[0]+0x10)+0x50..+0x58 and for each queues a job group Ai_Job_RunBehaviourUpdates with payload {b, mgr, &dt, car count from (mgr+0x38)+8} sized min(workers, cars); tracks up to 32 job handles on stack (errno 12 trace on overflow), then Render_Streaming_ProcessRequest and Ne_JobSignal_WaitWithTimeout on mgr+0xf0. Decrements the counter on exit."
+ },
+ "signature": {
+  "id": "ai.manager_dispatch_behaviour_update_jobs",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 0A 00 00 C5 FA 11 4C 24 3C",
+  "match": "0x140605900",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140605900",
+  "kind": "func_start",
+  "names": [
+   "Ai_Manager_Dispatch_BehaviourUpdateJobs"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140605940",
+  "made_on_target": "0x140605940",
+  "twin": "made on steam-26566308; the target 0x140605940 is KB 0x140605900: Ai_Create_VehicleController (0x6042c0) and Ai_Eval_ClampedTestSpeed (0x6068e0) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140605940",
+    "target": "0x140605940"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b14b0f381e75d9ed54e8df5f859efc084837bec7bf9343df076d26db0f348835"
+  }
+ ]
+}

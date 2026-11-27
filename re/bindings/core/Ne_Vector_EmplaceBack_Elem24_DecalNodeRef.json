@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_EmplaceBack_Elem24_DecalNodeRef",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1411184b0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_Vector_EmplaceBack_Elem24_DecalNodeRef(void *vec, void *ref, uint32_t *value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141118af0 (RacingPC lab re_groups/_decomp);xref:0x1416d3d80",
+  "notes": "(lib) std::vector emplace_back for 24-byte elements {vtbl k_Game_DecalNodePrefixPtr, uint32 id copied from ref+8, uint32 value}. Grows 1.5x with element-wise copy and frees the old buffer. Returns 0."
+ },
+ "signature": {
+  "id": "core.vector_emplace_back_elem24_decal_node_ref",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 4C 89 C7 48 89 D3 48 89 CE 48 8B 41 10 48 89 C2 48 2B 51 08 48 C1 FA 03 48 B9 AB AA AA AA AA AA AA AA",
+  "match": "0x1411184b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1411184b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vector_EmplaceBack_Elem24_DecalNodeRef"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141118af0",
+  "made_on_target": "0x141118af0",
+  "twin": "made on steam-26566308; the target 0x141118af0 is KB 0x1411184b0: Gdb_Load_SponsorSlotDefinitions (0x1118000) and Career_Sponsors_SerialiseLoyaltyTrack (0x1119430) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141118af0",
+    "target": "0x141118af0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "473339e17a39656cebc45d2894eafee0e9789e21a6838b199c12e69c5b30633e"
+  }
+ ]
+}

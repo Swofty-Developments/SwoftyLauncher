@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Destroy_PropertyBlock_14230ced0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14230b2d0",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "void Vm_Destroy_PropertyBlock_14230ced0(void *block)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14230ced0 (RacingPC lab re_groups/_decomp)",
+  "notes": "Destructor body for a view-model struct of 32 observable properties (vtable 0x145614e48, 0x20 bytes each) at qword indices 0x00..0x81 with gaps at 0x28-0x2b and 0x44; each is unlinked from its sibling list and released with Vm_Release_Node(g_Vm_Registry). No strings or callers identify which screen owns it. Better context needed: the owning VM class (session or myteam group) would give the real name."
+ },
+ "signature": {
+  "id": "vm.destroy_property_block_14230ced0",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8D 3D ?? ?? ?? ?? 48 89 B9 08 04 00 00",
+  "match": "0x14230b2d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14230b2d0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Destroy_PropertyBlock_14230ced0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14230ced0",
+  "made_on_target": "0x14230ced0",
+  "twin": "made on steam-26566308; the target 0x14230ced0 is KB 0x14230b2d0: Game_MyTeamContract_SetDriversVisible (0x230b380) and Career_MyTeamInitialEntryActivities_Event (0x2315450) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14230ced0",
+    "target": "0x14230ced0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cda5f251c279b144a6a486d3bb73d9e28397f06df7ad5dbaaf6db6b40ade3fbb"
+  }
+ ]
+}

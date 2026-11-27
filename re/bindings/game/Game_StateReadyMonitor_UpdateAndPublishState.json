@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_StateReadyMonitor_UpdateAndPublishState",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1436eb4b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_StateReadyMonitor_UpdateAndPublishState(void *self, char active)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1436eda40 (RacingPC lab re_groups/_decomp);xref:0x1436ebc10,0x1436ec990",
+  "notes": "When active: walks participants ((+0xc98)->+0x58 vector), counting eligible ones, those matching current phase +0xc90 in (+0xc80)+0xbb/+0x13c, a flag from +0x64 and count with +0x91!=2; evaluates countdown timers in +0xc80 (+0x88, +0xb0 vs network clock) and second list ((+0xc88)->+0x100). Packs result into +0xef8 (4 flag bytes), +0xefc phase (1/2/3), +0xf00, +0xf04, +0xf08; if anything changed, posts message vtable 0x145875890 with those 20 bytes on g_Game_MessageBus."
+ },
+ "signature": {
+  "id": "game.state_ready_monitor_update_and_publish_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 05 00 00 C5 F9 29 BC 24 80 05 00 00",
+  "match": "0x1436eb4b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436eb4b0",
+  "kind": "func_start",
+  "names": [
+   "Game_StateReadyMonitor_UpdateAndPublishState"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1436eda40",
+  "made_on_target": "0x1436eda40",
+  "twin": "made on steam-26566308; the target 0x1436eda40 is KB 0x1436eb4b0: Sess_Persistent_OnStateEnter (0x36e7de0) and Game_StateSession_OnStateExit (0x36fa8d0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1436eda40",
+    "target": "0x1436eda40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2b7def189f311202696019d69bcf0d7d9a275ce817efe522a033d8e5e59c9dc5"
+  }
+ ]
+}

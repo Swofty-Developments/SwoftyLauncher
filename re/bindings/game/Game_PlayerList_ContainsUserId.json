@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_PlayerList_ContainsUserId",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14310e870",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint32_t Game_PlayerList_ContainsUserId(void *list, void *id_entry)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143110e00 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1421f0eb0,0x1421f3000,0x14221be30",
+  "notes": "Whole body read. Walks the vector list+0xc0..+0xc8 of 0x50-byte entries and compares each with id_entry: flag bit 0x10000000 of the u32 at +0x48 must agree; without the bit the whole u32 must be equal, with it the id blocks at +0x08 are compared (kind 7: +0x20^+0x28; kind 3: byte +0x41, then +0x40 and +0x10^+0x18; otherwise Ne_UserId_Equals). Returns 1 on a match; otherwise writes error 2 to the TLS error chain and errno trace ring and returns 0. Callers pass [x+0x428] as the list: 0x1421f0eb0 fills a per-player row and stores the result in row byte +0x5b; Game_DataGathererPlayers_Update 0x1421f3000 does the same for the online player rows; 0x14221be30 uses it to drop or keep entrant rows of its 0x58-byte list. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.player_list_contains_user_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 4C 8B B1 C0 00 00 00",
+  "match": "0x14310e870",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14310e870",
+  "kind": "func_start",
+  "names": [
+   "Game_PlayerList_ContainsUserId"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143110e00",
+  "made_on_target": "0x143110e00",
+  "twin": "made on steam-26566308; the target 0x143110e00 is KB 0x14310e870: Game_CustomDriverNetworkMessageHandler_AddReplicatedDriver (0x310d3b0) and Game_PlayerSet_SetEntryLocked (0x3111b50) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143110e00",
+    "target": "0x143110e00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ca63cac4461f25ff2b76a9940714bf9465b526d5db7432e329d64540bb930be9"
+  }
+ ]
+}

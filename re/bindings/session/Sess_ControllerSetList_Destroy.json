@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_ControllerSetList_Destroy",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144648250",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_ControllerSetList_Destroy(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14464aac0 (RacingPC lab re_groups/_decomp);xref:0x14389c4c0",
+  "notes": "Walks the pointer vector at +0x18..+0x20, runs the element destructor 0x14464a970 on each non-null entry and frees it with the allocator at [0], then frees the vector buffer with the allocator at [2], zeroes begin/end/cap and deletes the critical section at [6]. Independent re-check (lab blind verifier 2026-11-27): partial, better name Sess_PtrList_Destroy_FreeElementsAndCritSec: Iterates the pointer vector at param_1[3]..[4], calls FUN_14464a970 on each non-null element and frees it via allocator vtable +0x38, frees the buffer and calls DeleteCriticalSection(param_1[6]); nothing identifies the elements as controller sets."
+ },
+ "signature": {
+  "id": "session.controller_set_list_destroy",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 C5 F8 29 74 24 20 48 89 CE 48 8B 51 18",
+  "match": "0x144648250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144648250",
+  "kind": "func_start",
+  "names": [
+   "Sess_ControllerSetList_Destroy"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14464aac0",
+  "made_on_target": "0x14464aac0",
+  "twin": "made on steam-26566308; the target 0x14464aac0 is KB 0x144648250: Game_AnimatedDriver_Initialise (0x4647db0) and Car_SuspensionDamage_OnCollision (0x4657580) on either side both sit 0x2870 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14464aac0",
+    "target": "0x14464aac0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ac5e40ca4675f49ad0efd02d666b22a8040807934df9a73cea7cb45201c00e3d"
+  }
+ ]
+}

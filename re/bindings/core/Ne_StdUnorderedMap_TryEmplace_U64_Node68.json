@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_StdUnorderedMap_TryEmplace_U64_Node68",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143a294d0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_StdUnorderedMap_TryEmplace_U64_Node68(void *map, void *outIterBool, const uint64_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a2baa0 (RacingPC lab re_groups/_decomp)",
+  "notes": "(lib) MSVC std::unordered_map try_emplace with FNV-1a over the 8-byte key. On miss allocates a 0x68 node whose value is itself an empty unordered container (0x18 sentinel, 16 bucket slots, mask 7, max load 1.0f), rehashes when load factor exceeds map[0], links the node and returns {node, inserted}."
+ },
+ "signature": {
+  "id": "core.std_unordered_map_try_emplace_u64_node68",
+  "section": ".xtls",
+  "pattern": "48 8D 8E 00 03 00 00 48 83 C7 20 48 8D 54 24 30 49 89 F8 E8 ?? ?? ?? ?? 48 8B 4C 24 30",
+  "match": "0x1439d71f0",
+  "anchor": "0x14",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x13"
+  },
+  "target": "0x143a294d0",
+  "kind": "call",
+  "names": [
+   "Ne_StdUnorderedMap_TryEmplace_U64_Node68"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1439d97c0",
+  "made_on_target": "0x143a2baa0",
+  "twin": "made on steam-26566308; the target 0x143a2baa0 is KB 0x143a294d0: Ne_UnorderedMap_FindOrEmplace_Fnv8_B (0x3a2b430) and Ne_UnorderedMap_FindOrEmplace_Fnv8_C (0x3a2c830) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1439d97c0",
+    "target": "0x143a2baa0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c72a19db7a1c0693ba815c1678f3262a82819bc1aea91ecab68397e4d531fad2"
+  }
+ ]
+}

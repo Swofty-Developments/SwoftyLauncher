@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_PushBack_InlineStr260_B",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1436c8d90",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Vector_PushBack_InlineStr260_B(void *vec, char **src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1436cb320 (RacingPC lab re_groups/_decomp);xref:0x1436ca080",
+  "notes": "(lib) Byte-identical duplicate of 0x1436cafc0: push_back of a 0x120-byte inline string (cap 0x104) copied from *src, with 1.5x growth."
+ },
+ "signature": {
+  "id": "core.vector_push_back_inline_str260_b",
+  "section": ".xtls",
+  "pattern": "48 8D 54 24 70 48 89 D9 E8 ?? ?? ?? ?? 48 8B 05",
+  "match": "0x1436c80fa",
+  "anchor": "0x9",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x8"
+  },
+  "target": "0x1436c8d90",
+  "kind": "call",
+  "names": [
+   "Ne_Vector_PushBack_InlineStr260_B"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1436ca68a",
+  "made_on_target": "0x1436cb320",
+  "twin": "made on steam-26566308; the target 0x1436cb320 is KB 0x1436c8d90: Game_ContractTeamSelect_OnExit (0x36c7d70) and Game_BetaCode_OnEntered (0x36d7ba0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1436ca68a",
+    "target": "0x1436cb320"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e44e031b1991c8bca9d65f7a4b59417c8394757400d1fb3ac64f510ba223493b"
+  }
+ ]
+}

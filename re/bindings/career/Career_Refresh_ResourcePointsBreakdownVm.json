@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Refresh_ResourcePointsBreakdownVm",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1417ff810",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Refresh_ResourcePointsBreakdownVm(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141800ff0 (RacingPC lab re_groups/_decomp);xref:0x141bc8880",
+  "notes": "Rebuilds the R&D resource-points (RP) summary view-model. Reads career root at vm+0x7828, season/event/session overrides at +0x7818/+0x781c/+0x7820 (-1 = current), gets the ResourcePoints component (k_Career_ResourcePointsComponentDesc), builds two RP source lists (player team and the entrant at +0x7840) via Vm_Unk_141802fa0, sums 0x30-byte source rows as round((count*perUnit+bonus)*scale) clamped to [min,max], multiplies by Career_ResourcePoints_GetGainMultiplier and emits rows through FUN_141806390 (source ids from byte table 0x14571d25d..0x14571d26c, id 0xc excluded from totals). If +0x7810 != 0 it also writes projected RP ints to nodes +0x50/+0x70, total strings +0x110/+0x130, wallet (Career_Get_RpWallet, 1000000 when unlimited) to +0x170 and wallet minus spend to +0x150/+0x190, and lists enabled upgrades per department (bool node +0x1d0). Sets +0x7838=1 when valid. UI only: good read hook for RP gain maths, not the place to change RP."
+ },
+ "signature": {
+  "id": "career.refresh_resource_points_breakdown_vm",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 0E 00 00",
+  "match": "0x1417ff810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417ff810",
+  "kind": "func_start",
+  "names": [
+   "Career_Refresh_ResourcePointsBreakdownVm"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141800ff0",
+  "made_on_target": "0x141800ff0",
+  "twin": "made on steam-26566308; the target 0x141800ff0 is KB 0x1417ff810: Career_Init_RnDUpgradeRewardPanel (0x1800d50) and Career_Apply_RnDChallengerIconsLayout (0x180bc20) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141800ff0",
+    "target": "0x141800ff0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1d8efe727871f66d29450900664fd85cc6bbbc87dce3c64d3ceeaf68661b3893"
+  }
+ ]
+}

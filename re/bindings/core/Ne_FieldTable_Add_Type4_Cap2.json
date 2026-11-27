@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_FieldTable_Add_Type4_Cap2",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1447d3490",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_FieldTable_Add_Type4_Cap2(void *table, const char *name, void *dest)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1447d5e50 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1447d25f0",
+  "notes": "Appends one 0x28-byte field descriptor to a table of capacity 2 (count +0x54, bit mask +0x50): type +0 = 4, name +8, dest +0x10, size +0x20 = 4, always sets the mask bit; when full it sets errno 0xc. Context from caller: Game_PhysicsDesc_ParseBodyPart registers radius and halfLength (dest buffer +0 and +4) for the capsule geometry, then runs Ne_AttrSet2_Parse. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "core.field_table_add_type4_cap2",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 C8 8B 49 54",
+  "match": "0x1447d3490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1447d3490",
+  "kind": "func_start",
+  "names": [
+   "Ne_FieldTable_Add_Type4_Cap2"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1447d5e50",
+  "made_on_target": "0x1447d5e50",
+  "twin": "made on steam-26566308; the target 0x1447d5e50 is KB 0x1447d3490: Ne_CloudUploader_Upload (0x47c8580) and Ne_Format_HresultUnknownFacility (0x49349e0) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1447d5e50",
+    "target": "0x1447d5e50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "49655da4d880e60b3d47a961137f885429da0726e77fa9f138c437b95dfba13a"
+  }
+ ]
+}

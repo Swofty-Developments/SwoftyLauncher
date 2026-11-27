@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_Build_ItemsByTeamIdMap",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14196a040",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "void Team_Build_ItemsByPackedIdMap(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14196b820 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14196f230,0x141bf9580,0x141c026b0",
+  "notes": "Renamed from Team_Build_ItemsByTeamIdMap: the key is the u32 at +0x5c of the 0x88-byte rows (per the KB entrant layout the vehicle ref, team is +0x58), so 'TeamId' is not shown by the code. Whole body read. Source = [self+0x48] or [[[self+0x40]+0x88]+0x260]+0x2b0: for each of its [+0x70] objects at +0x10 it collects the u32 at row+0x5c of every 0x88-byte row in the [+0x230] vectors at +0x130, plus the u32 list [obj+0x18]+0x80..+0x88, into a temp vector (helper 0x1413e4c90). Each id is inserted, if absent, into the std::map at self+0x30 (size +0x38, node 0x48 bytes from allocator +0x28, key order (byte0 << 14) | u16 at +2, value = empty pointer vector with allocator self+0x20). Then every item pointer in [[self+0x50]+0x310]+0x10..+0x18 with [item+0xc8] != 0 is appended to the vector of the node whose key matches byte +0x3c / u16 +0x3e of [item+0xc8]. Callers call it on a sub-object (+0xc8 or +0xb0) right before Game_Build_SpecialLiveryList on the same object; 0x14196f230 and 0x141bf9580 are view-model setup functions. Context from caller: the grouped items are livery entries. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "teams.build_items_by_team_id_map",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 48 89 CE 48 8B 41 20",
+  "match": "0x14196a040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14196a040",
+  "kind": "func_start",
+  "names": [
+   "Team_Build_ItemsByTeamIdMap"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14196b820",
+  "made_on_target": "0x14196b820",
+  "twin": "made on steam-26566308; the target 0x14196b820 is KB 0x14196a040: Ne_Std_ThrowVectorSubscriptError (0x1952cb0) and Ui_Play_FacilityStageCutsceneByIndex (0x19707c0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14196b820",
+    "target": "0x14196b820"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "531a098722e06cd06812a9be0fb11faaa5ca21bb3fbb8a48cc6b624ecfecfbe2"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Material_BuildDerivedNames",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143c08ba0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_Material_BuildDerivedNames(void *material)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c0b170 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143c0e130",
+  "notes": "If byte +0x1b4 is 0 it interns the base name from the table 0x1459c06d0 indexed by 0x143c0b5a0(material), else reuses +0x1f8/+0x200; writes name ptr/FNV-1a hash to +0x1f8/+0x200 and +0x1b8/+0x1c0. Scans the pass vector +0x140 (per pass +0x20 -> ranges +0x528 and +0x568); if only the +0x568 range has entries it takes the name from that entry and sets +0x1b4=1. Then formats three strings (formats at 0x1458c482e, 0x1458c483d, 0x1458c484c, the last two with the name), interns them and stores ptr/hash at +0x1c8/+0x1d0, +0x1d8/+0x1e0, +0x1e8/+0x1f0. Caller 0x143c0e130: large material load/build routine that calls this as its last step after bumping the counter at +0x1b0. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.material_build_derived_names",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 20 04 00 00 48 89 CE 49 BF 25 23 22 84 E4 9C F2 CB",
+  "match": "0x143c08ba0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c08ba0",
+  "kind": "func_start",
+  "names": [
+   "Render_Material_BuildDerivedNames"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c0b170",
+  "made_on_target": "0x143c0b170",
+  "twin": "made on steam-26566308; the target 0x143c0b170 is KB 0x143c08ba0: Render_Material_CountResourceSlots (0x3c09e60) and Ne_TerrainResource_GetMaterialResourcel (0x3c265a0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c0b170",
+    "target": "0x143c0b170"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "329b5ca35c142c277262e54b1777515d96cc835b2983f43ef217de6c7c663744"
+  }
+ ]
+}

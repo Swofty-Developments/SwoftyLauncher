@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_CopyConstruct_CustomisationHeader",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1401afb50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_CopyConstruct_CustomisationHeader(void *dst, const void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1401afb50 (RacingPC lab re_groups/_decomp);xref:0x1401aae90,0x1401b0880,0x1401b1860,0x1428927c0",
+  "notes": "Copy-constructor: sets vtables, three item refs with tags 1, 2, 3 at +0x8/+0x38/+0x68 (ids from src +0x18/+0x48/+0x78), int +0xa0, optional inline 128 char string +0xa8 (flag +0x140), uint16 +0x148, ints +0x158/+0x168/+0x178, byte +0x180, two 0x28 byte decal arrays (+0x190 count +0x258, +0x260 count +0x328) and int +0x330. Same layout as the first 0x338 bytes handled by Game_Assign_CustomisationProfile."
+ },
+ "signature": {
+  "id": "game.copy_construct_customisation_header",
+  "section": ".xtls",
+  "pattern": "56 57 48 89 C8 48 8D 0D ?? ?? ?? ?? 48 89 08 48 8D 0D",
+  "match": "0x1401afb50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401afb50",
+  "kind": "func_start",
+  "names": [
+   "Game_CopyConstruct_CustomisationHeader"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1401afb50",
+  "made_on_target": "0x1401afb50",
+  "twin": "made on steam-26566308; the target 0x1401afb50 is KB 0x1401afb50: Game_SceneManagerSpawn_MergeScene (0x1a5b10) and Ne_String_AssignWithMode (0x1b9000) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1401afb50",
+    "target": "0x1401afb50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "778b5b97fa7b9d1fe918a12884f326b841117e0014507cb816c7d1e03b3ab020"
+  }
+ ]
+}

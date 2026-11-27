@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Save_DriverContractRecord",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d9f1e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Save_DriverContractRecord(void *writer, int *rec)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d9fd60 (RacingPC lab re_groups/_decomp);xref:0x140d72f20,0x140d9f850",
+  "notes": "Serialises one 0x2c-byte contract record via Gdb_Write_ReflectedFieldA: packed id (+0), ints +4 and +8, u16 +0xc, u8 +0xe, u16 +0x10, u8 +0x12, ints +0x1c, +0x18, +0x20, +0x24, bool +0x28, int +0x14. Field names match the loader 0x140d765b0. Returns first non-zero error. Independent re-check (lab blind verifier 2026-11-27): partial, better name Gdb_Write_RecordReflectedFields: It sequentially calls Gdb_Write_ReflectedFieldA for 11 fields of the record (u8/u16 packed, ints, bytes, floats) and appends each to an output list, but the code shows no driver or contract semantics."
+ },
+ "signature": {
+  "id": "career.save_driver_contract_record",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 48 89 D7 8B 02 C1 E0 0E",
+  "match": "0x140d9f1e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d9f1e0",
+  "kind": "func_start",
+  "names": [
+   "Career_Save_DriverContractRecord"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140d9fd60",
+  "made_on_target": "0x140d9fd60",
+  "twin": "made on steam-26566308; the target 0x140d9fd60 is KB 0x140d9f1e0: Career_Set_DriverContractState (0xd9e9b0) and Game_DriverContractsMyTeamComponent_OpenContractWindow (0xdae9f0) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140d9fd60",
+    "target": "0x140d9fd60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f6ae03f62918b2c4fb87cd17f7d57bcf9383541164d41c7bf2f7b3181d095c96"
+  }
+ ]
+}

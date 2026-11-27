@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_Resolve_SystemDeps_PlayerCustInfo",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1416c2840",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_Resolve_SystemDeps_PlayerCustInfo(void *self, void *provider, void *system_map)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1416c3e30 (RacingPC lab re_groups/_decomp);xref:0x14206e2f0",
+  "notes": "Stores provider vfunc +0x28 (key 0x146cba218) at self+0xc0, then resolves from the system map: PlayerCustomisationInfoSystem -> +0x90, GameModeSystem -> +0x98, key 0x146082d08 -> +0xa0, 0x146082c68 -> +0xa8, 0x14607e178 -> +0xb0 (optional), 0x14607df70 -> +0xb8 (optional), 0x146082d68 -> +0xc8, EntrantsSystem -> +0xd0. Returns 0 on success or 0x16 after pushing the error into the errno trace ring."
+ },
+ "signature": {
+  "id": "game.resolve_system_deps_player_cust_info",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 89 C6 48 81 C7 F0 01 00 00",
+  "match": "0x141fcbacd",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1416c2840",
+  "kind": "call",
+  "names": [
+   "Game_Resolve_SystemDeps_PlayerCustInfo"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141fcd6cd",
+  "made_on_target": "0x1416c3e30",
+  "twin": "made on steam-26566308; the target 0x1416c3e30 is KB 0x1416c2840: Ui_Rnd_BuildGotoDepartmentButtonA (0x16b82c0) and Game_MyTeamCarCustomisation_BuildPreviewState (0x16c8140) on either side both sit 0x15f0 above their KB addresses; the match 0x141fcd6cd is KB 0x141fcbacd: Game_ChallengeCareer_BuildTrackTiles (0x1fc2340) and Game_LiveryAssignVM_OnActivate (0x1fd4da0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141fcd6cd",
+    "target": "0x1416c3e30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "503567b2a6a98cbdbb8263149173c9664b3eb6a176b65e5353088d7b3c479c23"
+  }
+ ]
+}

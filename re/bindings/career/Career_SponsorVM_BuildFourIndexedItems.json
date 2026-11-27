@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_SponsorVM_BuildFourIndexedItems",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141864950",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_SponsorVM_BuildFourIndexedItems(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141866130 (RacingPC lab re_groups/_decomp);xref:0x1423f7e30",
+  "notes": "Loops index 0..3; when byte +0x38 is set, formats the index as a child name (djb2 hash, rejects path chars), gets or creates that child under the list node at +0x2c0 and calls FUN_141866580(vm+0x2d8, vm+0x8 value, child holder, &index) to build the item. Better context needed: FUN_141866580 to tell what the four items are."
+ },
+ "signature": {
+  "id": "career.sponsor_vm_build_four_indexed_items",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 48 89 CE 48 C7 44 24 30 00 00 00 00",
+  "match": "0x141864950",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141864950",
+  "kind": "func_start",
+  "names": [
+   "Career_SponsorVM_BuildFourIndexedItems"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141866130",
+  "made_on_target": "0x141866130",
+  "twin": "made on steam-26566308; the target 0x141866130 is KB 0x141864950: Vm_SponsorSlots_Bind (0x1865a10) and Vm_SponsorGoalsText_Refresh (0x18666a0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141866130",
+    "target": "0x141866130"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "612387cda3e29e413d4852327984dbe3c3a3a8364e95fc855f1cad75d4adf3a9"
+  }
+ ]
+}

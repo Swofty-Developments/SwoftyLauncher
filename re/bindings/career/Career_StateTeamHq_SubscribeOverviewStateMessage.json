@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Career_StateTeamHq_SubscribeOverviewStateMessage",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140df1ec0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_StateTeamHq_SubscribeOverviewStateMessage(void *state, char subscribe)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140df2a40 (RacingPC lab re_groups/_decomp);xref:0x143704630",
+  "notes": "subscribe!=0 allocates a 0x10 delegate {Career_Dispatch_ByKind_140df2080, state} and calls Ne_Subscribe_BusMessage(bus, \"team_hq_overview_state_message\"); subscribe==0 unsubscribes the same handler (func 0x14398a8e0 with key 0x14569a028). If the bus is not ready (bus+0x68 == 0) it records errno 0x58 (0xc on alloc failure) in the errno trace ring."
+ },
+ "signature": {
+  "id": "career.state_team_hq_subscribe_overview_state_message",
+  "section": ".xtls",
+  "pattern": "48 81 C1 10 11 00 00 E8 ?? ?? ?? ?? 48 8B 05",
+  "match": "0x1437020ae",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x7"
+  },
+  "target": "0x140df1ec0",
+  "kind": "call",
+  "names": [
+   "Career_StateTeamHq_SubscribeOverviewStateMessage"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14370463e",
+  "made_on_target": "0x140df2a40",
+  "twin": "made on steam-26566308; the target 0x140df2a40 is KB 0x140df1ec0: Career_Msg_OnBankAccountFundsMessage (0xdf2340) and Career_TeamHqFacilities_CameraCycleFadeIn (0xdf2c30) on either side both sit 0xb80 above their KB addresses; the match 0x14370463e is KB 0x1437020ae: site_Career_TeamHqIsMyTeamResult (0x37020fd) and Ui_EnterMyTeamCareer_Main (0x37062d0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14370463e",
+    "target": "0x140df2a40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6b0b798170e20b46008a529ed0977230c71a9eac34d9302ba1ca06992ed87ebb"
+  }
+ ]
+}

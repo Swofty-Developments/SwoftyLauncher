@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Create_TimelineActivityBlock",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14231ec30",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void *Career_Create_TimelineActivityBlock(void *self, void *out_shared, uint32_t arg, uint32_t index, void *parent_shared)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142320830 (RacingPC lab re_groups/_decomp);xref:0x142317600",
+  "notes": "Formats \"timeline_activity_block_%d\" with index, forwards to FUN_142320c20 (0x142320c20) with a copy of parent_shared, then sets the colour-type node at created view+0x170 to 0xff000000 and releases parent_shared. Returns out_shared."
+ },
+ "signature": {
+  "id": "career.create_timeline_activity_block",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 50 44 89 C7 48 89 D6",
+  "match": "0x14231ec30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14231ec30",
+  "kind": "func_start",
+  "names": [
+   "Career_Create_TimelineActivityBlock"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142320830",
+  "made_on_target": "0x142320830",
+  "twin": "made on steam-26566308; the target 0x142320830 is KB 0x14231ec30: Career_MyTeamActivities_BindSelectedActivity (0x231eef0) and Ui_Dispatch_MyTeamActivitiesUiEvent (0x2320a00) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142320830",
+    "target": "0x142320830"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "caebb3b9cf4e0971e2f2657184324d52472b3dcd70099cd2e536c28e67d953a4"
+  }
+ ]
+}

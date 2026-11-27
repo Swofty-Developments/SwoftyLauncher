@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Set_NodeRef_FromRefProperty",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141e48ad0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_Set_NodeRef_FromRefProperty(void *out_handle, void *base_node, const char *name, void *src, int32_t create)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141e4a6d0 (RacingPC lab re_groups/_decomp);xref:0x142237230",
+  "notes": "Reads the property at src+0x08; if it is valid and its type id equals the node-ref type descriptor 0x146ca7550 it takes the referenced node, then calls Vm_Set_NodeRef(registry, base_node, name, ref, create) and returns a linked handle (vtable 0x1456611f8) in out_handle. Net effect: copies a node reference from one VM property into a named child of another node."
+ },
+ "signature": {
+  "id": "vm.set_node_ref_from_ref_property",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 60 C5 F8 29 74 24 50 4C 89 C7 48 89 D3",
+  "match": "0x141e48ad0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141e48ad0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Set_NodeRef_FromRefProperty"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141e4a6d0",
+  "made_on_target": "0x141e4a6d0",
+  "twin": "made on steam-26566308; the target 0x141e4a6d0 is KB 0x141e48ad0: Ui_Release_RnDDriverUpgradeRowNodes (0x1e45a90) and Game_TitleScreenVM_OnScreenActivated (0x1e9f230) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141e4a6d0",
+    "target": "0x141e4a6d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cdc2ba1255ab9c2fffc76e3d446fa061e5b1a673f8a9604eeb2ee47fccaf0d8b"
+  }
+ ]
+}

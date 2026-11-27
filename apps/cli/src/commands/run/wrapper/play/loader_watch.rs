@@ -129,6 +129,13 @@ impl<'a> LoaderWatch<'a> {
             say("info", text);
             return;
         }
+        if found.rotated {
+            say(
+                "info",
+                "The mod loader ran in F1 25: it moved its log aside after the game started.",
+            );
+            return;
+        }
         // The antivirus explanation is a Windows one; under Proton a loader
         // that does not attach is a prefix or override problem instead.
         if cfg!(windows) {

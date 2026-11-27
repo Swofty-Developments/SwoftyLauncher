@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbort_Thunk_141e6a3b0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141e687b0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbort_Thunk_141e6a3b0(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141e6a3b0 (RacingPC lab re_groups/_decomp);xref:0x141ce7680",
+  "notes": "(thunk) Calls Ne_Crt_InvalidParameterAbort then hits int 3; no-return overflow handler used by the hash map rehash at 0x141e6a3c0."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_thunk_141e6a3b0",
+  "section": ".xtls",
+  "pattern": "C3 E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC 41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE",
+  "match": "0x141ce841f",
+  "anchor": "0x2",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x1"
+  },
+  "target": "0x141e687b0",
+  "kind": "call",
+  "names": [
+   "Ne_Crt_InvalidParameterAbort_Thunk_141e6a3b0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141cea01f",
+  "made_on_target": "0x141e6a3b0",
+  "twin": "made on steam-26566308; the target 0x141e6a3b0 is KB 0x141e687b0: Ui_Release_RnDDriverUpgradeRowNodes (0x1e45a90) and Game_TitleScreenVM_OnScreenActivated (0x1e9f230) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141cea01f",
+    "target": "0x141e6a3b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "193ceba98f9fb75538524a5ec7f8772142f49997577b611748077d2b7d54a24e"
+  }
+ ]
+}

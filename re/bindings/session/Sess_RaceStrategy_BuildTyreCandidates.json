@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_RaceStrategy_BuildTyreCandidates",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1436988f0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_RaceStrategy_BuildTyreCandidates(void *strategy)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14369ae80 (RacingPC lab re_groups/_decomp);xref:0x143698580",
+  "notes": "For each of 5 tyre groups reads the car tyre component (k_Sess_TyreComponentType, +0x9c68, groups of 0x28 at +0x10, sets of 0x6c), clears candidate vector strategy+0x188[group], and for every set passing Car_Tyre_IsCompoundAllowed calls Sess_RaceStrategy_EvaluateStintTyre(ctx +0x10, car index byte +0xc4, candidate, strategy+0x1e4) and appends a 0x1c-byte candidate (group, set index, flags) if not already present; then runs Sess_RaceStrategy_SortCandidatesA/B/C on the vector."
+ },
+ "signature": {
+  "id": "session.race_strategy_build_tyre_candidates",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 48 89 CB 0F B6 81 C4 00 00 00",
+  "match": "0x1436988f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436988f0",
+  "kind": "func_start",
+  "names": [
+   "Sess_RaceStrategy_BuildTyreCandidates"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14369ae80",
+  "made_on_target": "0x14369ae80",
+  "twin": "made on steam-26566308; the target 0x14369ae80 is KB 0x1436988f0: site_Sess_PitEvalReturnFalse (0x36946da) and Sess_RaceStrategy_SetPlanType (0x369b840) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14369ae80",
+    "target": "0x14369ae80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5a065615f40f9f50a2192af61fb010a4c0b29470c70d8b0f8dfe25cc72ec2023"
+  }
+ ]
+}

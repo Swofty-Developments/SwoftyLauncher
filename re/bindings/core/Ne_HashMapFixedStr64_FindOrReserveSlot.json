@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMapFixedStr64_FindOrReserveSlot",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d5e400",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_HashMapFixedStr64_FindOrReserveSlot(void *map, uint64_t *out_index_status, void *key_node)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d5ef80 (RacingPC lab re_groups/_decomp);xref:0x140cc2750,0x140d5ee00",
+  "notes": "(lib) Robin-hood emplace helper for a map of node pointers keyed by the C string at node +0x10 (FNV-1a hash times multiplier +0x20). Returns {slot index, status}: 1 found, 2 new empty slot, 3 new slot after shifting, 0 failure after 256 retries; grows/rehashes via FUN_140d5f5b0 or allocates the initial 8-bucket table."
+ },
+ "signature": {
+  "id": "core.hash_map_fixed_str64_find_or_reserve_slot",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 84 24 D8 00 00 00 48 83 F8 03",
+  "match": "0x140cc2ef5",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x140d5e400",
+  "kind": "call",
+  "names": [
+   "Ne_HashMapFixedStr64_FindOrReserveSlot"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140cc39b5",
+  "made_on_target": "0x140d5ef80",
+  "twin": "made on steam-26566308; the target 0x140d5ef80 is KB 0x140d5e400: Ne_Vector24_PushBackMove (0xd34330) and Career_DeptEvent_CheckStoredUpgradeForDriver (0xd6d5c0) on either side both sit 0xb80 above their KB addresses; the match 0x140cc39b5 is KB 0x140cc2ef5: Career_DeptEvent_GetSpawnRate (0xcc2240) and Career_DeptEvent_ParseDepartment (0xcca850) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140cc39b5",
+    "target": "0x140d5ef80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "016784e51002285c78d70f48a9b5dc543926a193da54bab48701053005f65174"
+  }
+ ]
+}

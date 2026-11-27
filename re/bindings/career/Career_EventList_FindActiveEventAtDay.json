@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_EventList_FindActiveEventAtDay",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1422c6df0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_EventList_FindActiveEventAtDay(void *list, uint16_t day)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1422c89f0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1422c5140,0x142330180",
+  "notes": "Walks the 0x10-stride entries at list+0x50..0x58; for each object (entry+0x8) whose type (vtable+0x0) derives from 0x146065fd8: returns null as soon as day < obj+0xa (start day, list is sorted), otherwise returns the object when day <= vtable+0x10() (end day) and the byte obj+0xc is clear. Returns null if none. Callers Game_TeamHQAdvanceViewModel_OnCommandRaised and Career_TeamHqMyTeamVM_OnCommandRaised pass the activity record from Career_Get_ActivityRecordByIndex and day = ([x+0x2b0] >> 5) / 45, then use result+0x10 -> +0x8 (u16 id) for a lookup via 0x1412656e0. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "career.event_list_find_active_event_at_day",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 8B 59 50",
+  "match": "0x1422c6df0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422c6df0",
+  "kind": "func_start",
+  "names": [
+   "Career_EventList_FindActiveEventAtDay"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1422c89f0",
+  "made_on_target": "0x1422c89f0",
+  "twin": "made on steam-26566308; the target 0x1422c89f0 is KB 0x1422c6df0: Game_TeamHQAdvanceViewModel_StopAdvance (0x22c87a0) and Game_TeamHQAdvanceViewModel_ShowTodayCards (0x22c8c80) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1422c89f0",
+    "target": "0x1422c89f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "72e3f70477e8ae2ce87ec10d17e3d6f5c6319017d8fc6067df82014349429a5c"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Resolve_PendingRequest_140db78e0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140db6d60",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_Resolve_PendingRequest_140db78e0(void *self, char accept)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140db78e0 (RacingPC lab re_groups/_decomp);xref:0x142330180",
+  "notes": "Operates on the pending record at self+0x478: on reject sets its state byte +0xc = 3; on accept sets +0xc = 2, calls FUN_140db7950(self, rec+4 id, rec+0xa u16) and posts a bus message (vtable 0x145698ed0) carrying the id and flag 1. Better context needed: what the pending record represents (the caller is the My Team HQ command handler)."
+ },
+ "signature": {
+  "id": "career.resolve_pending_request_140db78e0",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 40 48 8B 81 78 04 00 00",
+  "match": "0x140db6d60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140db6d60",
+  "kind": "func_start",
+  "names": [
+   "Career_Resolve_PendingRequest_140db78e0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140db78e0",
+  "made_on_target": "0x140db78e0",
+  "twin": "made on steam-26566308; the target 0x140db78e0 is KB 0x140db6d60: Career_DriverContractsMyTeam_AddPendingEntry (0xdb7230) and Career_DriverContractsMyTeam_PostApproachMessages (0xdb81e0) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140db78e0",
+    "target": "0x140db78e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "de383bb78838ac11b87897f33cc0025ebe791b22c4c4f0888863e3354402a3a8"
+  }
+ ]
+}

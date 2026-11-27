@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Object_Ctor_AllocDescriptorSlots",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1439d7240",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void *Render_Gfx2Object_Ctor_AllocDescriptorSlots(void *self, const void *desc)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439d9810 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1439d9760",
+  "notes": "Ctor of a 0x98-byte object: vtable 0x1458a15a8, copies 7 qwords of desc into +0x8..+0x38, inits two 0x28-byte descriptor slot records at +0x40 and +0x68 (kind 5, index -1), flag +0x90=1. Loops over the device per-mode count (g_device+0x118 selects +0x140/+0x144 or 1): Render_Gfx2_QueueDeferredRelease, set kind 2, Render_Gfx2Device_AllocDescriptorSlot on g_device+0xf18; then calls 0x1439dfa60(self). Caller 0x1439d9760: device method that allocates it under CS +0x2668, registers it in the tracking set at +0x42d0 and inserts it into the map at +0x300 keyed by desc+0x20. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.gfx2_object_ctor_alloc_descriptor_slots",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 02",
+  "match": "0x1439d7240",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439d7240",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Object_Ctor_AllocDescriptorSlots"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1439d9810",
+  "made_on_target": "0x1439d9810",
+  "twin": "made on steam-26566308; the target 0x1439d9810 is KB 0x1439d7240: Render_Gfx2Buffer_Construct (0x39d7ce0) and Ne_Load_SlUpgradeInterface (0x39e6f90) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1439d9810",
+    "target": "0x1439d9810"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "568b66cd9441e9ddf92f6c75ffcb59f90d18c308c77cba4fa3968a9794ef0691"
+  }
+ ]
+}
