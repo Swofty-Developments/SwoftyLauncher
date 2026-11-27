@@ -10,6 +10,10 @@ pub const ATTACHED: &str = "(version.dll proxy) attached";
 /// The tail of the attach line that survives when a concurrent writer
 /// overwrites the start of it.
 pub(super) const ATTACHED_TAIL: &str = "proxy) attached";
+/// Lines only the loader writes, which show it ran when a concurrent writer
+/// (the offline play stub) has overwritten the attach line itself: its
+/// preamble lines and the core's output.
+pub(super) const LOADER_LINES: &[&str] = &["] real version.dll: ", "] forwards: ", "[core] "];
 /// The offline play stub's line when it has the game image and resumes it.
 pub(super) const PATCHING: &str = "game image at ";
 /// The loader's line in its fallback log naming the game folder's log it
@@ -38,11 +42,12 @@ pub enum Attach {
     Missed,
 }
 
-/// Whether a loader.log shows the loader running: `Some(false)` for a log
-/// with lines but no attach line (only the offline play stub's), `None` for
-/// an empty one.
+/// Whether a loader.log shows the loader running: the attach line anywhere
+/// in it, or, when the stub's late lines overwrote that line, any other line
+/// only the loader writes. `Some(false)` for a log with lines but none of
+/// the loader's (only the offline play stub's), `None` for an empty one.
 pub fn attached(text: &str) -> Option<bool> {
-    if text.contains(ATTACHED_TAIL) {
+    if text.contains(ATTACHED_TAIL) || LOADER_LINES.iter().any(|l| text.contains(l)) {
         return Some(true);
     }
     (!text.trim().is_empty()).then_some(false)
