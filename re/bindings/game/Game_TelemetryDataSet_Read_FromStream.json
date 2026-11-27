@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_TelemetryDataSet_Read_FromStream",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1437ad610",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint32_t Game_TelemetryDataSet_Read_FromStream(void *dataset, void *stream)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1437afba0 (RacingPC lab re_groups/_decomp);xref:0x142917150,0x142f8d550,0x142f9a8b0,0x142f9fdf0",
+  "notes": "Reads an 8-byte length through stream vtable +0x30, compares it with the stream size (vtable +0xa8), copies the 0x6c-byte header to dataset+0x260..+0x2cb (byte +0x280 clamped to 0/1), then walks the records: record size = 4 plus the sizes of the channels in +0x220..+0x228 whose mask matches the record header bits >> 18, each record appended to buffer +0x1e0 (capacity +0x1e8, cursor +0x1f0, high mark +0x1f8) with its offset in index table +0x208 (count +0x214). When +0x130 is set it validates lap time +0x268, sectors +0x26c/+0x270/+0x274 and more than 100 samples (else error 0x50). Returns 0 on success, 0x55 on failure; logs 'Successfully read %d bytes, sent to DataSet %s' with name +0x1b8. Callers: Game_GhostLap_ApplyDatasetTelemetry, Game_GhostLapHandler_Update (personal best) and OnSessionRivalSearchCompleted (rival ghost) load ghost telemetry with it; 0x142917150 loads up to four datasets from 0xc800-byte memory buffers. Hook point to inject or dump ghost telemetry. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.telemetry_data_set_read_from_stream",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 41 55 41 54 56 57 53 48 81 EC B8 00 00 00 48 8D AC 24 80 00 00 00 C5 78 29 75 20",
+  "match": "0x1437ad610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437ad610",
+  "kind": "func_start",
+  "names": [
+   "Game_TelemetryDataSet_Read_FromStream"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1437afba0",
+  "made_on_target": "0x1437afba0",
+  "twin": "made on steam-26566308; the target 0x1437afba0 is KB 0x1437ad610: Asset_Unk_14379dd00 (0x37a0290) and Career_ContractOutro_Destruct (0x37b65f0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1437afba0",
+    "target": "0x1437afba0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "64e96948778f6118ddf00a81f591371b57e6d8b0850ae994416aa2423dabc93c"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_Rehash_NodePtrTable",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140e10010",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_HashMap_Rehash_NodePtrTable(void *map, uint64_t new_bucket_count)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140e10b90 (RacingPC lab re_groups/_decomp);xref:0x1429d1010",
+  "notes": "(lib) Robin-hood rehash for a node-pointer table: allocates new slots (8 bytes each) plus info bytes ((n+overflow)*9+8, overflow = min(80 percent of n, 0xff)), resets count +0x28, mask +0x30, max load +0x38, info inc +0x40 = 0x20, reinserts every occupied old slot via FUN_140e10d60 and frees the old table unless it was the inline one."
+ },
+ "signature": {
+  "id": "core.hash_map_rehash_node_ptr_table",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 8B B3 D0 02 00 00",
+  "match": "0x1429cfd48",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x140e10010",
+  "kind": "call",
+  "names": [
+   "Ne_HashMap_Rehash_NodePtrTable"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1429d2108",
+  "made_on_target": "0x140e10b90",
+  "twin": "made on steam-26566308; the target 0x140e10b90 is KB 0x140e10010: Ne_Crt_InvalidParameterAbortStub_140e0fd20 (0xe108a0) and Career_Condition_FacilityUpgradeType_Ctor (0xe3f620) on either side both sit 0xb80 above their KB addresses; the match 0x1429d2108 is KB 0x1429cfd48: Career_Read_AwardedUpgradeReward (0x29be0c0) and Game_SaveSlotManager_SelectSlot (0x29d2f50) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1429d2108",
+    "target": "0x140e10b90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6e2a145b43f54050569eccaf164ae3e3b03024ae76ed0086f66e55cfbc762a76"
+  }
+ ]
+}

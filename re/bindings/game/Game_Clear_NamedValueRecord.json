@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Clear_NamedValueRecord",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14314a3c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Clear_NamedValueRecord(void *record)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14314c950 (RacingPC lab re_groups/_decomp);xref:0x142f87fc0,0x142f887a0,0x142f88f80,0x142f89bc0,0x142f9fdf0",
+  "notes": "Resets a record: byte +0x58 = 0, 16 bytes at +0x08 = 0, u32 +0xd8 = 0, empties the name->value hash map at +0xe0 (nodes pushed to free list +0xe8, info bytes zeroed, count +0x118 = 0) and u32 +0x138 = 0. Pairs with Game_Find_NamedValueRecord_U64/U32. Context from caller: leaderboard row reused across ghost rival search results."
+ },
+ "signature": {
+  "id": "game.clear_named_value_record",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE C6 41 58 00",
+  "match": "0x14314a3c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14314a3c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Clear_NamedValueRecord"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14314c950",
+  "made_on_target": "0x14314c950",
+  "twin": "made on steam-26566308; the target 0x14314c950 is KB 0x14314a3c0: Game_VehicleCustomisationReplicationManager_AddReplicatedPlayer (0x31439b0) and Game_RankedMatchingProcessor_CreateSession (0x3153130) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14314c950",
+    "target": "0x14314c950"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6ad83c9a61f78ba3a896423c9f5ed8c378ae3421d24a4a48322b4ffc29e6971c"
+  }
+ ]
+}

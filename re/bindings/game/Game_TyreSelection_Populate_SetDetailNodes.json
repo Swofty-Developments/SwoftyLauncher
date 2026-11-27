@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_TyreSelection_Populate_SetDetailNodes",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141fae020",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_TyreSelection_Populate_SetDetailNodes(void *sel, void *equippedSet, void *compoundGroup, uint32_t *selectedSet)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141fafc20 (RacingPC lab re_groups/_decomp);xref:0x141faa0f0",
+  "notes": "Fully read; fills the UI VM detail panel for one tyre set (record stride 0x6c: +0x0 owner/driver id, +0x4 compound id, +0x8 set index byte, +0x9 flags bit0=unused/new, bit2=mandatory, bit3=other state, +0xc/+0x18/+0x24/+0x30 four per-wheel wear floats, +0x14/+0x20/+0x2c/+0x38 per-wheel used bytes). Looks up compound id in the 0x18-stride table at 0x146082400 (count 0x146082478, fallback id 1 or 4) and writes title, description, then under child nodes of sel+0x90: availability (lng_recommended_for / lng_reserved_for with name from FUN_14211f980, or fixed lng keys by flags and Car_Tyre_IsCompoundAllowed), compound_texture, is_mandatory, is_fastest_q2_tyre (sel+0x30 record: +4 compound, +8 set index), info_text (lng_mandatory_set / lng_q2_fastest_lap), is_info_text_visible, set_number_string (set index+1 of group count from compoundGroup +0x10..+0x18); three stat nodes each with value_text, value_text_colour and a float bar value: condition percent = clamp(avg of 4 wear floats - 0.0001, 0..1), 1.0 if bit0 set; laps via FUN_141f99e50 / FUN_141f9a080 on sel+0x28 with min_text, max_text and bar 1 - a/b; lap time delta vs equippedSet via FUN_141facce0 * 1000 coloured red if positive, green if negative, white if abs < 0.0005, or a placeholder when either set has bit0. No return value used. Good hook to change what the tyre panel shows; the delta and lap helpers are the places to change the numbers. Context from caller: called by Game_GarageTabletTyreSelectVM_BuildNodes right after it builds the 0xa8 selection object and subscribes FUN_141faf1f0; the batch line listed caller not identified, xref found by grep at 141faa0f0.c line 326."
+ },
+ "signature": {
+  "id": "game.tyre_selection_populate_set_detail_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 C5 F8 29 BC 24 80 01 00 00 C5 F8 29 B4 24 70 01 00 00 4C 89 CB",
+  "match": "0x141fae020",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141fae020",
+  "kind": "func_start",
+  "names": [
+   "Game_TyreSelection_Populate_SetDetailNodes"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141fafc20",
+  "made_on_target": "0x141fafc20",
+  "twin": "made on steam-26566308; the target 0x141fafc20 is KB 0x141fae020: Game_GarageMonitorTvFeedVM_OnDeactivate (0x1fa6f20) and Game_ChallengeCareer_BuildTrackTiles (0x1fc2340) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141fafc20",
+    "target": "0x141fafc20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a2edc23eaf98bc45efa355b33cdce079cc2c4a8bcbebd4ad09903092aa55b207"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_Remove_BusHandlers_GetMessageDetails",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1434232c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_F1os_Remove_BusHandlers_GetMessageDetails(void *op)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143425840 (RacingPC lab re_groups/_decomp);xref:0x143422050",
+  "notes": "If flag op+0x1d0 is set, removes two bus handlers bound to this op (callbacks 0x143423620 and 0x143423650, message keys 0x145661b5e and 0x145661b77) from [g_Game_MessageBus+8] via 0x14398a8e0, then clears op+0x1d0; if the bus is not running (+0x68 == 0) it only sets errno 0x58. Caller Game_F1os_Finish_GetMessageDetails (op vtable slot 11) uses it to drop the CableStateChanged/OnlineStateChanged listeners before the busy-spinner decrement. Caller 0x1434221b0: op teardown that calls this first and then frees op+0x128 and the result record op+0x1a8. Kept at L1: same template as 0x142672bf0, checked by grep only, not read line by line. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.f1os_remove_bus_handlers_get_message_details",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B BE 28 01 00 00 48 C7 86 28 01 00 00 00 00 00 00 48 85 FF 74 22 48 8B 9E 20 01 00 00 48 85 DB 74 16 48 8B 07 48 89 F9 31 D2 FF 10 48 8B 03 48 89 D9 48 89 FA FF 50 38 48 89 F1 48 83 C4 20 5B 5F 5E E9 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC 41 56 56 57 53 48 81 EC 68 01 00 00",
+  "match": "0x14341fc3a",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1434232c0",
+  "kind": "call",
+  "names": [
+   "Game_F1os_Remove_BusHandlers_GetMessageDetails"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1434221ba",
+  "made_on_target": "0x143425840",
+  "twin": "made on steam-26566308; the target 0x143425840 is KB 0x1434232c0: Game_F1os_LogLargePayload_GetInbox (0x341dc00) and Game_F1osTasksystem_CreateTask_HoldingPageHint (0x3433ee0) on either side both sit 0x2580 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1434221ba",
+    "target": "0x143425840"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cb2adffa25a9c7d07d8de2cea0cddb66162c09cbb74690afee3db95a968298b8"
+  }
+ ]
+}

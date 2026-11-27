@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_PushBack_Elem24_MoveOwnedPtr",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1408809c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Vector_PushBack_Elem24_MoveOwnedPtr(void *vec, void *elem)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140880a10 (RacingPC lab re_groups/_decomp);xref:0x140717750",
+  "notes": "(lib) Vector emplace_back for 0x18-byte elements {qword +0, int32 +8, owning pointer +0x10}: moves the element in (source pointer nulled), grows 1.5x through the vector allocator (+0, vfunc +0x18 alloc / +0x38 free) and destroys moved-from owners via vfunc +0x28."
+ },
+ "signature": {
+  "id": "core.vector_push_back_elem24_move_owned_ptr",
+  "section": ".xtls",
+  "pattern": "48 8D 54 24 38 E8 ?? ?? ?? ?? 48 8B 7C 24 48 48 8B 4B 70 FF 15 ?? ?? ?? ?? 48 85 FF 0F 84",
+  "match": "0x140717e10",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x1408809c0",
+  "kind": "call",
+  "names": [
+   "Ne_Vector_PushBack_Elem24_MoveOwnedPtr"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140717e50",
+  "made_on_target": "0x140880a10",
+  "twin": "made on steam-26566308; the target 0x140880a10 is KB 0x1408809c0: Vm_Set_String (0x8462c0) and Game_F1os_CreateOnlineServiceTask (0x95d550) on either side both sit 0x50 above their KB addresses; the match 0x140717e50 is KB 0x140717e10: Game_Analytics_UnregisterMessageHandlers (0x6fd700) and site_Career_TeleResearchTypeName (0x71e73a) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140717e50",
+    "target": "0x140880a10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9f9cdf678fe13a822b8e3cf11583b4a757c056685672ade9be65a820a6601565"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_Proto_LapDataRecord_Set_StringField90",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1404cd5b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Proto_LapDataRecord_Set_StringField90(void *self, const char *value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1404cd5f0 (RacingPC lab re_groups/_decomp);xref:0x140717750",
+  "notes": "Same body as 0x1404cd320 but the target std::string is at self+0x90 (size +0xa0, capacity +0xa8). No-op when value is null. Context from caller: second string field of the lap record; field name not visible in the code."
+ },
+ "signature": {
+  "id": "game.proto_lap_data_record_set_string_field90",
+  "section": ".xtls",
+  "pattern": "48 89 F9 E8 ?? ?? ?? ?? 48 8B 8E 10 0A 02 00",
+  "match": "0x140717a14",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x1404cd5b0",
+  "kind": "call",
+  "names": [
+   "Game_Proto_LapDataRecord_Set_StringField90"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140717a54",
+  "made_on_target": "0x1404cd5f0",
+  "twin": "made on steam-26566308; the target 0x1404cd5f0 is KB 0x1404cd5b0: Game_Analytics_BakedLiverySponsor_WriteJson (0x4201d0) and Ne_RbTree_EraseSubtree (0x557390) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140717a54",
+    "target": "0x1404cd5f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f03be6e61413511b8694d5b5466498dec3272eb351caf64bff6faf3d4c499562"
+  }
+ ]
+}

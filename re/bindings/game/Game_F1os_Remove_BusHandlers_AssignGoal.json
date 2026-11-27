@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_Remove_BusHandlers_AssignGoal",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142668600",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_F1os_Remove_BusHandlers_AssignGoal(void *op)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14266a980 (RacingPC lab re_groups/_decomp);xref:0x142665d10",
+  "notes": "If flag op+0x1d0 is set: removes two bound functors (FUN_142667330 and FUN_142667360, each paired with op) from g_Game_MessageBus+8 for message ids 0x145661b5e and 0x145661b77 via 0x14398a8e0; when bus+0x68 is 0 it only records error 0x58 in the TLS error trace. Then clears op+0x1d0. Callers: Game_F1os_Finish_AssignGoal (operation finish) and 0x142665e70: 0x56-byte teardown that calls this first (same template as 0x14266fdd0, which then frees owned members). Kept at L1: same template as 0x142672bf0, checked by grep only, not read line by line. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.f1os_remove_bus_handlers_assign_goal",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B BE 28 01 00 00 48 C7 86 28 01 00 00 00 00 00 00 48 85 FF 74 22 48 8B 9E 20 01 00 00 48 85 DB 74 16 48 8B 07 48 89 F9 31 D2 FF 10 48 8B 03 48 89 D9 48 89 FA FF 50 38 48 89 F1 48 83 C4 20 5B 5F 5E E9 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC 41 57 41 56 56 57 53 48 81 EC 90 00 00 00",
+  "match": "0x142663afa",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x142668600",
+  "kind": "call",
+  "names": [
+   "Game_F1os_Remove_BusHandlers_AssignGoal"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142665e7a",
+  "made_on_target": "0x14266a980",
+  "twin": "made on steam-26566308; the target 0x14266a980 is KB 0x142668600: Game_F1os_Create_CompleteEvent (0x264af10) and Game_F1os_LogLargePayload_UpgradeCard (0x2697990) on either side both sit 0x2380 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142665e7a",
+    "target": "0x14266a980"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5fa6bd5bfb919afb3a095e975781398092bb92f65eeeb39031ba197976e414e6"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Proto_Message_GetOrCreate_BaseContext",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1404cc620",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Proto_Message_GetOrCreate_BaseContext(void *msg, void *out_shared_ptr)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1404cc660 (RacingPC lab re_groups/_decomp);xref:0x140717750",
+  "notes": "Lazy getter: if msg+0x50 is null it allocates a 400-byte refcounted block, constructs it with Ne_Proto_BaseContext_Construct(block+0x10, msg+0x40), stores the object at +0x50 and the control block at +0x58 (releasing any old one). Returns a shared_ptr copy {+0x50, +0x58} in out with the strong count incremented. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "core.proto_message_get_or_create_base_context",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8D 54 24 38 48 89 F9 E8 ?? ?? ?? ?? 48 8B 54 24 38",
+  "match": "0x140717bad",
+  "anchor": "0xe",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xd"
+  },
+  "target": "0x1404cc620",
+  "kind": "call",
+  "names": [
+   "Ne_Proto_Message_GetOrCreate_BaseContext"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140717bed",
+  "made_on_target": "0x1404cc660",
+  "twin": "made on steam-26566308; the target 0x1404cc660 is KB 0x1404cc620: Game_Analytics_BakedLiverySponsor_WriteJson (0x4201d0) and Ne_RbTree_EraseSubtree (0x557390) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140717bed",
+    "target": "0x1404cc660"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3230e5ad0ee97229b323c54e7724651020f9d5a07adc8a069bfa21688d2d89b4"
+  }
+ ]
+}

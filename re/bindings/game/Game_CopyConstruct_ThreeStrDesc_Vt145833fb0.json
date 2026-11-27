@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_CopyConstruct_ThreeStrDesc_Vt145833fb0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1432af300",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_CopyConstruct_ThreeStrDesc_Vt145833fb0(void *dst, const void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1432b1890 (RacingPC lab re_groups/_decomp);xref:0x142f9a8b0,0x142fbccd0,0x143013fb0",
+  "notes": "Copy constructor for an object with vtable 0x145833fb0: deep-copies three heap strings (+0x08, +0x38, +0x60), u32 +0x30, u32 +0x88, u64 +0x90, u64 +0x98, u32 +0xa0, u32 +0xa4. Context from caller: leaderboard read request descriptor passed to F1os / JSON leaderboard reader."
+ },
+ "signature": {
+  "id": "game.copy_construct_three_str_desc_vt145833fb0",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C5 F8 11 B3 98 01 00 00",
+  "match": "0x14301052b",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1432af300",
+  "kind": "call",
+  "names": [
+   "Game_CopyConstruct_ThreeStrDesc_Vt145833fb0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143012abb",
+  "made_on_target": "0x1432b1890",
+  "twin": "made on steam-26566308; the target 0x1432b1890 is KB 0x1432af300: Game_F1os_LogF (0x3296fa0) and Game_F1osTask_SpawnChild_Vt1458323b0 (0x32b3f80) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143012abb",
+    "target": "0x1432b1890"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cf80d7cb3c29887d08d21028bc1d9dcdfdf9ca7174759e4eda7a917d180387ab"
+  }
+ ]
+}

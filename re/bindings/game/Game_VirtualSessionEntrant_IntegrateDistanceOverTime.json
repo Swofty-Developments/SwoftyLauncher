@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_VirtualSessionEntrant_IntegrateDistanceOverTime",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142f687b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "float Game_VirtualSessionEntrant_IntegrateDistanceOverTime(void *self, float dt, void *perf_ctx, int *brackets)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142f6ad40 (RacingPC lab re_groups/_decomp);xref:0x142f73d20",
+  "notes": "Splits dt into max(1, dt/0.016667) substeps and each step adds substep*Sess_VirtualPerformance_EstimateSpeedAtLapFraction(...) to a running distance, wrapping at the lap length from the performance object vtable +0x188 and converting back to lap fraction via vtable +0x180; returns the summed distance. Start position is the obfuscated lap distance (+0x90 ^ +0x98) minus laps (+0x40 ^ +0x48, +0x50) times g_Game_TrackLength. Reads entrant index +0xb24, tyre component compound check (3 or 4), session weather/type at +0x10->+0x58, and +0xb30/+0xb34/+0xb38 passed to the estimator; calls Sess_VirtualPerformance_FindTableBrackets first."
+ },
+ "signature": {
+  "id": "game.virtual_session_entrant_integrate_distance_over_time",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC D0 00 00 00 C5 78 29 A4 24 C0 00 00 00",
+  "match": "0x142f687b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f687b0",
+  "kind": "func_start",
+  "names": [
+   "Game_VirtualSessionEntrant_IntegrateDistanceOverTime"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f6ad40",
+  "made_on_target": "0x142f6ad40",
+  "twin": "made on steam-26566308; the target 0x142f6ad40 is KB 0x142f687b0: Sess_Progress_SyncResultRecord (0x2f6a440) and Sess_LapSim_PrepareVehicleParams (0x2f6cbd0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f6ad40",
+    "target": "0x142f6ad40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e6d15fe96a4b1778473acd8ff041622fd3984b2dc43c4370f13298cf30f884df"
+  }
+ ]
+}

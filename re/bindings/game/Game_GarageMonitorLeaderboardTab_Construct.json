@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_GarageMonitorLeaderboardTab_Construct",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142fc7280",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_GarageMonitorLeaderboardTab_Construct(void *self, void *a2, void *a3, void *owner, int board_kind)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142fc9810 (RacingPC lab re_groups/_decomp);xref:0x141f73ba0",
+  "notes": "Constructor: calls base ctor 0x142fc9e50, installs vtables (0x145801a60 and 4 sub-vtables), zero-inits ~28 VM node handles at +0xe50..+0x11c8, then by board_kind sets the title FixedString at +0x508 to lng_global_leaderboard (0) or lng_friends_leaderboard (1) and binds the icon node +0x4f0 to overrides.car_monitor_maximised.cm_icon_nav.cm_nav_global / cm_nav_friends. Stores owner at +0x620 and clears +0xa20."
+ },
+ "signature": {
+  "id": "game.garage_monitor_leaderboard_tab_construct",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 68 01 00 00 C5 F8 29 B4 24 50 01 00 00 4C 89 CE",
+  "match": "0x142fc7280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fc7280",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageMonitorLeaderboardTab_Construct"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142fc9810",
+  "made_on_target": "0x142fc9810",
+  "twin": "made on steam-26566308; the target 0x142fc9810 is KB 0x142fc7280: Game_GhostLapHandler_EvaluatePerformanceState (0x2fa1e00) and site_Sess_TimeTrialLeaderboard_TabChild (0x2fce099) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142fc9810",
+    "target": "0x142fc9810"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "537a2a1323f6e85d2f9d46563d7c04dbd3082d24112743d3ab3bbf9d9e3dd1d0"
+  }
+ ]
+}

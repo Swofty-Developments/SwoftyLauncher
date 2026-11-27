@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_GetMxcsr",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x145377550",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint32_t Ne_Crt_GetMxcsr(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x145379f10 (RacingPC lab re_groups/_decomp);xref:0x145374fb0",
+  "notes": "(lib) Returns the current SSE MXCSR control/status register and nothing else. Called by Ne_Crt_SetMxcsrExceptionFlags to read the register before modifying it."
+ },
+ "signature": {
+  "id": "core.crt_get_mxcsr",
+  "section": ".xtls",
+  "pattern": "48 83 EC 08 0F AE 1C 24 8B 04 24 48 83 C4 08",
+  "match": "0x145377550",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x145377550",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_GetMxcsr"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x145379f10",
+  "made_on_target": "0x145379f10",
+  "twin": "made on steam-26566308; the target 0x145379f10 is KB 0x145377550: Ne_Crt_SetMxcsrExceptionFlags (0x5374fb0) and Ne_Crt_Setjmp (0x537ab40) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x145379f10",
+    "target": "0x145379f10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "acaa3e79cb9f29d6da048e592d650367a2b66a7a884e846c251a2c46300bfbec"
+  }
+ ]
+}

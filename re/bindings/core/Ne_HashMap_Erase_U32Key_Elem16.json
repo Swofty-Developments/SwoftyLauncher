@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_Erase_U32Key_Elem16",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142f84910",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_HashMap_Erase_U32Key_Elem16(void *map, const uint32_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142f86ea0 (RacingPC lab re_groups/_decomp);xref:0x142f85c60,0x142f9f430",
+  "notes": "(lib) Robin-hood hash map erase: hashes the u32 key with multiplier +0x20, probes info bytes (+0x30) and 16-byte entries (+0x28, mask +0x40, info inc +0x50, shift +0x54), then backward-shifts following entries and decrements count +0x38. No-op if the key is absent."
+ },
+ "signature": {
+  "id": "core.hash_map_erase_u32_key_elem16",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 50 48 89 C8 44 8B 12 4C 89 D1",
+  "match": "0x142f84910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f84910",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_Erase_U32Key_Elem16"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f86ea0",
+  "made_on_target": "0x142f86ea0",
+  "twin": "made on steam-26566308; the target 0x142f86ea0 is KB 0x142f84910: Game_GhostRivalFinder_SetState (0x2f85c60) and Game_GhostRivalFinder_Finish (0x2f872a0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f86ea0",
+    "target": "0x142f86ea0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "251de95d06da33acbfcecc4424433a362b053bb17417e5f02ead18628f5e8500"
+  }
+ ]
+}

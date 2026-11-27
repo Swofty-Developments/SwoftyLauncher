@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_GarageEntrantList_Replace_Entrant",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1424abb30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_GarageEntrantList_Replace_Entrant(void *self, char slot_id, void *entrant_record)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1424ad730 (RacingPC lab re_groups/_decomp);xref:0x142a43a80",
+  "notes": "Walks the vector of 0x98-byte entries at self +0x8/+0x10; for the entry with +0x82 == slot_id that passes the 0x14309e770 match test against entrant_record it erases the entry (shifts the tail down), calls Sess_Set_GarageSlotEntrant_Thunk(entry +0x88 ptr, entrant_record, entry +0x90 byte) and re-inserts a copy of entrant_record at the same position via 0x1424ec9b0. Returns 1 if replaced, else 0. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "game.garage_entrant_list_replace_entrant",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC C0 00 00 00 4C 8B 71 08",
+  "match": "0x1424abb30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424abb30",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageEntrantList_Replace_Entrant"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1424ad730",
+  "made_on_target": "0x1424ad730",
+  "twin": "made on steam-26566308; the target 0x1424ad730 is KB 0x1424abb30: Sess_Assign_GarageSlotsByTeamOrder (0x24aa430) and Game_Check_ReturnToGarageTimeLimit (0x24ae250) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1424ad730",
+    "target": "0x1424ad730"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "daa2203d830567558c7b850de5831b340c1d152cb11a4a0952df2f731209876b"
+  }
+ ]
+}

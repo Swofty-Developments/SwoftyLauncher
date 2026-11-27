@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_GarageMonitorTabs_Construct_TabObject_2688",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142988060",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_GarageMonitorTabs_Construct_TabObject_2688(void *obj, void *owner)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14298a420 (RacingPC lab re_groups/_decomp);xref:0x141f75ad0",
+  "notes": "Constructor: sets vtable 0x1457b5b80, initialises about 19 empty property slots (+0x10..+0x278, slot vtables 0x1456613d8/0x1456624b8/0x1456616e0/0x145661670/0x1456611f0/0x145660588/0x1456904f8), stores owner at +0x700, two small config records at +0x70c and +0x71c, byte +0x708 = 0xff, and constructs five 0x640-byte sub-objects at +0x740, +0xd80, +0x13c0, +0x1a00, +0x2040 via 0x14298a730; returns obj. Caller Game_GarageMonitorTabs_ConstructPpTab builds it in place at tab+0x1f80 (next member starts at tab+0x4610, so size is 0x2690) and passes a stack argument as owner. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.garage_monitor_tabs_construct_tab_object_2688",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE C5 F8 57 C0 C5 F8 11 41 18",
+  "match": "0x142988060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142988060",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageMonitorTabs_Construct_TabObject_2688"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14298a420",
+  "made_on_target": "0x14298a420",
+  "twin": "made on steam-26566308; the target 0x14298a420 is KB 0x142988060: Game_TrackAcclimatisation_CalcTyreTarget (0x2984b00) and Game_PracticeTrackAcclimatisation_RefreshState (0x29a0760) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14298a420",
+    "target": "0x14298a420"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7e59fb9eb544a2132c8ec5f5e6eaf80018b40b264ce23f4574470f9af843c83c"
+  }
+ ]
+}

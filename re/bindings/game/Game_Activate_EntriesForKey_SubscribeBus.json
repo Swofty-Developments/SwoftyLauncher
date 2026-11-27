@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Activate_EntriesForKey_SubscribeBus",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14272e7a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_Activate_EntriesForKey_SubscribeBus(void *self, int64_t key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142730b20 (RacingPC lab re_groups/_decomp);xref:0x142588990",
+  "notes": "Releases and clears the active list self+0xc8..+0xd0 (16-byte shared pointers, allocator +0xc0), finds key in the hash map self+0x88..+0xbc (elem 0x28), appends that entry's shared-pointer vector (+0x10..+0x18) to the active list and calls vt+0x20 on every active item. Once only (flag self+0x70) it subscribes handler {0x1427330f0, self} on g_Game_MessageBus under the message name at 0x145670aa7 (errno 0x58 when the bus is not live). Only listed caller 0x142588990 failed to decompile, so the call site was not seen. Better context needed: what the key and the entries are. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.activate_entries_for_key_subscribe_bus",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 D3 48 89 CE 4C 8B B9 C8 00 00 00",
+  "match": "0x14272e7a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14272e7a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Activate_EntriesForKey_SubscribeBus"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142730b20",
+  "made_on_target": "0x142730b20",
+  "twin": "made on steam-26566308; the target 0x142730b20 is KB 0x14272e7a0: Game_F1os_LogLargePayload_GetCompendiumRewards (0x26d29e0) and Game_F1os_F1WorldTask_Update (0x273c900) on either side both sit 0x2380 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142730b20",
+    "target": "0x142730b20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2f3b2969cf7e3dc2bcc9a276f304a839846d9c5f3a9b3034f2dab2703ef65b4d"
+  }
+ ]
+}

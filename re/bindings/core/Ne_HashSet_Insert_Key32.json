@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_HashSet_Insert_Key32",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142ad73f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_HashSet_Insert_Key32(void *table, void *out_iter_bool, const void *key32)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142ad97b0 (RacingPC lab re_groups/_decomp);xref:0x1406bf170,0x141356f60,0x142ad08d0",
+  "notes": "(lib) MSVC std::unordered container insert for a 32-byte key: FNV-1a hash via 0x142b60d60 (seed 0xcbf29ce484222325), bucket lookup with 256-bit key compare, on miss allocates a 0x30-byte node (allocator +8, size 0x30 align 0x10), rehashes when load factor (float at +0) is exceeded (bucket array +0x28, mask +0x40, bucket count +0x48, size +0x18) and links the node. Writes {node, inserted flag} to out and returns it. Throws on max size 0x555555555555555."
+ },
+ "signature": {
+  "id": "core.hash_set_insert_key32",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4D 89 C4 49 89 D5",
+  "match": "0x142ad73f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ad73f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashSet_Insert_Key32"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142ad97b0",
+  "made_on_target": "0x142ad97b0",
+  "twin": "made on steam-26566308; the target 0x142ad97b0 is KB 0x142ad73f0: Ne_RegisteredHandle_Assign (0x2ac1b70) and Game_OptionsSystem_ResolveOptionValue (0x2adf300) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142ad97b0",
+    "target": "0x142ad97b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5437371fed435f7b8bdba1a2f9ec9818dfaec4d5db5b9aca70e3d87d761ba876"
+  }
+ ]
+}

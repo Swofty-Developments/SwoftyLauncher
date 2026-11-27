@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLapHandler_Check_TasksSettled",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142f91900",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "uint8_t Game_GhostLapHandler_Check_TasksSettled(void *handler)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142f93e90 (RacingPC lab re_groups/_decomp);xref:0x142f9a8b0",
+  "notes": "Returns 0 while less than 0.1 s has passed since timer +0x70, while any request id is pending (+0x94, +0x98, +0x130, +0x134, +0x1d0, +0x1d4) or while the rival finder +0x508 is in states 2..9; returns 1 when +0x138, +0x9c and +0x1d8 are all 4 (and +0x288 != 1); otherwise compares the values +0x110, +0x1b0, +0x300 and +0x258 together with 0x142fa2580/0x142fa2690 and a platform object state to decide. Callers: Game_GhostLapHandler_Update gates applying the personal best and the Racenet upload on it; 0x1414b5940 (a large UI update) writes the result into a bool VM node. Better context needed: meaning of +0x110/+0x1b0/+0x300/+0x258 (they look like lap times or ranks) for the final comparison. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.ghost_lap_handler_check_tasks_settled",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 48 89 CE 48 8B 41 78",
+  "match": "0x142f91900",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f91900",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLapHandler_Check_TasksSettled"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f93e90",
+  "made_on_target": "0x142f93e90",
+  "twin": "made on steam-26566308; the target 0x142f93e90 is KB 0x142f91900: Game_GhostLapHandler_CancelTasks (0x2f93470) and Game_GhostLapsStorageSystem_Connect (0x2f95990) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f93e90",
+    "target": "0x142f93e90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "99bd15d1cf7579dc42aa855c1f8e860347563122913ee5156624075ae82defdc"
+  }
+ ]
+}

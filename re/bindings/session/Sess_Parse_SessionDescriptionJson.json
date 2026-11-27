@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_Parse_SessionDescriptionJson",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14278bcf0",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "void Sess_Parse_SessionDescriptionJson(void *owner, void *jsonObject, void *outDesc, uint8_t flag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14278e070 (RacingPC lab re_groups/_decomp)",
+  "notes": "Huge (0xF7BE bytes, ~11k decompile lines) JSON-object-to-struct parser: clears outDesc+0x0, then for each key does Ne_JsonObject_FindMember_2 on param_2 and fills the 0x56d0-byte description (+0x2/+0x3 enum bytes via name-to-enum 0x1427ba1f0, +0x8/+0x10 objects found by Strcmp on name at +0x178 in global 0x146066570 lists +0x238/+0x240, +0x18, +0x28..+0x38 pointer vector, +0x4a70, +0x4eb4 float); also calls Sess_Parse_PlayerDescription, Sess_Resolve_DriverRef, Game_Parse_EventRestrictionJson, Game_OptionsStore_FindOption, Car_FailureType_ParseName. Context from caller: all callers build the out struct with FUN_1427b6d80 right before the call; 0x140ad80c0 and 0x1425871e0 (both parse a JSON document with 0x140b5e180, then copy the result with Ne_Struct_CopyConstruct_140ad98e0) pass flag=0; 0x14278d310 (loops over a list of JSON texts, Ne_Json_Document_Parse each) calls it twice on the same out struct with flag=1, first with the per-item document then with a shared one, so a second call overlays keys. Stays L1: only about the first 330 lines of the body plus callee/offset greps were read, not the whole function; param_4 is stored to the stack at entry and its use was not traced. Better context needed: key strings at 0x14570ea5a (len 9), 0x1457a29a8 (len 15), 0x1457a29b8 (len 16) are not resolved in the decompile. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.parse_session_description_json",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 49 00 00",
+  "match": "0x14278bcf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14278bcf0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Parse_SessionDescriptionJson"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14278e070",
+  "made_on_target": "0x14278e070",
+  "twin": "made on steam-26566308; the target 0x14278e070 is KB 0x14278bcf0: site_Career_TeamDeptEnumStore (0x27765d8) and Game_F1os_F1CGTask_Update (0x27a1ea0) on either side both sit 0x2380 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14278e070",
+    "target": "0x14278e070"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4b25d6efbe10b1a03358dac063395e3de38db4a90a3afb6d3f692565604c1e68"
+  }
+ ]
+}

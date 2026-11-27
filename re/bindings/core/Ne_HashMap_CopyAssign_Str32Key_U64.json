@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_CopyAssign_Str32Key_U64",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142ff88f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_HashMap_CopyAssign_Str32Key_U64(void *dst, const void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142ffae80 (RacingPC lab re_groups/_decomp);xref:0x142f87fc0,0x142f887a0,0x142f88f80,0x142f89550,0x142f89bc0,0x142f8bac0,0x142f9a8b0,0x142f9fdf0",
+  "notes": "(lib) Copy assignment of a node-based robin-hood map: returns dst nodes to the free list (+0x08), reallocates the slot/info table if the mask (+0x40) differs, copies hash params and info bytes, then clones each 0x40-byte node (32-char inline string key at +0x18, 8-byte value at +0x38), allocating via FUN_142ff9500 when the free list is empty."
+ },
+ "signature": {
+  "id": "core.hash_map_copy_assign_str32_key_u64",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CE 48 39 CA",
+  "match": "0x142ff88f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ff88f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_CopyAssign_Str32Key_U64"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142ffae80",
+  "made_on_target": "0x142ffae80",
+  "twin": "made on steam-26566308; the target 0x142ffae80 is KB 0x142ff88f0: Game_TodData_FindScenarioParam (0x2ff89e0) and Game_Read_UIMovieBuildSetting (0x30370b0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142ffae80",
+    "target": "0x142ffae80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "57eb26335fe05a3d93cb6a4957728390ecd851be10aa3acdc24ad093e7f2edfa"
+  }
+ ]
+}

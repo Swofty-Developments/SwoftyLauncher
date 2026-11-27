@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Register_OptionRestrictions_FromEventGroups",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1427b68c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_Register_OptionRestrictions_FromEventGroups(void *self, void *options)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1427b8c40 (RacingPC lab re_groups/_decomp);xref:0x142588990",
+  "notes": "Only when self+0x4e58 is set: 0x142aac820 fills a vector of groups (stride 0x38); for each group item (+0x20..+0x28) and sub-item (+0x18..+0x20) it locks the weak object from vt+0x28 and, if its float +0x10 is non-zero and its descriptor ([obj]+0x18) has flag +0x20 and a name +0x18, hashes the name (djb2, seed 0x1505) and finds the matching entry ([+8]+8 == hash) in options+0x360..+0x368; every restriction of that entry (+0x18..+0x20, stride 0x38) is detached if already bound (Game_OptionBinding_Detach) and registered with Game_OptionRestriction_Register, and the name pointer is appended to the vector self+0x4e70..+0x4e80. Only listed caller 0x142588990 failed to decompile, so the call site was not seen. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.register_option_restrictions_from_event_groups",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 89 C8 48 8B 89 58 4E 00 00",
+  "match": "0x1427b68c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1427b68c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Register_OptionRestrictions_FromEventGroups"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1427b8c40",
+  "made_on_target": "0x1427b8c40",
+  "twin": "made on steam-26566308; the target 0x1427b8c40 is KB 0x1427b68c0: Game_FrontendSceneCar_SpawnFromLiveryData2 (0x27b4430) and Sess_Parse_PlayerDriverRef (0x27b9590) on either side both sit 0x2380 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1427b8c40",
+    "target": "0x1427b8c40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d0ed554f5b8c2b9f91354286d2d851c9e78632289602b9abe4eaeeb3876204bf"
+  }
+ ]
+}

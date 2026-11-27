@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Camera_Build_RttViewParams",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140183810",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_Camera_Build_RttViewParams(void *cam, void *out_view)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140183810 (RacingPC lab re_groups/_decomp);xref:0x1401ca160",
+  "notes": "Fills an output view struct from a camera-like object: +0x50 id, +0x74/+0x7c/+0x80 depth params (near/far style), +0x84/+0x88 extents (width scaled by global aspect * 0.5625), +0x8c..+0xa8 frustum/offset floats, derives projection terms (2/w, 2/h, 1/(a-b)), converts quaternion +0x40 to a 3x3 rotation, takes position +0x20 and calls Render_RttView_SetViewMatrices. If global 0x14618eaa0 has +0x161 set and +0x2ae9 clear, extents come from that global (+0x2870..+0x288c) instead. Good hook to alter view size or clip values."
+ },
+ "signature": {
+  "id": "render.camera_build_rtt_view_params",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 08 01 00 00 C5 78 29 BC 24 F0 00 00 00 C5 78 29 B4 24 E0 00 00 00 C5 78 29 AC 24 D0 00 00 00 C5 78 29 A4 24 C0 00 00 00 C5 78 29 9C 24 B0 00 00 00 C5 78 29 94 24 A0 00 00 00 C5 78 29 8C 24 90 00 00 00 C5 78 29 84 24 80 00 00 00 C5 F8 29 7C 24 70 C5 F8 29 74 24 60 48 89 D6",
+  "match": "0x140183810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140183810",
+  "kind": "func_start",
+  "names": [
+   "Render_Camera_Build_RttViewParams"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140183810",
+  "made_on_target": "0x140183810",
+  "twin": "made on steam-26566308; the target 0x140183810 is KB 0x140183810: Ne_Gfx2TextureManager_SetInRaceOn (0x1777e0) and Game_CameraActor_ProcessPendingCameraChanges (0x183ca0) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140183810",
+    "target": "0x140183810"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6bd20da53dc12e8328da792e64214b045b142e7cfb687458105e32c2bd3455ba"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_F1WorldRequest_Construct_WithCallback",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142741b80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_F1WorldRequest_Construct_WithCallback(void *self, void *owner, void *allocator, uint32_t id, void **callback_pair, bool flag, uint8_t arg7)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142743f00 (RacingPC lab re_groups/_decomp);xref:0x14255edb0,0x142568db0,0x142588990,0x1425b5a30,0x1425b8730,0x1426db930,0x14273c900,0x1427449f0",
+  "notes": "Constructor: base vtable 0x1457a0340 then final vtable 0x1457a03a0. Writes +0x08 allocator, +0x10 id, +0x14 arg7, +0x15 = 1, +0x18 owner, a string at +0x20 (reserved to 0x16) initialised to \"f1world_generic_error\", +0x48 flag, and moves the 2-pointer callback from callback_pair into +0x50/+0x58. When flag is 0 it calls 0x14079c980(owner, 7, -1.0f). The default error id string \"f1world_generic_error\" is the useful marker for F1 World request failures."
+ },
+ "signature": {
+  "id": "game.f1_world_request_construct_with_callback",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 0F B6 5C 24 68",
+  "match": "0x142741b80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142741b80",
+  "kind": "func_start",
+  "names": [
+   "Game_F1WorldRequest_Construct_WithCallback"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142743f00",
+  "made_on_target": "0x142743f00",
+  "twin": "made on steam-26566308; the target 0x142743f00 is KB 0x142741b80: Game_F1os_F1WorldTask_OnRequestResult (0x2741e20) and Game_F1World_ApplySkipOnboarding (0x2746b50) on either side both sit 0x2380 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142743f00",
+    "target": "0x142743f00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "73413d62c74bc2595ccc48da3e2088b4a1ccfa1ef57a8c6c56fb8cd1604512bb"
+  }
+ ]
+}
