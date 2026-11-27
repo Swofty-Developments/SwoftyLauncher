@@ -9,7 +9,7 @@ The in-game half of Swofty Launcher for F1 25. `native/build.sh` writes it to `n
 | `swofty/addons/core/swofty_gamelog.dll` | `src/gamelog/` | Copies the engine's own log lines into `loader.log`. |
 | `swofty/addons/core/bindings.json` | `re/tools/bindgen.py` | Game functions, data and call sites that plugins can bind to, with their signatures. |
 | `swofty/addons/core/symbols.tsv` | `re/tools/bindgen.py` | Function names by address, for crash reports. |
-| `swofty/addons/core/log_channels.tsv` | `src/gamelog/log_channels.tsv` | The engine's log channels, for the game log filter. |
+| `swofty/addons/core/log_channels.tsv` | `src/gamelog/log_channels.tsv` | The engine's log channels, for the game log filter: one section per build (Steam 1.0.141 and 1.0.145, EA 1.0.141 and 1.0.145), made by `re/tools/logchan.py`. On a build with no section no channel opens, the loader logs `game log channels unavailable` and the crash report's game log section says so. |
 | `native/release/swofty-core-<version>-patches.json` (release asset, not in the install) | `tools/patch_sites.py` | Every byte the core writes in the exe on each supported build, for the server's memory challenges. |
 | `swofty/addons/core/features.json` | `FEATURES` in `src/core/runtime/stage.cpp` | The runtime asset features of this core, each `stable` or `experimental`. |
 

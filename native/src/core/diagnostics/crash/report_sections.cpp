@@ -103,8 +103,13 @@ void section_blackbox(const Request &r)
                                   c.text);
         }))
         report_writer.out.put("  none\n");
-    report_writer.out.put("\n== Black box: last game log warnings and errors (%llu recorded, oldest first)\n",
-                          (unsigned long long)recorder.warnings.total());
+    if (recorder.game_log_unavailable)
+        report_writer.out.put("\n== Black box: last game log warnings and errors (game log channels unavailable on this build; "
+                              "%llu route errors recorded, oldest first)\n",
+                              (unsigned long long)recorder.warnings.total());
+    else
+        report_writer.out.put("\n== Black box: last game log warnings and errors (%llu recorded, oldest first)\n",
+                              (unsigned long long)recorder.warnings.total());
     if (!recorder.warnings.each([&](const blackbox::Copy &c) {
             report_writer.out.put("  -%9.3f s [%5lu] %s\n", double(r.ms - c.ms) / 1000, (unsigned long)c.tid, c.text);
         }))

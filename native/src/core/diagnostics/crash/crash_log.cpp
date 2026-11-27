@@ -5,6 +5,7 @@
 #include <cstring>
 
 #include "core/diagnostics/crash/process.hpp"
+#include "gamelog/channel_table.hpp"
 #include "loader/data_folder.h"
 
 namespace runtime {
@@ -75,6 +76,8 @@ void tap(const char *f, ...)
     va_start(ap, f);
     vsnprintf(b, sizeof b, f, ap);
     va_end(ap);
+    if (!strncmp(b, gamelog::table::UNAVAILABLE, strlen(gamelog::table::UNAVAILABLE)))
+        recorder.game_log_unavailable = true;
     if (!strncmp(b, "[game] ", 7)) {
         if (strstr(b, " (warn): ") || strstr(b, " (error): "))
             recorder.warnings.put(GetTickCount64(), GetCurrentThreadId(), "game", b + 7);
