@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_EvpMd_Fetch",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1448ff220",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_Ossl_EvpMd_Fetch(void *libctx, const char *algorithm, const char *properties)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144901be0 (RacingPC lab re_groups/_decomp);xref:0x1452a2210,0x1452a4740,0x1452a49a0,0x1452a65d0",
+  "notes": "OpenSSL EVP_MD_fetch. Forwards to the generic EVP fetch (Ne_Unk_144c956a0) with operation id 1 (digest) and three method callbacks (construct FUN_144902860, up_ref 0x144902de0, free FUN_144902df0)."
+ },
+ "signature": {
+  "id": "core.ossl_evp_md_fetch",
+  "section": ".xtls",
+  "pattern": "B8 48 00 00 00 E8 ?? ?? ?? ?? 48 2B E0 48 8D 05 ?? ?? ?? ?? 4D 8B C8 48 89 44 24 30 4C 8B C2 48 8D 05 ?? ?? ?? ?? BA 01 00 00 00",
+  "match": "0x1448ff220",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1448ff220",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_EvpMd_Fetch"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144901be0",
+  "made_on_target": "0x144901be0",
+  "twin": "made on steam-26566308; the target 0x144901be0 is KB 0x1448ff220: Ne_CloudUploader_Upload (0x47c8580) and Ne_Format_HresultUnknownFacility (0x49349e0) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144901be0",
+    "target": "0x144901be0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ae2ae39d694611637c4f6fe58613d88a9122f4ce79397d81640543d11afe82da"
+  }
+ ]
+}

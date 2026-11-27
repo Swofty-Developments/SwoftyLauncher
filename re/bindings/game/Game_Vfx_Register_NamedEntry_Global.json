@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_Vfx_Register_NamedEntry_Global",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143492340",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Vfx_Register_NamedEntry_Global(const char *name, void *data, int32_t count, uint32_t flags)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1434948c0 (RacingPC lab re_groups/_decomp);xref:0x143494220",
+  "notes": "Builds a std::string from name and searches the global vector DAT_1460fc1c0..c8 (0x50-byte entries: string +0, listener pointer vector +0x20, data +0x40, count +0x48, flags +0x4c) with a case-insensitive compare. Appends a new entry if absent (grow via FUN_1434e6140); if present with different data/count/flags it reassigns them and sets byte 1 through every listener pointer (dirty flag). Context from caller: tyre value set init."
+ },
+ "signature": {
+  "id": "game.vfx_register_named_entry_global",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 41 B8 01 00 00 00 41 B9 80 00 00 00 C5 F8 28 74 24 20",
+  "match": "0x143492300",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x143492340",
+  "kind": "call",
+  "names": [
+   "Game_Vfx_Register_NamedEntry_Global"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143494880",
+  "made_on_target": "0x1434948c0",
+  "twin": "made on steam-26566308; the target 0x1434948c0 is KB 0x143492340: Game_F1os_CreateTask_ReconcileUserEntitlements (0x3453bf0) and Game_PitLane_GetDistanceToBox (0x34b72b0) on either side both sit 0x2580 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143494880",
+    "target": "0x1434948c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "84f36a6c5c49028afaf40d9a4747a5ae0addab403539036b8149ee2500f43887"
+  }
+ ]
+}

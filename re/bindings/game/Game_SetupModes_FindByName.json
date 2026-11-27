@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_SetupModes_FindByName",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142a21c30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_SetupModes_FindByName(void *table, const char *name)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142a23ff0 (RacingPC lab re_groups/_decomp);xref:0x141c2db00",
+  "notes": "Scans 16-byte entries at table+0x48..+0x50, skipping null pointers at entry+8, and strcmp-compares name with entry->+0xd8->+0x10. Returns the matching object or 0. Same search as the head of 0x140ba3870."
+ },
+ "signature": {
+  "id": "game.setup_modes_find_by_name",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 4C 8B 71 48",
+  "match": "0x142a21c30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a21c30",
+  "kind": "func_start",
+  "names": [
+   "Game_SetupModes_FindByName"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142a23ff0",
+  "made_on_target": "0x142a23ff0",
+  "twin": "made on steam-26566308; the target 0x142a23ff0 is KB 0x142a21c30: Sess_Load_GameSetupBranding (0x2a15340) and Game_Garage_FadeOutForExit (0x2a3c920) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142a23ff0",
+    "target": "0x142a23ff0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6fbf8baebd3ac1b0bd50e0abe176aec7255154a0e25490a360f78d553d3355b6"
+  }
+ ]
+}

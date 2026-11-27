@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Assign_DriverSetupOptionals",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1401af6c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_Assign_DriverSetupOptionals(void *dst, const void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1401af6c0 (RacingPC lab re_groups/_decomp);xref:0x1401aae90,0x1428927c0",
+  "notes": "Copy-assignment of a setup struct: 0x19 header bytes, then three optionals handled as engaged/disengaged pairs: customisation header at +0x20 (flag +0x360; constructs via Game_CopyConstruct_CustomisationHeader, assigns via func 0x1402baf40, or destroys its two decal arrays), decal array at +0x370 (count +0x438, flag +0x440) and decal array at +0x450 (count +0x518, flag +0x520), plus byte +0x530. Context from caller: driver actor spawner setup resolve."
+ },
+ "signature": {
+  "id": "game.assign_driver_setup_optionals",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D7 48 89 CE C5 F8 10 42 09",
+  "match": "0x1401af6c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401af6c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Assign_DriverSetupOptionals"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1401af6c0",
+  "made_on_target": "0x1401af6c0",
+  "twin": "made on steam-26566308; the target 0x1401af6c0 is KB 0x1401af6c0: Game_SceneManagerSpawn_MergeScene (0x1a5b10) and Ne_String_AssignWithMode (0x1b9000) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1401af6c0",
+    "target": "0x1401af6c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "42db544cc7ddb4f15b4c43bbced152d3f3e9489952a3c67aafff1aeb0eff410a"
+  }
+ ]
+}

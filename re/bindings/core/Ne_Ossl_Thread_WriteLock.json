@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_Thread_WriteLock",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144c834e0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int Ne_Ossl_Thread_WriteLock(void *lock)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144c85ea0 (RacingPC lab re_groups/_decomp);xref:0x144c921b0,0x144c922c0,0x144c92440,0x144ca6220,0x144f86490,0x144f86540,0x144f865e0,0x144f867e0",
+  "notes": "(lib) OpenSSL CRYPTO_THREAD_write_lock (Windows). AcquireSRWLockExclusive on the lock, sets exclusive flag at +0x8 to 1, returns 1."
+ },
+ "signature": {
+  "id": "core.ossl_thread_write_lock",
+  "section": ".xtls",
+  "pattern": "40 53 B8 20 00 00 00 E8 ?? ?? ?? ?? 48 2B E0 48 8B D9 FF 15 ?? ?? ?? ?? B8 01 00 00 00",
+  "match": "0x144c834e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144c834e0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_Thread_WriteLock"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144c85ea0",
+  "made_on_target": "0x144c85ea0",
+  "twin": "made on steam-26566308; the target 0x144c85ea0 is KB 0x144c834e0: Ne_Std_ThrowBadFunctionCall (0x49e4194) and Ne_Crt_Chkstk (0x4c8c190) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144c85ea0",
+    "target": "0x144c85ea0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7531962936d91d6f5f0211a7543e1e3405af78e2f2b6202949631f594c52a5f4"
+  }
+ ]
+}

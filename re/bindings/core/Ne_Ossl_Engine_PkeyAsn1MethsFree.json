@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_Engine_PkeyAsn1MethsFree",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144f9cb20",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Ossl_Engine_PkeyAsn1MethsFree(void *engine)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144f9f4e0 (RacingPC lab re_groups/_decomp);xref:0x144cabae0,0x144cabe30",
+  "notes": "OpenSSL engine_pkey_asn1_meths_free. Calls engine->pkey_asn1_meths (+0x50) for the nid list and frees each returned ASN1 method via FUN_144d9f5b0."
+ },
+ "signature": {
+  "id": "core.ossl_engine_pkey_asn1_meths_free",
+  "section": ".xtls",
+  "pattern": "40 57 B8 20 00 00 00 E8 ?? ?? ?? ?? 48 2B E0 48 8B 41 50",
+  "match": "0x144f9cb20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144f9cb20",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_Engine_PkeyAsn1MethsFree"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144f9f4e0",
+  "made_on_target": "0x144f9f4e0",
+  "twin": "made on steam-26566308; the target 0x144f9f4e0 is KB 0x144f9cb20: Ne_Crt_ReportGsFailure (0x4d94e1c) and Ne_Crt_Strstr (0x532d4b8) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144f9f4e0",
+    "target": "0x144f9f4e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c6daab2cc149e6f39703768947581f7b257c34a8b8270ac900fad41326207c3e"
+  }
+ ]
+}

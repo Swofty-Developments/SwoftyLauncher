@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneMap_InsertOrAssign_KeyU16_Node3B0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1429f70c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void *Game_FrontendSceneMap_InsertOrAssign_KeyU16_Node3B0(void *map, void *outPair, uint8_t *key, void *value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1429f9480 (RacingPC lab re_groups/_decomp);xref:0x1428deb70,0x1428e3300,0x1428e4e50,0x1428e6180",
+  "notes": "Chained hash map insert-or-assign keyed by u16 (node 0x3b0 bytes, key at +0x10, value at +0x18). Value has two optional sub-objects (flag at value+0x190 copied via 0x140c83880, flag at value+0x358 copied via 0x1416d39f0), two ref-counted strings (+0x360, +0x380), 24 bytes at +0x368, u16 at +0x388 and u64 at +0x390. Rehashes when load factor (float at map+0) is exceeded. Writes {node, inserted flag} to outPair. Context from caller: per-driver frontend scene data."
+ },
+ "signature": {
+  "id": "game.frontend_scene_map_insert_or_assign_key_u16_node3_b0",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4D 89 CE 4D 89 C7 48 89 D5 48 89 CB",
+  "match": "0x1429f70c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1429f70c0",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneMap_InsertOrAssign_KeyU16_Node3B0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1429f9480",
+  "made_on_target": "0x1429f9480",
+  "twin": "made on steam-26566308; the target 0x1429f9480 is KB 0x1429f70c0: Game_SaveSlotManager_Deserialise (0x29d8bd0) and Ne_Crt_AbortNoReturn_B (0x2a00c40) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1429f9480",
+    "target": "0x1429f9480"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c95e28429aa5aa950b213db9efade9112233402930a07edd28e5c01a850271e2"
+  }
+ ]
+}

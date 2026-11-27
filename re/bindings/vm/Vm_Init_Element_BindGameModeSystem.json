@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Init_Element_BindGameModeSystem",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143821f10",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint32_t Vm_Init_Element_BindGameModeSystem(void *element)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1438244a0 (RacingPC lab re_groups/_decomp);xref:0x143844a80",
+  "notes": "Calls Vm_ElementBase_Init, asks g_Vm_UiSystem (vfunc +0x70, then +0x28 with DAT_146050c98) for a registry, looks up k_Live_GameModeSystemKey in its robin-hood map (+0x30) and stores the found pointer at element+0x60. Returns the base init result on success; otherwise sets error 0x16 (EINVAL) in the TLS error chain and errno trace ring and returns 0x16. Context from caller: used by the PracticeTyreWearResultsMap config element."
+ },
+ "signature": {
+  "id": "vm.init_element_bind_game_mode_system",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CF E8 ?? ?? ?? ?? 89 C6 48 8B 0D ?? ?? ?? ?? 48 8B 01 FF 50 70 4C 8B 00 48 8D 15 ?? ?? ?? ?? 48 89 C1 41 FF 50 28 48 85 C0",
+  "match": "0x143821f10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143821f10",
+  "kind": "func_start",
+  "names": [
+   "Vm_Init_Element_BindGameModeSystem"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1438244a0",
+  "made_on_target": "0x1438244a0",
+  "twin": "made on steam-26566308; the target 0x1438244a0 is KB 0x143821f10: Game_TrackSurface_DryLineStrength (0x37cff90) and site_Game_TileListSelect_ChildStep (0x383b560) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1438244a0",
+    "target": "0x1438244a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "bf085faacf7dbe1be008d06a7fc6e940b8f9fa0d8d4f2cbe9808ec60f19091cc"
+  }
+ ]
+}

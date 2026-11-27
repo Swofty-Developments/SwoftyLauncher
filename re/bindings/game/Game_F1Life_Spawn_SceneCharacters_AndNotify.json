@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_F1Life_Spawn_SceneCharacters_AndNotify",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142545a20",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_F1Life_Spawn_SceneCharacters_AndNotify(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142547950 (RacingPC lab re_groups/_decomp);xref:0x1425445b0",
+  "notes": "Large setup step: picks a free kind-1 scene slot from +0x1a10 (slot type +200, not already used by an entry of +0xb8..+0xc0 stride 0x1820) and spawns the main character via 0x14254df60; collects kind 3 objects and for up to 3 of them looks up driver ids in the tree at +0x1b20 and the entrant list (stride 0x88), builds a driver description (first one with animation \"pose_04_idle\") and calls Game_FrontendSceneManager_FindOrCreateNewCustomDriver and SetupCustomDriver, caching the u16 handles in vector +0x1b38; then spawns further characters from 0x14253b9a0 results (0x1810-byte records), calls 0x14254ce80 and posts a bus message (vtable 0x1457963b8)."
+ },
+ "signature": {
+  "id": "game.f1_life_spawn_scene_characters_and_notify",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 28 34 00 00",
+  "match": "0x142545a20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142545a20",
+  "kind": "func_start",
+  "names": [
+   "Game_F1Life_Spawn_SceneCharacters_AndNotify"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142547950",
+  "made_on_target": "0x142547950",
+  "twin": "made on steam-26566308; the target 0x142547950 is KB 0x142545a20: Game_VoPlaySoundEffectNode_Execute (0x25289b0) and Game_FrontendSceneObject_RespawnAll (0x2549cb0) on either side both sit 0x1f30 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142547950",
+    "target": "0x142547950"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0c51854e50e140f6f86fcf68e90092099edcb154ba283d0f20f97f2154147fed"
+  }
+ ]
+}

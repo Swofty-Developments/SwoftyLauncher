@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Car_TyreSets_Find_AvailableCompoundWithFallback",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142e8cab0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "int32_t Car_TyreSets_Find_AvailableCompoundWithFallback(void *tyre_sets, uint32_t compound_idx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142e8f040 (RacingPC lab re_groups/_decomp);xref:0x141f935c0",
+  "notes": "Tyre-set inventory: slots of 0x28 bytes at +0x10 (set vector begin +0x20, end +0x28, element 0x6c), slot count at +0xd8. Returns the requested compound index if it still has an unused set (func 0x142e8d120 gives the next-set index), else tries four fallback indices from the tables at 0x1457f59dc..0x1457f5a0c (default order 1,2,3,4); second pass accepts any slot with a non-empty set vector; returns -1 when nothing exists. Context from caller: garage tyre select default choice."
+ },
+ "signature": {
+  "id": "car.tyre_sets_find_available_compound_with_fallback",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 89 D6 48 89 CF 8D 46 FF",
+  "match": "0x142e8cab0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e8cab0",
+  "kind": "func_start",
+  "names": [
+   "Car_TyreSets_Find_AvailableCompoundWithFallback"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142e8f040",
+  "made_on_target": "0x142e8f040",
+  "twin": "made on steam-26566308; the target 0x142e8f040 is KB 0x142e8cab0: Car_Tyre_CheckCompoundClassRule (0x2e8acc0) and Sess_TyreAllocation_SwapSets (0x2e90a50) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142e8f040",
+    "target": "0x142e8f040"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7834d21ea8b1b33e2435ff048c52c2f2604cbd4328483e469ee72eeafe3e5259"
+  }
+ ]
+}

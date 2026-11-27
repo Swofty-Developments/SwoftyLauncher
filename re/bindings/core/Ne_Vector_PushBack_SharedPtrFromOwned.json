@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_PushBack_SharedPtrFromOwned",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140fc6400",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_Vector_PushBack_SharedPtrFromOwned(void *vec, void *owned_pair)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140fc6f80 (RacingPC lab re_groups/_decomp);xref:0x140f8bee0",
+  "notes": "(lib) Vector of 16-byte shared pointers (allocator +0, begin +8, end +0x10, cap +0x18). Appends a new element built from owned_pair: allocates a 0x20 control block (vtable 0x1456bdb60, counts 1/1) holding {owned[0], owned[1]}, stores {ptr, block} and nulls owned[1]. Grows 1.5x by moving elements and releasing the old storage. Always returns 0."
+ },
+ "signature": {
+  "id": "core.vector_push_back_shared_ptr_from_owned",
+  "section": ".xtls",
+  "pattern": "48 8B 4C 24 70 48 8D 54 24 20 E8 ?? ?? ?? ?? 48 8B 74 24 28",
+  "match": "0x140f8d5a9",
+  "anchor": "0xb",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xa"
+  },
+  "target": "0x140fc6400",
+  "kind": "call",
+  "names": [
+   "Ne_Vector_PushBack_SharedPtrFromOwned"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140f8e129",
+  "made_on_target": "0x140fc6f80",
+  "twin": "made on steam-26566308; the target 0x140fc6f80 is KB 0x140fc6400: Career_MyTeamRewards_GetRewardName (0xfc6a70) and Career_Deserialise_ClaimedFlag (0xfc7620) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140f8e129",
+    "target": "0x140fc6f80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7fb266434841aa75076d77fe9a92efd6170c049f8befa8c2f1694d68e0fdec97"
+  }
+ ]
+}

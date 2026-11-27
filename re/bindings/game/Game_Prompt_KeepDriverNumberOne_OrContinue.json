@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Prompt_KeepDriverNumberOne_OrContinue",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14166e150",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Prompt_KeepDriverNumberOne_OrContinue(void *state)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14166f740 (RacingPC lab re_groups/_decomp);xref:0x142057170",
+  "notes": "If state+0x18 flag is clear it tail-calls the stored continuation state[0](state[1]). Otherwise shows UI message \"keep_driver_number_one\" via the message service at state[7]+0x10 with callback FUN_14166f810, stores the listener handle at state+0x20 and clears the flag."
+ },
+ "signature": {
+  "id": "game.prompt_keep_driver_number_one_or_continue",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC E8 00 00 00 48 89 C8",
+  "match": "0x14166e150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14166e150",
+  "kind": "func_start",
+  "names": [
+   "Game_Prompt_KeepDriverNumberOne_OrContinue"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14166f740",
+  "made_on_target": "0x14166f740",
+  "twin": "made on steam-26566308; the target 0x14166f740 is KB 0x14166e150: Ne_InternedString_ManageB (0x16689d0) and Career_Bind_FacilityUpgradeNameStrings (0x16752d0) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14166f740",
+    "target": "0x14166f740"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9e6aa33509eab81730844ae0f464ab9cca2599615095fc10f34cf0e718a7a2e0"
+  }
+ ]
+}

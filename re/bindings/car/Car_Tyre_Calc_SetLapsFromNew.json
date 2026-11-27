@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Car_Tyre_Calc_SetLapsFromNew",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141f98480",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "int64_t Car_Tyre_Calc_SetLapsFromNew(void *ctx, const void *tyre_set)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141f9a080 (RacingPC lab re_groups/_decomp);xref:0x141f94610",
+  "notes": "Same computation as 0x141f99e50 but samples the wear curve at 0.0 instead of the current average wear and ignores the +9 flag: laps a fresh set of this compound (tyre_set+4) lasts until wear 0.7, using the same per-lap rate (+0x630 mean * +0x98e0[compound] * +0x98f4). Returns rounded lap count, 0 when session data is not ready."
+ },
+ "signature": {
+  "id": "car.tyre_calc_set_laps_from_new",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 78 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 89 CF",
+  "match": "0x141f98480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f98480",
+  "kind": "func_start",
+  "names": [
+   "Car_Tyre_Calc_SetLapsFromNew"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141f9a080",
+  "made_on_target": "0x141f9a080",
+  "twin": "made on steam-26566308; the target 0x141f9a080 is KB 0x141f98480: Game_ScoreBreakdownVM_OnDeactivate (0x1f657b0) and Game_GarageMonitorTvFeedVM_OnActivate (0x1fa26e0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141f9a080",
+    "target": "0x141f9a080"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d33358df0bab11c556977102e562084cb62c267db25ef8feca099c587d435398"
+  }
+ ]
+}

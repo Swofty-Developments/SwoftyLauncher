@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Customisation_Remap_DriverCustomisationRefs",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1414466c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Customisation_Remap_DriverCustomisationRefs(void *self, uint32_t packedId)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141446ea0 (RacingPC lab re_groups/_decomp);xref:0x140fe65c0,0x141a22030,0x142057170",
+  "notes": "Picks a replacement id: first entry in table ((+0x280)+0x2a8) whose id at +0xc540 differs from packedId, else 0x3fff0000. Walks list +0x80 and rewrites every inner tree entry id (+0x28) equal to packedId with the replacement. If the replacement is valid and +0x1b4 equals packedId and Wear_Get_DriverCustomisation finds it, writes it to +0x1b4. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "game.customisation_remap_driver_customisation_refs",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 84 D2 0F 84",
+  "match": "0x1414466c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414466c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Customisation_Remap_DriverCustomisationRefs"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141446ea0",
+  "made_on_target": "0x141446ea0",
+  "twin": "made on steam-26566308; the target 0x141446ea0 is KB 0x1414466c0: Game_DecalGeneration_ReadBackCompressed (0x14387c0) and Ne_FlagMaskSet_SetBit (0x144e040) on either side both sit 0x7e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141446ea0",
+    "target": "0x141446ea0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4e542b2425cf1441c0037b36d8cf77b5f7d2e6f92e849916a4ff2cb3e79066a9"
+  }
+ ]
+}

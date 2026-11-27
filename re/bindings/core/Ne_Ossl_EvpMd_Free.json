@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_EvpMd_Free",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1448ff280",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Ossl_EvpMd_Free(void *md)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144901c40 (RacingPC lab re_groups/_decomp);xref:0x1452a2210,0x1452a4740,0x1452a49a0,0x1452a65d0",
+  "notes": "OpenSSL EVP_MD_free. Only for dynamic methods (origin +0x10 == 0): atomically decrements refcount at +0x70 and calls the destructor FUN_1449045c0 at zero."
+ },
+ "signature": {
+  "id": "core.ossl_evp_md_free",
+  "section": ".xtls",
+  "pattern": "48 85 C9 74 2B B8 28 00 00 00 E8 ?? ?? ?? ?? 48 2B E0 83 79 10 00 75 14 B8 FF FF FF FF F0 0F C1 41 70 83 E8 01 7F 05 E8 ?? ?? ?? ?? 48 83 C4 28 C3 CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC 48 89 5C 24 08 48 89 6C 24 10",
+  "match": "0x1448ff280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1448ff280",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_EvpMd_Free"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144901c40",
+  "made_on_target": "0x144901c40",
+  "twin": "made on steam-26566308; the target 0x144901c40 is KB 0x1448ff280: Ne_CloudUploader_Upload (0x47c8580) and Ne_Format_HresultUnknownFacility (0x49349e0) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144901c40",
+    "target": "0x144901c40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c95e676a61c17a7eda86c24b5d1514d148cd670b81e28a6f0323ab62b90adb25"
+  }
+ ]
+}

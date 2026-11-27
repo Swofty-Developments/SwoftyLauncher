@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Vfx_Build_NodeTree_14349e800",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14349c280",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_Vfx_Build_NodeTree_14349e800(void *self, void *allocator, uint32_t id, void *ctx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14349e800 (RacingPC lab re_groups/_decomp);xref:0x1433893d0",
+  "notes": "Node-tree builder with slots self+0x18..+0x28 and id at +0x10. Embeds two named parameter nodes (float defaults 100.0/10.0 and 50.0/20.0) initialised by FUN_14348b0b0 and FUN_1434822e0. Context from caller: tyre kickup VFX."
+ },
+ "signature": {
+  "id": "game.vfx_build_node_tree_14349e800",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 C5 F8 28 F3 44 89 C6 48 89 D0 48 89 CF 48 89 51 08 4C 8B 0A BA 20 00 00 00 41 B8 08 00 00 00 48 89 C1 41 FF 51 18 48 89 C3 C5 C0 57 FF C5 F8 11 78 10 C5 F8 11 38 48 89 47 28",
+  "match": "0x14349c280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14349c280",
+  "kind": "func_start",
+  "names": [
+   "Game_Vfx_Build_NodeTree_14349e800"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14349e800",
+  "made_on_target": "0x14349e800",
+  "twin": "made on steam-26566308; the target 0x14349e800 is KB 0x14349c280: Game_F1os_CreateTask_ReconcileUserEntitlements (0x3453bf0) and Game_PitLane_GetDistanceToBox (0x34b72b0) on either side both sit 0x2580 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14349e800",
+    "target": "0x14349e800"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fd362a133f66a515e43b96a5cefe2aa9538525b672d7e78662cd7b7e2e19a944"
+  }
+ ]
+}

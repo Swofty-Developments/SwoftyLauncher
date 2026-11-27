@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_Proto_EngineComponentFittedRecord_Construct",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1404722b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_Proto_EngineComponentFittedRecord_Construct(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1404722f0 (RacingPC lab re_groups/_decomp);xref:0x140718d20",
+  "notes": "Builds the std::string \"f1.proto.EngineComponentFittedRecord\", passes it to the base message constructor 0x144937b50, frees the temp, sets vtable 0x145628de0, zeroes +0x48..+0x77 and inits an empty SSO string at +0x60 (cap 0xf at +0x78, +0x80 = 0). Returns self. cxx=f1.proto.EngineComponentFittedRecord"
+ },
+ "signature": {
+  "id": "game.proto_engine_component_fitted_record_construct",
+  "section": ".xtls",
+  "pattern": "48 89 C1 E8 ?? ?? ?? ?? 48 63 43 14",
+  "match": "0x140718e6b",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x1404722b0",
+  "kind": "call",
+  "names": [
+   "Game_Proto_EngineComponentFittedRecord_Construct"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140718eab",
+  "made_on_target": "0x1404722f0",
+  "twin": "made on steam-26566308; the target 0x1404722f0 is KB 0x1404722b0: Game_Analytics_BakedLiverySponsor_WriteJson (0x4201d0) and Ne_RbTree_EraseSubtree (0x557390) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140718eab",
+    "target": "0x1404722f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b8e23cd7ac5600dbd61bd91c01dfcf9593889a5624a9ca0dc187aaa6272f8a48"
+  }
+ ]
+}

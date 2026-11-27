@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_RbTree_EmplaceUnique_FloatKey_CopyMapVal",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142eef1c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_RbTree_EmplaceUnique_FloatKey_CopyMapVal(void *map, void *out_pair, const float *key, const void *src_map)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142ef1750 (RacingPC lab re_groups/_decomp);xref:0x142e7efd0",
+  "notes": "(lib) std::map<float, map>::try_emplace. lower_bound on float key at node+0x20; if present writes {node,false}. Otherwise allocates a 0x40 node, stores key, copy-constructs the inner map value (new 0x48 head, tree copied by FUN_142ef1b60, min/max fixed up), links and rebalances (red-black), increments size at map+0x10 and writes {node,true}. Throws via Ne_Std_ThrowMapSetTooLong at max size."
+ },
+ "signature": {
+  "id": "core.rb_tree_emplace_unique_float_key_copy_map_val",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4D 89 CE 4D 89 C7 48 89 CF 4C 8B 69 08 49 8B 45 08",
+  "match": "0x142eef1c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142eef1c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_RbTree_EmplaceUnique_FloatKey_CopyMapVal"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142ef1750",
+  "made_on_target": "0x142ef1750",
+  "twin": "made on steam-26566308; the target 0x142ef1750 is KB 0x142eef1c0: Ne_HashMap_FindSlot_Thumbnail (0x2ee76c0) and Sess_TyreCompoundClasses_SortEntries (0x2ef29e0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142ef1750",
+    "target": "0x142ef1750"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "47cf8f323aacbf30cec679ab008261f264e7600712b0227729217678ecb913d0"
+  }
+ ]
+}

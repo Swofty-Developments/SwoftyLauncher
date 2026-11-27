@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_BitMatrix_IterBegin",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144ffa660",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint32_t *Ne_BitMatrix_IterBegin(uint32_t *iter, uint32_t *matrix)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144ffd020 (RacingPC lab re_groups/_decomp);xref:0x144d1a140",
+  "notes": "(lib) Set-bit iterator init over a rows x cols bit matrix (matrix: rows +0x0, cols +0x4, uint32 word pointer +0x8). Finds the first set bit, stores current (row,col) at iter+0/+4 as bit index / cols and % cols, end marker rows/cols at +8/+0xc, word index +0x10, remaining word bits +0x14, words pointer +0x18. Empty matrix yields (rows,cols). Lives in the Wwise code area."
+ },
+ "signature": {
+  "id": "core.bit_matrix_iter_begin",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 10 48 89 7C 24 18 4C 8B 5A 08",
+  "match": "0x144ffa660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144ffa660",
+  "kind": "func_start",
+  "names": [
+   "Ne_BitMatrix_IterBegin"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144ffd020",
+  "made_on_target": "0x144ffd020",
+  "twin": "made on steam-26566308; the target 0x144ffd020 is KB 0x144ffa660: Ne_Crt_ReportGsFailure (0x4d94e1c) and Ne_Crt_Strstr (0x532d4b8) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144ffd020",
+    "target": "0x144ffd020"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e4bad35cca809bd07c682545263e8b2f1b97c10821dfb7556b196194e616204f"
+  }
+ ]
+}

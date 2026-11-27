@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Openssl_Crypto_Strdup",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144c94190",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "char *Ne_Openssl_Crypto_Strdup(const char *str)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144c96b50 (RacingPC lab re_groups/_decomp);xref:0x144ca5990,0x144ca9c80,0x144f46000",
+  "notes": "(lib) OpenSSL CRYPTO_strdup: NULL in gives NULL; bounded strlen (max 0x7fffffff), allocates len+1 with the CRYPTO_malloc at 0x144c8c1e0 and copies the string with FUN_145360330 (strcpy); returns the copy or NULL."
+ },
+ "signature": {
+  "id": "core.openssl_crypto_strdup",
+  "section": ".xtls",
+  "pattern": "40 53 B8 20 00 00 00 E8 ?? ?? ?? ?? 48 2B E0 48 8B D9 48 85 C9 75 08 33 C0 48 83 C4 20 5B C3 33 C0",
+  "match": "0x144c94190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144c94190",
+  "kind": "func_start",
+  "names": [
+   "Ne_Openssl_Crypto_Strdup"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144c96b50",
+  "made_on_target": "0x144c96b50",
+  "twin": "made on steam-26566308; the target 0x144c96b50 is KB 0x144c94190: Ne_Crt_SecurityCookieFailure (0x4c964a0) and Ne_Wwise_ConvolutionReverb_Init (0x4cb02b0) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144c96b50",
+    "target": "0x144c96b50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4e2932c809677be41fb2e6f7710ba099433c4250492e4fc7dbd0342864432e75"
+  }
+ ]
+}

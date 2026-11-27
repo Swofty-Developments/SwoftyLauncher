@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_InstantRace_Set_HotloadTriggered",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140ba1340",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_InstantRace_Set_HotloadTriggered(void *self, uint8_t triggered)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140ba1320 (RacingPC lab re_groups/_decomp);xref:0x141c2db00",
+  "notes": "Writes the flag byte at self+0x291 and, when log channel hash 0x396540b4 is enabled, logs \"Hotload Triggered flag set to %s\" on channel \"INSTANT_RACE\". Hook point to see when instant race hot-load is armed."
+ },
+ "signature": {
+  "id": "game.instant_race_set_hotload_triggered",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 88 91 91 02 00 00 80 3D ?? ?? ?? ?? 01",
+  "match": "0x140ba1340",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ba1340",
+  "kind": "func_start",
+  "names": [
+   "Game_InstantRace_Set_HotloadTriggered"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140ba1320",
+  "made_on_target": "0x140ba1320",
+  "twin": "made on steam-26566308; the target 0x140ba1320 is KB 0x140ba1340: Game_EventListGridSetupComponent_SetupStartingGrid (0xb9cd50) and Game_InstantRace_SetupTrackList (0xba28b0) on either side both sit -0x20 below their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140ba1320",
+    "target": "0x140ba1320"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6b98e285b80d39b5b41e206fc8ded1dab3e1904ea70c7551f7bedcf2896266d7"
+  }
+ ]
+}

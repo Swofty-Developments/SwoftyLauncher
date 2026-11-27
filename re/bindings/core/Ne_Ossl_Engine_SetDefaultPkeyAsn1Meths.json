@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_Engine_SetDefaultPkeyAsn1Meths",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144f9cab0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int Ne_Ossl_Engine_SetDefaultPkeyAsn1Meths(void *engine)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144f9f470 (RacingPC lab re_groups/_decomp);xref:0x144ca4b90",
+  "notes": "OpenSSL ENGINE_set_default_pkey_asn1_meths. Uses engine->pkey_asn1_meths (+0x50) nid list and registers it in the table at 0x14600b120 with setdefault=1."
+ },
+ "signature": {
+  "id": "core.ossl_engine_set_default_pkey_asn1_meths",
+  "section": ".xtls",
+  "pattern": "40 53 B8 30 00 00 00 E8 ?? ?? ?? ?? 48 2B E0 48 8B 41 50 48 8B D9 48 85 C0 74 3D 45 33 C9 4C 8D 44 24 40 33 D2 FF D0 85 C0 7E 2D 4C 8B 4C 24 40 48 8D 15 ?? ?? ?? ?? C7 44 24 28 01 00 00 00",
+  "match": "0x144f9cab0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144f9cab0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_Engine_SetDefaultPkeyAsn1Meths"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144f9f470",
+  "made_on_target": "0x144f9f470",
+  "twin": "made on steam-26566308; the target 0x144f9f470 is KB 0x144f9cab0: Ne_Crt_ReportGsFailure (0x4d94e1c) and Ne_Crt_Strstr (0x532d4b8) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144f9f470",
+    "target": "0x144f9f470"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7cd93d473fa5dcfd98d8a826e991a377c49f9ed895ecd4ddf5193611db410a5d"
+  }
+ ]
+}

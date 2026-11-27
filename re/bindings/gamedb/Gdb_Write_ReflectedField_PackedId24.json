@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Gdb_Write_ReflectedField_PackedId24",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1413f7be0",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "proto": "uint32_t Gdb_Write_ReflectedField_PackedId24(const void *self, void *save_obj, const char *field_name)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1413f8220 (RacingPC lab re_groups/_decomp);xref:0x142493950,0x142493e00",
+  "notes": "Serialises one id field: packs byte self+0x8 (high) and uint16 self+0xa into a 24-bit value, creates a reflected field named field_name with the type object at 0x14612bf60 via Gdb_Write_ReflectedFieldA, sets its value (vtable +0x40) and appends it to the save object's child list (count +0x10). Returns the error code (0 ok)."
+ },
+ "signature": {
+  "id": "gamedb.write_reflected_field_packed_id24",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 D6 0F B6 41 08",
+  "match": "0x1413f7be0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1413f7be0",
+  "kind": "func_start",
+  "names": [
+   "Gdb_Write_ReflectedField_PackedId24"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1413f8220",
+  "made_on_target": "0x1413f8220",
+  "twin": "made on steam-26566308; the target 0x1413f8220 is KB 0x1413f7be0: Ne_CrowdPlugin_FindZoneIndex (0x13f3f30) and Ne_StdMap_At_141403b30 (0x1404170) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1413f8220",
+    "target": "0x1413f8220"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "77fd4559f1faeeb393fc54b2fb994cb669edb858c0abe657d4b275bacb0a683d"
+  }
+ ]
+}

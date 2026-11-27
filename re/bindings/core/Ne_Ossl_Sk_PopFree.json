@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_Sk_PopFree",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144d965f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Ossl_Sk_PopFree(void *st, void (*free_fn)(void *))",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144d98fb0 (RacingPC lab re_groups/_decomp);xref:0x144ca61a0,0x144db16f0,0x144f46000",
+  "notes": "(lib) OpenSSL OPENSSL_sk_pop_free. Loops st->num (+0x0) entries of st->data (+0x8), calls free_fn on each non-null element, then Crypto_Free(data) and Crypto_Free(st). Not game logic."
+ },
+ "signature": {
+  "id": "core.ossl_sk_pop_free",
+  "section": ".xtls",
+  "pattern": "48 85 C9 0F 84 ?? ?? ?? ?? 48 89 6C 24 20",
+  "match": "0x144d965f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144d965f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_Sk_PopFree"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144d98fb0",
+  "made_on_target": "0x144d98fb0",
+  "twin": "made on steam-26566308; the target 0x144d98fb0 is KB 0x144d965f0: Ne_Crt_ReportGsFailure (0x4d94e1c) and Ne_Crt_Strstr (0x532d4b8) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144d98fb0",
+    "target": "0x144d98fb0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f3ed79cf42772ec8a6f4c8bd7408c825da781a90ccb2bde36e225ee0167b9c8f"
+  }
+ ]
+}

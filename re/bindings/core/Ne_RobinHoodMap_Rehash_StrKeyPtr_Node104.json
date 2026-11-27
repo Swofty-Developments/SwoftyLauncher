@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_Rehash_StrKeyPtr_Node104",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142cb63a0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodMap_Rehash_StrKeyPtr_Node104(void *map, uint64_t newBuckets, uint8_t freeOld)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142cb8930 (RacingPC lab re_groups/_decomp);xref:0x142beaf10",
+  "notes": "(lib) Robin-hood map rehash: 8-byte node pointer slots at +0x28, info bytes +0x30, FNV-1a over the C string at node+0x10 times multiplier +0x20, 80 percent load factor. Old storage is freed or recycled into 0x68-byte node free lists (+0x8/+0x10). Context from caller: DRS allowed lap groups keyed by name."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_rehash_str_key_ptr_node104",
+  "section": ".xtls",
+  "pattern": "45 31 C0 E8 ?? ?? ?? ?? 49 BC B3 01 00 00 00 01 00 00",
+  "match": "0x142be943b",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x142cb63a0",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_Rehash_StrKeyPtr_Node104"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142beb9cb",
+  "made_on_target": "0x142cb8930",
+  "twin": "made on steam-26566308; the target 0x142cb8930 is KB 0x142cb63a0: Ne_UIPCOptions_PopulateOutputMonitors (0x2c99650) and Ne_Post_BusMessageQueued_FlashbackUsed (0x2cb96c0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142beb9cb",
+    "target": "0x142cb8930"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "109e5092a4fcf3a99a2d1c34e3e6e79303c815153ab5248a3feedf188f8f4666"
+  }
+ ]
+}

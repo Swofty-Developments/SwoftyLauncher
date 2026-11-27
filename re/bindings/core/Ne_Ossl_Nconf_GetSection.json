@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_Nconf_GetSection",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144f8ccd0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Ossl_Nconf_GetSection(void *conf, const char *section)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144f8f690 (RacingPC lab re_groups/_decomp);xref:0x14518d010,0x14518d3c0",
+  "notes": "OpenSSL NCONF_get_section. Null conf raises CONF reason 0x69, null section 0x6b; otherwise looks up {section,name=NULL} in conf->data hash (+0x10) and returns the value stack (+0x10 of the entry)."
+ },
+ "signature": {
+  "id": "core.ossl_nconf_get_section",
+  "section": ".xtls",
+  "pattern": "B8 28 00 00 00 E8 ?? ?? ?? ?? 48 2B E0 48 85 C9 75 36 E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? BA 20 01 00 00",
+  "match": "0x144f8ccd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144f8ccd0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_Nconf_GetSection"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144f8f690",
+  "made_on_target": "0x144f8f690",
+  "twin": "made on steam-26566308; the target 0x144f8f690 is KB 0x144f8ccd0: Ne_Crt_ReportGsFailure (0x4d94e1c) and Ne_Crt_Strstr (0x532d4b8) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144f8f690",
+    "target": "0x144f8f690"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "93c82693b5cb88f80fda83a29b9022716db87f1c247013a993680d12fe46d7cb"
+  }
+ ]
+}

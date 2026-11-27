@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleCustomisationMap_Erase_ByKeyU16",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1429f7b80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_VehicleCustomisationMap_Erase_ByKeyU16(void *map, uint8_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1429f9f40 (RacingPC lab re_groups/_decomp);xref:0x1428e7760",
+  "notes": "Hashes the 2 key bytes, walks the bucket chain comparing the u16 at node+0x10, and if found unlinks the node (fixing bucket first/last), decrements size +0x18, releases ref string node+0x68c0, calls Game_VehicleCustomisation_Destroy(node+0x20) and frees the node. Returns 1 if erased, 0 if not found. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "game.vehicle_customisation_map_erase_by_key_u16",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 0F B6 02 48 B9 25 23 22 84 E4 9C F2 4B",
+  "match": "0x1429f7b80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1429f7b80",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleCustomisationMap_Erase_ByKeyU16"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1429f9f40",
+  "made_on_target": "0x1429f9f40",
+  "twin": "made on steam-26566308; the target 0x1429f9f40 is KB 0x1429f7b80: Game_SaveSlotManager_Deserialise (0x29d8bd0) and Ne_Crt_AbortNoReturn_B (0x2a00c40) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1429f9f40",
+    "target": "0x1429f9f40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e0ad8658b2749f77103b9377075b34b584ae65cd2cc9396cb6c219ee4dc7ea6d"
+  }
+ ]
+}
