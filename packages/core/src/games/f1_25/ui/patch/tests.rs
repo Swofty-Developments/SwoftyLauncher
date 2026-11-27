@@ -553,14 +553,52 @@ fn home_with_theatre() -> Vec<u8> {
                     1,
                     Some("theatre_container"),
                 ),
+                stock_home_f1_world_route(),
             ],
         ),
         route_group("settings_container", vec![]),
     ])
 }
 
+fn stock_home_f1_world_route() -> Node {
+    route(
+        "f1_world",
+        vec![
+            route_cmd("Wait", 1, &[("Time", "0")], None),
+            route_cmd(
+                "StartStandardWipe",
+                2,
+                &[("Video", "ui_wipes/ui_wipe_standard_in.bk2")],
+                Some("1"),
+            ),
+            route_cmd("Wait", 3, &[("Time", "0")], None),
+            route_cmd("InputState", 4, &[], Some("2")),
+            route_cmd(
+                "TriggerSubRoute",
+                5,
+                &[("SubRoute", "close"), ("Target", "fe_home"), ("To", F1_WORLD_HUB)],
+                Some("3"),
+            ),
+            route_cmd(
+                "TriggerSubRoute",
+                6,
+                &[
+                    ("SubRoute", "open_no_input"),
+                    ("Target", F1_WORLD_HUB),
+                    ("From", "fe_home"),
+                    ("Message", ""),
+                ],
+                Some("5"),
+            ),
+        ],
+        "4,6",
+        1,
+        None,
+    )
+}
+
 #[test]
-fn the_main_menu_showroom_route_is_the_hubs_own_showroom_route_from_the_home_screen() {
+fn the_main_menu_showroom_route_runs_the_homes_f1_world_route_then_the_hubs_own_showroom_route() {
     let out = routes(
         &home_with_theatre(),
         Vec::new(),
@@ -570,45 +608,31 @@ fn the_main_menu_showroom_route_is_the_hubs_own_showroom_route_from_the_home_scr
     .unwrap();
     let p = Pkg::parse(&out).unwrap();
     let ours = route_in(&p, "fe_home", SHOWROOM_ROUTE);
+    let stock = route_in(&p, "fe_home", "f1_world");
+    let (ours_steps, stock_steps) = (steps(ours), steps(stock));
     assert_eq!(
-        steps(ours),
-        [
-            "PlayerCard 0",
-            "TransitionScreen out fe_home",
-            "CloseScreen fe_home 2",
-            "OpenScreen fe_showroom 3,10,11",
-            "ViewModelCallback fe_showroom 4",
-            "InputState 5",
-            "TransitionScreen in fe_showroom 5",
-            "TriggerSubRoute close theming_overlay_frontend",
-            "TransitionScreen out fe_planes",
-            "CloseScreen fe_planes 9",
-            "FrontendSceneSwitch fe_f1_world",
-        ],
-        "fe_home's video background closes and the scene is the hub's before fe_showroom opens, as on the way in \
-         through F1 World; the other slices stay open, fe_showroom gets its view model callback before input, and \
-         the theming overlay closes on its own"
+        ours_steps[..stock_steps.len()],
+        stock_steps[..],
+        "every command of fe_home's own f1_world route runs first, unchanged"
+    );
+    assert_eq!(
+        ours_steps[stock_steps.len()..],
+        ["TriggerSubRoute showroom fe_f1_world 6"],
+        "then the hub's own showroom route is fired once the hub is open"
     );
     let o = ours.o().unwrap();
-    assert_eq!(o.str_at("Dependencies").unwrap(), "6,7,8");
+    assert_eq!(o.str_at("Dependencies").unwrap(), "4,7");
     assert_eq!(o.at("Type").unwrap().as_val().unwrap().as_u32(), Some(1));
     assert_eq!(attr_value(ours, "Destination").as_deref(), Some(SHOWROOM_SCREEN));
     let text = format!("{ours:?}");
     for gone in [
         "theatre_container",
-        "slice_bg_content_underlay",
+        "fe_planes",
         "CloseSlices",
-        "open_no_input",
+        "FrontendSceneSwitch",
     ] {
         assert!(!text.contains(gone), "{gone} in {text}");
     }
-    let cmds = ours.o().unwrap().at("Commands").unwrap().a().unwrap();
-    let hub: Vec<_> = cmds
-        .iter()
-        .filter(|c| format!("{c:?}").contains(F1_WORLD_HUB))
-        .filter_map(cmd_type)
-        .collect();
-    assert_eq!(hub, ["FrontendSceneSwitch"], "the hub is never opened or closed");
     assert_eq!(
         steps(route_in(&p, "fe_home", "theatre")),
         [
@@ -616,6 +640,11 @@ fn the_main_menu_showroom_route_is_the_hubs_own_showroom_route_from_the_home_scr
             "TriggerSubRoute open_no_input theatre_container 5"
         ],
         "the game's own Theatre route stays"
+    );
+    assert_eq!(
+        steps(stock),
+        stock_steps,
+        "fe_home's f1_world route is not touched"
     );
     let twice = routes(
         &out,
@@ -629,13 +658,29 @@ fn the_main_menu_showroom_route_is_the_hubs_own_showroom_route_from_the_home_scr
 }
 
 #[test]
-fn no_showroom_route_is_built_from_the_theatre_when_the_hubs_showroom_route_is_missing_or_changed() {
+fn no_showroom_route_is_built_when_the_hubs_showroom_route_is_missing_or_changed_or_the_home_has_no_f1_world_route()
+ {
     let without_hub = pkg_of(vec![route_group(SHOWROOM_SCREEN, vec![])]);
     for f1_world in [Vec::new(), without_hub, f1_world_with(hub_showroom_route(false))] {
         let out = routes(&home_with_theatre(), Vec::new(), Vec::new(), &f1_world).unwrap();
         assert!(!has_route(&out, "fe_home", SHOWROOM_ROUTE));
         assert!(has_route(&out, "fe_home", "theatre"));
     }
+    let home = pkg_of(vec![route_group(
+        "fe_home",
+        vec![
+            route("options", vec![], "", 0, None),
+            route("theatre", vec![], "", 0, None),
+        ],
+    )]);
+    let out = routes(
+        &home,
+        Vec::new(),
+        Vec::new(),
+        &f1_world_with(hub_showroom_route(true)),
+    )
+    .unwrap();
+    assert!(!has_route(&out, "fe_home", SHOWROOM_ROUTE));
 }
 
 #[test]
@@ -654,6 +699,7 @@ fn the_home_gets_showroom_time_trial_and_grand_prix_routes_copied_from_its_own()
                 route("options", vec![], "", 0, None),
                 route("theatre", vec![], "theatre_container", 0, None),
                 activity,
+                stock_home_f1_world_route(),
             ],
         ),
         route_group("settings_container", vec![]),

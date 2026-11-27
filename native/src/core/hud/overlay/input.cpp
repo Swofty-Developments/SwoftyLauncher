@@ -49,6 +49,15 @@ void Input::poll_pads(ULONGLONG now)
     }
 }
 
+void Input::showroom_opened(const char *why)
+{
+    if (!key_log.open())
+        return;
+    swofty::log("[overlay] input: Showroom opened (%s); the next %d key, wheel and raw key messages the game window receives "
+                "are logged (window %s)",
+                why, hud::input::KEY_LOG_LINES, game_wnd.load() ? "subclassed" : "not subclassed, so none will show");
+}
+
 LRESULT CALLBACK Input::proc(HWND w, UINT msg, WPARAM wp, LPARAM lp)
 {
     Input &in = overlay.input;
@@ -87,6 +96,9 @@ LRESULT CALLBACK Input::proc(HWND w, UINT msg, WPARAM wp, LPARAM lp)
         e = {Ev::up, SWOFTY_MOUSE_MIDDLE, x, y};
         break;
     case WM_MOUSEWHEEL:
+        if (in.key_log.take())
+            swofty::log("[overlay] input: showroom log: WM_MOUSEWHEEL delta %d%s", int(GET_WHEEL_DELTA_WPARAM(wp)),
+                        held ? " (kept from the game: an addon holds input focus)" : "");
         e = {Ev::wheel, 0, float(GET_WHEEL_DELTA_WPARAM(wp)) / WHEEL_DELTA, 0};
         block = held;
         break;
@@ -97,6 +109,9 @@ LRESULT CALLBACK Input::proc(HWND w, UINT msg, WPARAM wp, LPARAM lp)
         block = held;
         break;
     case WM_KEYDOWN:
+        if (in.key_log.take())
+            swofty::log("[overlay] input: showroom log: WM_KEYDOWN vk 0x%02x%s", unsigned(wp & 0xff),
+                        held ? " (kept from the game: an addon holds input focus)" : "");
         hud::text_entry::state.key(uint32_t(wp) & 0xff, GetTickCount64());
         e = {Ev::key_down, uint32_t(wp) & 0xff, 0, 0};
         block = held;
@@ -123,6 +138,14 @@ LRESULT CALLBACK Input::proc(HWND w, UINT msg, WPARAM wp, LPARAM lp)
         break;
     case WM_INPUT:
         record = false;
+        if (in.key_log.left.load(std::memory_order_relaxed) > 0) {
+            RAWINPUT ri{};
+            UINT size = sizeof ri;
+            if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lp), RID_INPUT, &ri, &size, sizeof(RAWINPUTHEADER)) != UINT(-1) &&
+                ri.header.dwType == RIM_TYPEKEYBOARD && !(ri.data.keyboard.Flags & RI_KEY_BREAK) && in.key_log.take())
+                swofty::log("[overlay] input: showroom log: raw key vk 0x%02x%s", unsigned(ri.data.keyboard.VKey & 0xff),
+                            held ? " (kept from the game: an addon holds input focus)" : "");
+        }
         if (held) {
             in.blocked_raw.fetch_add(1, std::memory_order_relaxed);
             return DefWindowProcW(w, msg, wp, lp);
