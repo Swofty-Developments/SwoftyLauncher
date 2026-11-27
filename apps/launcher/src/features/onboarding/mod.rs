@@ -24,6 +24,10 @@ const BUTTON_HEIGHT: f32 = 48.;
 /// How long the consent form may take to load before the player can move on without it.
 const CONSENT_WAIT: Duration = Duration::from_secs(25);
 
+/// How long the form may stay open with no answer, from the ads step showing, before the player can
+/// move on without one. Moving on that way gives no consent.
+const ASKING_WAIT: Duration = Duration::from_secs(30);
+
 /// How long the check at start waits for the consent page to say whether it needs an answer.
 const CONSENT_CHECK: Duration = Duration::from_secs(60);
 
@@ -60,6 +64,8 @@ pub(crate) struct Onboarding {
     /// Opens the form over a saved answer, so it can be changed.
     reopen: bool,
     consent_since: Instant,
+    ads_since: Instant,
+    timeout_logged: bool,
     pub(crate) focus: FocusHandle,
 }
 
@@ -71,6 +77,8 @@ impl Onboarding {
             privacy_only: false,
             reopen: false,
             consent_since: Instant::now(),
+            ads_since: Instant::now(),
+            timeout_logged: false,
             focus: cx.focus_handle(),
         }
     }
@@ -170,6 +178,7 @@ impl Shell {
                             .as_ref()
                             .is_some_and(|w| w.step == Step::Ads)
                             && s.ads.consent().is_none();
+                        s.log_consent_timeout();
                         if s.ads.poll_consent() || waiting {
                             cx.notify();
                         }
@@ -182,6 +191,30 @@ impl Shell {
             }
         })
         .detach();
+    }
+
+    fn log_consent_timeout(&mut self) {
+        let consent = self.ads.consent();
+        let Some(wizard) = &self.overlays.onboarding else {
+            return;
+        };
+        if wizard.step != Step::Ads
+            || wizard.timeout_logged
+            || consent.is_some_and(|c| c.settled())
+            || !consent_settled_by(
+                consent,
+                wizard.consent_since.elapsed(),
+                wizard.ads_since.elapsed(),
+            )
+        {
+            return;
+        }
+        crate::app::app_log::note(&format!(
+            "the ad consent form gave no answer (reported {consent:?}): moving on without consent"
+        ));
+        if let Some(wizard) = &mut self.overlays.onboarding {
+            wizard.timeout_logged = true;
+        }
     }
 
     /// Whether the ads step is part of onboarding: for everyone while ads are on.
@@ -213,16 +246,15 @@ impl Shell {
             .find(|s| s.order() < step.order())
     }
 
-    /// The consent form answered, nothing to ask, or given up on after [`CONSENT_WAIT`].
+    /// The consent form answered, nothing to ask, or given up on after [`CONSENT_WAIT`] or [`ASKING_WAIT`].
     fn consent_settled(&self) -> bool {
-        match self.ads.consent() {
-            Some(consent) => consent.settled(),
-            None => self
-                .overlays
-                .onboarding
-                .as_ref()
-                .is_some_and(|w| w.consent_since.elapsed() >= CONSENT_WAIT),
-        }
+        self.overlays.onboarding.as_ref().is_some_and(|w| {
+            consent_settled_by(
+                self.ads.consent(),
+                w.consent_since.elapsed(),
+                w.ads_since.elapsed(),
+            )
+        })
     }
 
     fn onboarding_can_forward(&self, step: Step) -> bool {
@@ -241,6 +273,9 @@ impl Shell {
 
     fn onboarding_go(&mut self, step: Step, cx: &mut Context<Self>) {
         if let Some(wizard) = &mut self.overlays.onboarding {
+            if step == Step::Ads && wizard.step != Step::Ads {
+                wizard.ads_since = Instant::now();
+            }
             wizard.step = step;
         }
         cx.notify();
@@ -440,5 +475,50 @@ impl Shell {
             .child(div().flex_1().flex().justify_start().child(back))
             .children((steps.len() > 1).then(|| steps::dots(step, &steps, p)))
             .child(div().flex_1().flex().justify_end().child(forward))
+    }
+}
+
+/// Whether the player may move on from the ads step. A form that never answered settles after its
+/// wait, and moving on then records no consent.
+fn consent_settled_by(consent: Option<Consent>, since_open: Duration, since_ads: Duration) -> bool {
+    match consent {
+        None => since_open >= CONSENT_WAIT,
+        Some(Consent::Asking) => since_ads >= ASKING_WAIT,
+        Some(answered) => answered.settled(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{ASKING_WAIT, CONSENT_WAIT, Consent, Duration, consent_settled_by};
+
+    const NONE: Duration = Duration::ZERO;
+
+    #[test]
+    fn a_form_that_never_draws_settles_after_the_wait() {
+        let late = ASKING_WAIT;
+        assert!(!consent_settled_by(
+            Some(Consent::Asking),
+            late * 10,
+            ASKING_WAIT - Duration::from_secs(1)
+        ));
+        assert!(consent_settled_by(Some(Consent::Asking), NONE, late));
+    }
+
+    #[test]
+    fn a_page_that_never_reports_settles_after_the_wait() {
+        assert!(!consent_settled_by(
+            None,
+            CONSENT_WAIT - Duration::from_secs(1),
+            NONE
+        ));
+        assert!(consent_settled_by(None, CONSENT_WAIT, NONE));
+    }
+
+    #[test]
+    fn a_real_answer_settles_at_once() {
+        for answer in [Consent::Given, Consent::NotNeeded, Consent::Unavailable] {
+            assert!(consent_settled_by(Some(answer), NONE, NONE));
+        }
     }
 }

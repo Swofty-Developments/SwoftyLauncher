@@ -211,6 +211,13 @@ impl Host {
     }
 
     fn opened(&mut self, unit: Unit, view: Option<View>) {
+        if unit == Unit::Consent {
+            crate::app::app_log::note(if view.is_some() {
+                "the ad consent page opened"
+            } else {
+                "the ad consent page didn't open"
+            });
+        }
         self.backend.adopt(unit, view);
         match self.slots.get(&unit) {
             Some(slot) if slot.shown && !self.covered => {
@@ -371,6 +378,7 @@ impl Ads {
         let mut changed = false;
         for event in host.backend.events() {
             if event.slot == Unit::Consent.key() && host.consent != Some(event.consent) {
+                crate::app::app_log::note(&format!("the ad consent page reported {:?}", event.consent));
                 host.consent = Some(event.consent);
                 changed = true;
             }
