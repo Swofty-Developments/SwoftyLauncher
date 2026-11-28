@@ -12,6 +12,7 @@ use super::extension::{
     BLOCKED, CUT_OFF, Failure, RUNNERS, download, download_dir, fetch_release, install_files, staging_dir,
 };
 use super::heal::heal_launcher;
+use super::journal::clear_superseded_kill_marker;
 use super::*;
 use crate::game_folder::baseline::{DepotHashes, sha256_file};
 use crate::{Error, Result, io_err, write_json};

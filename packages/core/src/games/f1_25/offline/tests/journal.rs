@@ -310,3 +310,46 @@ fn restore_follows_non_ascii_paths() {
     assert!(!parked.exists());
     std::fs::remove_dir_all(&d).ok();
 }
+
+#[test]
+fn a_kill_marker_from_a_replaced_build_is_cleared() {
+    // Tonight's shape: a killed build wrote the marker, the player updated, and
+    // either nothing recorded a build (missing record) or a different build did.
+    let d = temp("kill-marker-superseded");
+    let game = d.join("game");
+    let marker = game.join("swofty/offline/state");
+    std::fs::create_dir_all(marker.parent().unwrap()).unwrap();
+
+    std::fs::write(&marker, "{\"stop\":1}\n").unwrap();
+    let record = d.join("staged-build");
+    let note = clear_superseded_kill_marker(&game, &record, Some("hook-0.4.3")).unwrap();
+    assert!(!marker.exists(), "a marker with no recorded build is cleared");
+    assert!(note.is_some(), "{note:?}");
+
+    std::fs::write(&marker, "{\"stop\":1}\n").unwrap();
+    std::fs::write(&record, "hook-0.4.2\n").unwrap();
+    let note = clear_superseded_kill_marker(&game, &record, Some("hook-0.4.3")).unwrap();
+    assert!(!marker.exists(), "a marker from a different build is cleared");
+    assert!(note.is_some(), "{note:?}");
+
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_kill_marker_from_the_current_build_is_kept() {
+    // A kill of the installed build must survive: the marker persisting across
+    // launches is the only thing that enforces it.
+    let d = temp("kill-marker-current");
+    let game = d.join("game");
+    let marker = game.join("swofty/offline/state");
+    std::fs::create_dir_all(marker.parent().unwrap()).unwrap();
+    std::fs::write(&marker, "{\"stop\":1}\n").unwrap();
+    let record = d.join("staged-build");
+    std::fs::write(&record, "hook-0.4.3\n").unwrap();
+
+    let note = clear_superseded_kill_marker(&game, &record, Some("hook-0.4.3")).unwrap();
+    assert!(marker.exists(), "the current build's own kill marker is kept");
+    assert!(note.is_none(), "{note:?}");
+
+    std::fs::remove_dir_all(&d).ok();
+}

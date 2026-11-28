@@ -228,10 +228,15 @@ fn stage_offline(store: &Store, game: &Path) -> Result<()> {
     for note in staged? {
         say("info", &format!("offline play: {note}"));
     }
-    say(
-        "info",
-        "staged offline play: EA AntiCheat is not started this session; multiplayer is unavailable",
-    );
+    // Only a run that actually staged leaves a journal; stage() already named a
+    // stand-down in its notes, so the EA-not-started line is said only when the
+    // session really is offline, never on a stand-down that starts unmodded.
+    if journal.exists() {
+        say(
+            "info",
+            "staged offline play: EA AntiCheat is not started this session; multiplayer is unavailable",
+        );
+    }
     Ok(())
 }
 
