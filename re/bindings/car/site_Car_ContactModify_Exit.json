@@ -9,7 +9,7 @@
   "level": "L2",
   "subsystem": "car",
   "evidence": "decomp:own capstone disasm of Car_Contact_ModifyVehicle (KB 0x142f04040, this site KB 0x142f04dd1);xref:0x142f0662e;kb:Car_Contact_ModifyVehicle",
-  "notes": "Common exit of Car_Contact_ModifyVehicle (its first early-out jumps here too): vmovaps xmm6,[rsp+40h], xmm7,[rsp+50h], xmm8,[rsp+60h], rsi = contact record still live. Contact Physics' rigid-body contact (kizi.ai-tweaks, kizi_contact_sim.hpp) computes its contact response here.  Blind round 2026-11-28: rsi is the contact record on every path except the first early out at KB 0x142f04040+0x2590 (cmp [rip+slot],rcx, same contact as the last call), which jumps here before rsi is loaded; there rcx still holds the contact record and rsi is the caller's."
+  "notes": "Common exit of Car_Contact_ModifyVehicle (its first early-out jumps here too): vmovaps xmm6,[rsp+40h], xmm7,[rsp+50h], xmm8,[rsp+60h]. rsi = the contact record on every path except that first early out. Contact Physics' rigid-body contact (kizi.ai-tweaks, kizi_contact_sim.hpp) computes its contact response here and only uses rsi when it equals the last-contact slot. The early out: cmp [rip+slot],rcx at KB 0x142f04091 (Steam 0x142f06621, same contact as the last call), je at KB 0x142f04098 jumps here before the only write to rsi, mov rsi,rcx at KB 0x142f0409e; on that path rcx still holds the contact record and rsi is the caller's."
  },
  "signature": {
   "id": "car.contact_modify_exit",
