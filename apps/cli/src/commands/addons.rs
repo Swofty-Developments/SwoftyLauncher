@@ -12,6 +12,15 @@ use std::process::ExitCode;
 
 impl Execute for AddonsCommand {
     fn execute(self, invocation: &Invocation) -> Result<ExitCode> {
+        if let Some(shelf) = invocation.game.addons {
+            return crate::commands::game_addons::command(
+                &invocation.store.root,
+                invocation.game,
+                shelf,
+                self,
+            )
+            .map(|()| ExitCode::SUCCESS);
+        }
         command(&invocation.store, &invocation.profile, self).map(|()| ExitCode::SUCCESS)
     }
 }
