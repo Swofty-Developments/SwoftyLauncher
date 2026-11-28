@@ -270,7 +270,7 @@ fn an_f1_addon_or_one_missing_its_assembly_is_not_installed() {
 fn the_oc2_addon_is_refused_by_the_f1_25_store() {
     let t = Tree::new("f1-refuses");
     let src = t.addon("src/hello", "swofty.hello-kitchen", "0.1.0", "overcooked_2");
-    let store = crate::store::Store::new(&t.0.join("data"));
+    let store = crate::store::Store::new(t.0.join("data"));
     let e = store.install_addon(&src).unwrap_err().to_string();
     assert!(e.contains("is an addon for Overcooked 2, not F1 25"), "{e}");
     assert!(!store.addons_dir().join("swofty.hello-kitchen").exists());
