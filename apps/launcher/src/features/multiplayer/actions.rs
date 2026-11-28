@@ -173,6 +173,7 @@ impl Shell {
 
     pub(crate) fn room_leave(&mut self, cx: &mut Context<Self>) {
         if self.rooms.leave() {
+            Multiplayer::close_room_game(self);
             cx.notify();
         }
     }
@@ -604,6 +605,37 @@ impl Multiplayer {
         }
         m.game.closing = Some(pids);
         true
+    }
+
+    /// Closes the room's F1 25 when the player leaves the room, so a left-over game can't open Career on the
+    /// room's borrowed registry ids and save over a real career. It logs a stop failure rather than notifying,
+    /// as the leave paths carry no window; the game exiting on its own already leaves the room through
+    /// [`State::watch_game`], which this does not touch.
+    pub(super) fn close_room_game<H: Host<Self>>(host: &mut H) {
+        let (m, needs) = host.split();
+        let Some(dir) = needs.game_dir else {
+            return;
+        };
+        let pids: Vec<u32> = needs
+            .processes
+            .iter()
+            .filter(|g| g.is_in(dir))
+            .map(|g| g.pid)
+            .collect();
+        if pids.is_empty() {
+            return;
+        }
+        swofty_core::session::request_stop(&needs.store.root);
+        let mut closing = Vec::new();
+        for pid in &pids {
+            match swofty_core::platform::process::stop_process(*pid) {
+                Ok(()) => closing.push(*pid),
+                Err(e) => crate::app::app_log::action("stop f1 25").failed(&e),
+            }
+        }
+        if !closing.is_empty() {
+            m.game.closing = Some(closing);
+        }
     }
 
     /// Cancels the room's Play while it waits on its checks or a prompt once the session no longer asks for
