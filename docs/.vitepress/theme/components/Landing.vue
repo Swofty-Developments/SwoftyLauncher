@@ -3,10 +3,12 @@ import { computed } from "vue";
 import { useData } from "vitepress";
 import Icon from "./Icon.vue";
 import DownloadButton from "./DownloadButton.vue";
+import { useGame } from "../games";
 import { useLinks } from "../links";
 
 const { frontmatter: fm, theme } = useData();
 const { to, asset, rel } = useLinks();
+const { games, game } = useGame();
 
 const repo = computed(() => theme.value.repo as string);
 const hero = computed(() => fm.value.hero ?? {});
@@ -64,7 +66,7 @@ const footPaths = footBands.map((b) => ({ color: b.color, d: wave(b, 1440, 420) 
     <a class="lp-skip" href="#lp-main">Skip to content</a>
 
     <nav class="lp-nav" aria-label="Site">
-      <a class="lp-btn lp-btn--ink" :href="to('/')" aria-current="page"><Icon name="home" /><span>Home</span></a>
+      <a class="lp-btn lp-btn--ink" :href="to(game.landing)" aria-current="page"><Icon name="home" /><span>Home</span></a>
       <a class="lp-btn lp-btn--ink" :href="to(hero.docs)"><Icon name="book" /><span>Docs</span></a>
       <a class="lp-btn lp-btn--ink" href="https://publish.f1.swofty.net" aria-label="Publishing">
         <Icon name="upload" /><span class="lp-nav-label">Publishing</span>
@@ -99,7 +101,17 @@ const footPaths = footBands.map((b) => ({ color: b.color, d: wave(b, 1440, 420) 
 
         <p class="lp-tagline">
           <span v-html="hero.tagline" />
-          <a class="lp-game" :href="hero.game?.link" rel="noopener"><Icon name="flag" /><span>{{ hero.game?.text }}</span></a>
+          <span class="lp-games" role="group" aria-label="Game">
+            <a
+              v-for="g in games"
+              :key="g.id"
+              class="lp-game"
+              :href="to(g.landing)"
+              :aria-current="g.id === game.id ? 'page' : undefined"
+            >
+              <Icon :name="g.icon" /><span>{{ g.name }}</span>
+            </a>
+          </span>
         </p>
 
         <div class="lp-actions">
@@ -115,7 +127,7 @@ const footPaths = footBands.map((b) => ({ color: b.color, d: wave(b, 1440, 420) 
       <div class="lp-side lp-side--left" aria-hidden="true" />
       <div class="lp-side lp-side--right" aria-hidden="true" />
 
-      <figure class="lp-shot lp-shot--hero">
+      <figure v-if="shots.hero" class="lp-shot lp-shot--hero">
         <img :src="asset(shots.hero.src)" :alt="shots.hero.alt" width="1920" height="1080" />
       </figure>
 
@@ -130,7 +142,7 @@ const footPaths = footBands.map((b) => ({ color: b.color, d: wave(b, 1440, 420) 
         </template>
       </div>
 
-      <section class="lp-gallery" aria-label="Screenshots">
+      <section v-if="shots.gallery?.length" class="lp-gallery" aria-label="Screenshots">
         <figure v-for="g in shots.gallery" :key="g.src" class="lp-shot" :class="`lp-shot--${g.shape}`">
           <img :src="asset(g.src)" :alt="g.alt" :width="g.shape === 'wide' ? 1920 : 1000" :height="g.shape === 'wide' ? 1080 : 888" loading="lazy" />
           <figcaption>{{ g.caption }}</figcaption>
@@ -196,7 +208,7 @@ const footPaths = footBands.map((b) => ({ color: b.color, d: wave(b, 1440, 420) 
       </svg>
       <div class="lp-footer-inner">
         <div class="lp-linkrow">
-          <a :href="to('/guide/')"><Icon name="book" /><span>Documentation</span></a>
+          <a :href="to(game.docs)"><Icon name="book" /><span>Documentation</span></a>
           <span class="lp-dot" aria-hidden="true" />
           <a :href="repo" rel="noopener"><span class="vpi-social-github lp-gh" /><span>Source Code</span></a>
           <span class="lp-dot" aria-hidden="true" />
@@ -205,7 +217,7 @@ const footPaths = footBands.map((b) => ({ color: b.color, d: wave(b, 1440, 420) 
           <a :href="`${repo}/blob/main/LICENSE`" rel="noopener"><Icon name="scale" /><span>Licence</span></a>
         </div>
         <p>Released under the PolyForm Noncommercial 1.0.0 licence. The SDK and the addon template are MIT.</p>
-        <p>Not affiliated with Codemasters, Electronic Arts or Formula 1.</p>
+        <p>{{ game.disclaimer }}</p>
         <p class="lp-credit">
           Styled after <a href="https://geode-sdk.org/" rel="noopener">Geode</a>. The docs reuse CSS from the
           <a href="https://github.com/geode-sdk/docs" rel="noopener">Geode docs</a> under the MIT licence; see
