@@ -1,11 +1,11 @@
 ---
 title: MainMenu
-description: Add buttons to the Overcooked 2 front-end main menu carousel with MainMenu.AddButton, change their label and visibility, and react when the main menu shows.
+description: Add buttons to the MODS tab of the Overcooked 2 main menu with MainMenu.AddButton, change their label and visibility, and react when the main menu shows.
 ---
 
 # MainMenu
 
-`MainMenu.AddButton` adds a button to the front-end main menu carousel, in the game's own button style. It works with the mouse and the pad like the game's buttons.
+Swofty Core adds a **MODS** tab to the front-end main menu, after **SETTINGS**, in the game's own style. `MainMenu.AddButton` adds a button to it. The buttons work with the mouse, the keyboard and the pad like the game's own.
 
 ```csharp [PartyMode.cs]
 using Swofty.Overcooked2;
@@ -15,31 +15,38 @@ namespace PartyMode
     public sealed class PartyMode : IAddon
     {
         private static bool on;
+        private static int shown;
 
         public void Load(AddonContext ctx)
         {
+            MenuButton help = MainMenu.AddButton("yourname.party-mode.help", "Party help", () =>
+                Dialogs.Message("Party Mode", "Party mode is on."));
+            help.Visible = false;
+
             MenuButton toggle = null;
             toggle = MainMenu.AddButton("yourname.party-mode.toggle", "Party: off", () =>
             {
                 on = !on;
                 toggle.Label = on ? "Party: on" : "Party: off";
+                help.Visible = on;
                 ctx.Log.Info("party mode " + (on ? "on" : "off"));
             });
 
-            MenuButton help = MainMenu.AddButton("yourname.party-mode.help", "Party help", () =>
-                Dialogs.Message("Party Mode", "Party mode is " + (on ? "on" : "off") + "."));
-
-            MainMenu.Shown += () =>
-            {
-                help.Visible = on;
-                ctx.Log.Info("main menu shown");
-            };
+            MainMenu.Shown += () => ctx.Log.Info("main menu shown " + (++shown) + " times");
         }
     }
 }
 ```
 
-The buttons follow the game's own buttons, in the order addons add them. Swofty Core's **Addons** button comes first.
+Swofty Core's **Addons** button comes first, then the addons' buttons in the order they are added:
+
+```text
+MODS
+  ADDONS
+  PARTY: OFF
+```
+
+Selecting **PARTY: OFF** turns it into **PARTY: ON** and shows **PARTY HELP** above it. The game draws the labels in capitals.
 
 ## AddButton
 
@@ -64,7 +71,7 @@ public sealed class MenuButton
 }
 ```
 
-Setting `Label` or `Visible` changes the button in the carousel.
+Setting `Label` or `Visible` changes the button on the **MODS** tab.
 
 ## Shown
 
@@ -72,7 +79,7 @@ Setting `Label` or `Visible` changes the button in the carousel.
 public static event System.Action Shown;
 ```
 
-Raised when the main menu has shown. An exception in a handler is logged under your addon id.
+Raised every time the main menu shows. An exception in a handler is logged under your addon id.
 
 ```csharp
 MainMenu.Shown += () => ctx.Log.Info("main menu shown");

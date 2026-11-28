@@ -20,7 +20,7 @@ links:
   - { icon: github, text: Source Code, link: https://github.com/Swofty-Developments/SwoftyLauncher }
   - { icon: tag, text: Releases, link: https://github.com/Swofty-Developments/SwoftyLauncher/releases }
 
-intro: Pick <em>Overcooked 2</em> in the bottom-left of the launcher and it becomes an Overcooked 2 launcher, with its own <em>Library</em> and <em>Addon Browser</em>. <em>Play</em> starts the game with <em>Swofty Core</em>, which loads your addons and adds an <em>Addons</em> button to the main menu.
+intro: Pick <em>Overcooked 2</em> in the bottom-left of the launcher and it becomes an Overcooked 2 launcher, with its own <em>Library</em> and <em>Addon Browser</em>. <em>Play</em> starts the game with <em>Swofty Core</em>, which loads your addons and adds a <em>MODS</em> tab to the main menu.
 
 platforms:
   - { icon: linux, text: Linux, the native Steam build }
@@ -37,11 +37,11 @@ features:
     link: /overcooked-2/guide/playing#addon-browser
   - icon: chip
     title: Swofty Core
-    details: Loads through <em>Unity Doorstop</em>, patches the game with <em>Harmony</em> and lists every addon under <em>Addons</em> in the main menu.
+    details: Loads through <em>Unity Doorstop</em>, patches the game with <em>Harmony</em> and lists every addon under <em>MODS</em> in the main menu.
     link: /overcooked-2/core
   - icon: code
     title: Standard library
-    details: Main menu buttons, game-styled dialogs, scene events, versions and a log per addon, in <em>Swofty.Overcooked2.dll</em>.
+    details: Buttons on the MODS tab, game-styled dialogs, scene events, versions and a log per addon, in <em>Swofty.Overcooked2.dll</em>.
     link: /overcooked-2/std/
   - icon: sliders
     title: Harmony patches

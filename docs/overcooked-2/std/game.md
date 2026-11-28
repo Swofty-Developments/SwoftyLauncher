@@ -50,4 +50,13 @@ The game's build as the game reports it, or `"unknown"`.
 public static event System.Action<string> SceneLoaded;
 ```
 
-Raised after Unity loads a scene, with the scene's name. The front end with the main menu is `StartScreen`. An exception in a handler is logged under your addon id.
+Raised after Unity loads a scene, with the scene's name, for scenes loaded on their own and added to another. An exception in a handler is logged under your addon id.
+
+From the start of the game to the main menu:
+
+```text
+Boot                the first scene; addons load here
+Ident               the logos
+StartScreen         the front end with the main menu
+StartScreen_Base    added to StartScreen
+```

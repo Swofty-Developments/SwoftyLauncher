@@ -9,7 +9,7 @@ description: The Overcooked 2 standard library, Swofty.Overcooked2.dll. An addon
 
 An addon is a public class that implements `IAddon`. Swofty Core creates it and calls `Load` once, with the addon's [`AddonContext`](./addon-context).
 
-This addon uses every part of the library. It counts the orders you deliver through a Harmony patch, keeps the count in its data folder, and shows it from a main menu button.
+This addon uses every part of the library. It counts the orders you deliver through a Harmony patch, keeps the count in its data folder, and shows it from a button on the main menu's **MODS** tab.
 
 ```csharp [DeliveryCounter.cs]
 using System.IO;
@@ -100,7 +100,7 @@ An exception in a button's click, a `MainMenu.Shown` handler or a `Game.SceneLoa
 ## The parts
 
 - [AddonContext and Log](./addon-context): the addon's id, folders, log and Harmony instance.
-- [MainMenu](./main-menu): buttons in the front-end carousel, and when it shows.
+- [MainMenu](./main-menu): buttons on the main menu's **MODS** tab, and when the main menu shows.
 - [Dialogs](./dialogs): a message in the game's dialog style.
 - [Game](./game): the game's build and every scene load.
 - [Runtime](./runtime): the versions of Swofty Core, the standard library and the launcher, and every addon of the session.

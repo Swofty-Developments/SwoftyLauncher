@@ -42,7 +42,7 @@ swofty games                                                     # every game, w
 
 **Play** writes the session file, starts Overcooked 2 with Swofty Core and shows **Running**. Steam must be running. **Stop** closes the game.
 
-In the game, the main menu has an **Addons** button. It opens a dialog with Swofty Core's version, the game's build and every addon that is on:
+In the game, the main menu has a **MODS** tab after **SETTINGS**, with **ADDONS** and the buttons your addons add. **ADDONS** opens a dialog with Swofty Core's version, the game's build and every addon that is on:
 
 ```text
 Addons
