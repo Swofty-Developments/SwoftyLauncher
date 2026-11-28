@@ -103,18 +103,16 @@ function buildRef(ref) {
   try {
     run("pnpm", ["install", "--frozen-lockfile", "--prefer-offline", "--ignore-scripts"], tree);
     run("pnpm", ["--filter", "@f1modmanager/docs", "docs:build"], tree);
-    const dist = path.join(work, "dist");
-    fs.cpSync(path.join(tree, "docs", ".vitepress", "dist"), dist, { recursive: true });
-    return dist;
+    return listBuild(path.join(tree, "docs", ".vitepress", "dist")).urls;
   } finally {
     run("git", ["worktree", "remove", "--force", tree], repoDir);
+    fs.rmSync(work, { recursive: true, force: true });
   }
 }
 
 function load(spec) {
   if (fs.existsSync(spec) && fs.statSync(spec).isFile()) return readList(spec);
-  const dist = fs.existsSync(spec) ? spec : buildRef(spec);
-  return listBuild(dist).urls;
+  return fs.existsSync(spec) ? listBuild(spec).urls : buildRef(spec);
 }
 
 const opts = args(process.argv.slice(2));
