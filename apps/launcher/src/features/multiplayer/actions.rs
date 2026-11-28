@@ -172,21 +172,7 @@ impl Shell {
     }
 
     pub(crate) fn room_leave(&mut self, cx: &mut Context<Self>) {
-        if self.rooms.leave() {
-            if Multiplayer::close_room_game(self) {
-                self.rooms.outro = Some(std::time::Instant::now());
-                cx.spawn(async move |this, cx| {
-                    for _ in 0..OUTRO.as_secs() {
-                        cx.background_executor()
-                            .timer(std::time::Duration::from_secs(1))
-                            .await;
-                        if this.update(cx, |_, cx| cx.notify()).is_err() {
-                            break;
-                        }
-                    }
-                })
-                .detach();
-            }
+        if Multiplayer::leave_and_close(self, cx) {
             cx.notify();
         }
     }
@@ -439,6 +425,26 @@ impl Multiplayer {
         Self::withdraw(host, window, cx);
         Self::launch(host, window, cx);
         Self::match_host(host, cx);
+        // The game going back to the main menu after a room is a leave: close it, so the player can't carry the
+        // room's borrowed ids into Career. The game's status is polled here too, so this holds even while the
+        // launcher isn't on the Multiplayer page as the game runs.
+        let (quit_to_menu, poll_session_game) = {
+            let (m, needs) = <H as Host<Self>>::split(host);
+            (
+                m.session.is_some()
+                    && needs.running
+                    && m.game.closing.is_none()
+                    && !m.leaving
+                    && m.game.left_to_menu(m.lobby.game.as_ref()),
+                m.session.is_some() && m.lobby.game_due(Instant::now()),
+            )
+        };
+        if quit_to_menu {
+            Self::leave_and_close(host, cx);
+        }
+        if poll_session_game {
+            Self::poll_game(host, cx);
+        }
         let dialog = window.has_active_dialog(cx);
         let (m, needs) = <H as Host<Self>>::split(host);
         let mut changed = !dialog && m.drop_held();
@@ -652,6 +658,29 @@ impl Multiplayer {
             m.game.closing = Some(closing);
         }
         closed
+    }
+
+    /// Leaves the room and closes its F1 25, opening the outro interstitial while the close runs. Shared by the
+    /// Leave button and the tick's watch for the game going back to the main menu. True when a room was left.
+    pub(super) fn leave_and_close<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) -> bool {
+        if !host.split().0.leave() {
+            return false;
+        }
+        if Self::close_room_game(host) {
+            host.split().0.outro = Some(std::time::Instant::now());
+            cx.spawn(async move |this, cx| {
+                for _ in 0..OUTRO.as_secs() {
+                    cx.background_executor()
+                        .timer(std::time::Duration::from_secs(1))
+                        .await;
+                    if this.update(cx, |_, cx| cx.notify()).is_err() {
+                        break;
+                    }
+                }
+            })
+            .detach();
+        }
+        true
     }
 
     /// Cancels the room's Play while it waits on its checks or a prompt once the session no longer asks for
