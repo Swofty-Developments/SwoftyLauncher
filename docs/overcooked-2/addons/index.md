@@ -129,15 +129,15 @@ Swofty Core 0.1.0, launcher 1.10.63.
 ```
 
 ```text [core.log]
-00:15:07 [core] first scene StartScreen; loading addons
-00:15:07 [swofty.hello-kitchen] Hello Kitchen 0.1.0 loaded on Overcooked 2 build 66.678012 with Swofty Core 0.1.0
-00:15:07 [core] loaded swofty.hello-kitchen 0.1.0
-00:15:07 [core] addons: 1 loaded, 0 failed
-00:15:07 [swofty.hello-kitchen] scene loaded: StartScreen
-00:15:09 [swofty.hello-kitchen] the front end is up
-00:15:09 [core] main menu shown
-00:15:09 [swofty.hello-kitchen] the main menu has shown
-00:15:14 [swofty.hello-kitchen] hello number 1
+00:15:05 [core] first scene Boot; loading addons
+00:15:05 [swofty.hello-kitchen] Hello Kitchen 0.1.0 loaded on Overcooked 2 build 66.678012 with Swofty Core 0.1.0
+00:15:05 [core] loaded swofty.hello-kitchen 0.1.0
+00:15:05 [core] addons: 1 loaded, 0 failed
+00:15:05 [swofty.hello-kitchen] scene loaded: Boot
+00:15:19 [swofty.hello-kitchen] scene loaded: StartScreen
+00:15:19 [swofty.hello-kitchen] the front end is up
+00:15:21 [swofty.hello-kitchen] the main menu has shown
+00:15:26 [swofty.hello-kitchen] hello number 1
 ```
 
 ## What each part does

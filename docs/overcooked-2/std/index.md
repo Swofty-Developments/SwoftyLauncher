@@ -85,9 +85,9 @@ public interface IAddon
 }
 ```
 
-For each addon of the session, in load order, Swofty Core loads the assemblies named in `swofty.json`, finds every public non-abstract class that implements `IAddon`, creates each one with its parameterless constructor, and calls `Load`. The classes of one addon share one `AddonContext`.
+When the game loads its first scene, Swofty Core loads the addons on Unity's main thread. For each addon of the session, in load order, it loads the assemblies named in `swofty.json`, finds every public non-abstract class that implements `IAddon`, creates each one with its parameterless constructor, and calls `Load`. The classes of one addon share one `AddonContext`.
 
-An exception from `Load` fails that addon only. Swofty Core removes the addon's main menu buttons, its `MainMenu.Shown` and `Game.SceneLoaded` handlers and its Harmony patches, then loads the next addon. The error is in `core.log`, in `status.json` and in the **Addons** dialog:
+An exception from `Load` fails that addon only. Swofty Core removes the addon's main menu buttons, its `MainMenu.Shown` and `Game.SceneLoaded` handlers and its Harmony patches, then loads the next addon. The error is in `core.log` and `status.json`, and the **Addons** dialog shows the addon as failed:
 
 ```text [core.log]
 00:15:07 [core] yourname.broken failed: Broken.Broken.Load threw NullReferenceException: Object reference not set to an instance of an object

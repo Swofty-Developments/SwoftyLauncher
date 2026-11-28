@@ -22,7 +22,7 @@ launcher ── writes ──▶ sessions/<stamp>/session.json
 
 ## The files
 
-The launcher ships Swofty Core in `cores/overcooked_2/`, next to its `bin/` folder:
+The launcher ships Swofty Core in `cores/overcooked_2/` in its [install folder](/guide/installation#the-install-folder), next to `bin/`:
 
 ```text
 cores/overcooked_2/
@@ -85,7 +85,7 @@ target_assembly = C:\…\cores\overcooked_2\core\Swofty.Overcooked2.Core.dll
 }
 ```
 
-For each addon, Swofty Core loads its `assemblies` in order, creates every public non-abstract class that implements [`IAddon`](/overcooked-2/std/), and calls `Load`. An exception in an addon fails that addon only; the rest load.
+Swofty Core loads the addons when the game loads its first scene, `Boot`, on Unity's main thread. For each addon in order, it loads its `assemblies` in order, creates every public non-abstract class that implements [`IAddon`](/overcooked-2/std/), and calls `Load`. An exception in an addon fails that addon only; the rest load.
 
 Without a session file, or with one it cannot read, Swofty Core writes to Unity's `Player.log`, loads no addons, and still adds its **Addons** button.
 
@@ -94,14 +94,18 @@ Without a session file, or with one it cannot read, Swofty Core writes to Unity'
 Each session has its own folder, `$DATA/games/overcooked_2/sessions/<stamp>/`. Swofty Core appends to `core.log` in it, one line per message, tagged `core` or with the addon id:
 
 ```text [core.log]
-00:15:07 [core] Swofty Core 0.1.0, std 0.1.0, Harmony 2.3.6, launcher 1.10.63
-00:15:07 [core] Overcooked 2 build 20236421
-00:15:07 [core] loading swofty.hello-kitchen 0.1.0
-00:15:07 [swofty.hello-kitchen] loaded on Overcooked 2 build 20236421
-00:15:07 [core] loaded 1 addon, 0 failed
-00:15:21 [swofty.hello-kitchen] scene StartScreen
-00:15:29 [swofty.hello-kitchen] scene frontend
-00:15:29 [core] main menu shown with 2 added buttons
+00:15:02 [core] Swofty Core 0.1.0 for Overcooked 2 (std 0.1.0, Harmony 2.3.6, Doorstop 4.5.0)
+00:15:02 [core] session /home/you/.local/share/swofty/games/overcooked_2/sessions/20261129-001500/session.json from launcher 1.10.63, 1 addon(s)
+00:15:03 [core] Overcooked 2 build 66.678012
+00:15:05 [core] first scene Boot; loading addons
+00:15:05 [swofty.hello-kitchen] Hello Kitchen 0.1.0 loaded on Overcooked 2 build 66.678012 with Swofty Core 0.1.0
+00:15:05 [core] loaded swofty.hello-kitchen 0.1.0
+00:15:05 [core] addons: 1 loaded, 0 failed
+00:15:05 [swofty.hello-kitchen] scene loaded: Boot
+00:15:19 [core] scene StartScreen loaded (Single)
+00:15:19 [swofty.hello-kitchen] scene loaded: StartScreen
+00:15:21 [core] main menu shown
+00:15:21 [swofty.hello-kitchen] the main menu has shown
 ```
 
 `Log.Warn` lines start with `warning:` and `Log.Error` lines with `error:`.

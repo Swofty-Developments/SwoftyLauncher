@@ -9,7 +9,7 @@ description: Pick Overcooked 2 in the bottom-left of the launcher, install and t
 
 The game picker is in the bottom-left of the launcher, on the game art. Select it and pick **Overcooked 2**. Each game shows whether the launcher found it.
 
-With Overcooked 2 picked, the launcher has three tabs: **Home** with the news, **Library** with your Overcooked 2 addons, and **Discover** with the Overcooked 2 Addon Browser. F1 25's pages stay with F1 25. Pick **F1 25** to get them back. The launcher remembers the game you picked.
+With Overcooked 2 picked, the launcher has three tabs: **Home** with the news, **Library** with your Overcooked 2 addons, and **Discover** with the Overcooked 2 Addon Browser. The F1 25 pages, such as Shaders, the DB Editor and Saves, show with F1 25 picked. The launcher remembers the game you picked.
 
 The play bar shows the Overcooked 2 copy it found: the store, the build and the folder. With more than one copy, pick the one to play there.
 
@@ -17,10 +17,10 @@ The play bar shows the Overcooked 2 copy it found: the store, the build and the 
 
 **Library** lists the addons installed for Overcooked 2.
 
-- **Install**: select **Install from file** and pick a zip or a folder, or drop one on the page. It needs a `swofty.json` whose `compat.game` is `"overcooked_2"`. An F1 25 addon is refused.
-- **Turn on and off**: the switch on each addon. Only addons that are on load at Play.
-- **Open folder** opens the addon's folder in `$DATA/games/overcooked_2/addons/<id>/`.
-- **Uninstall** removes the addon and its folder.
+- **Install**: pick a zip or an addon folder, or drop one on the Library. It needs a `swofty.json` whose `compat.game` is `"overcooked_2"`. An F1 25 addon is refused.
+- **On and off**: the switch on each addon. Only addons that are on load at Play.
+- **Open folder**: the addon's folder, `$DATA/games/overcooked_2/addons/<id>/`.
+- **Uninstall**: removes the addon and its folder.
 
 The command line does the same:
 
@@ -42,9 +42,19 @@ swofty games                                                     # every game, w
 
 **Play** writes the session file, starts Overcooked 2 with Swofty Core and shows **Running**. Steam must be running. **Stop** closes the game.
 
-In the game, the main menu has an **Addons** button. It opens a dialog with Swofty Core's version and every addon with its state: loaded, or failed with the error.
+In the game, the main menu has an **Addons** button. It opens a dialog with Swofty Core's version, the game's build and every addon that is on:
 
-When something goes wrong, the session's `core.log` says what Swofty Core did: see [Logs](/overcooked-2/core#logs). [Send your logs](/using/send-logs) to the developers with the launcher.
+```text
+Addons
+
+Swofty Core 0.1.0 (std 0.1.0)
+Overcooked 2 build 66.678012
+
+Hello Kitchen 0.1.0: loaded
+Party Mode 1.2.0: failed
+```
+
+The session's `core.log` has what Swofty Core did and the error of a failed addon: see [Logs](/overcooked-2/core#logs).
 
 ## Where the files are
 
