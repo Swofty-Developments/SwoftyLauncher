@@ -61,6 +61,16 @@
    "verdict": "partial",
    "evidence": "decomp:own disasm 0x144669530-0x14466a64f pdata function start, vtable slot 0x145bfb680;xref:0x145bfb680,0x14466af67,0x1446648b3,0x144654335,0x144711578",
    "notes": "gh:Swofty-Developments partial at L2. Holds: start 0x144669530 (KB 0x144666cc0 plus 0x2870), the only pointer to it is vtable 0x145bfb5e0 slot +0xa0 (0x145bfb680), part+0x10 car, +0x40 body holder (body at holder+0x18), +0xe0 tether index (-1 skips the connection), +0x100 connection from call 0x1440cff80, +0x10c set to 1 only when the connection is non-null. Wrong: the prototype. edx is used as a byte (mov ebp,edx; mov [rsp+0x70],bpl; test bpl,bpl) and the callers pass it with mov dl,1 or xor edx,edx, so the upper bits of rdx are undefined; no exit sets rax (the common epilogue 0x1446695a4 leaves the caller rax and the failed allocation path tail-calls an import) and no caller reads a result. Correct prototype: void Car_WheelPart_Detach(void *part, uint8_t notify)"
+  },
+  {
+   "date": "2026-11-28",
+   "verifier": "Swofty-Developments",
+   "kind": "func",
+   "item": "Car_WheelPart_Detach",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x144669530-0x14466a64f, prologue 41 57 41 56 ... 48 81 EC 38 03 00 00, cmp qword [rcx+0x40],0 at 0x14466959d early out to epilogue 0x1446695a4, mov ebp,edx at 0x144669612 then mov [rsp+0x70],bpl at 0x144669b40 and test bpl,bpl at 0x14466a3d4 gating the tail, mov [rsi+0x100],rax from call 0x1440cff80 at 0x14466a3ab and mov byte [rsi+0x10c],1 only after test rax at 0x14466a3b7, cmp dword [rsi+0xe0],-1 at 0x144669da1, single pointer to it is vtable slot 0x145bfb680 (+0xa0 of 0x145bfb5e0), callers 0x144654335 mov dl,1, 0x1446648b3 mov dl,1, 0x14466af67 mov dl,1, 0x144711578 xor edx,edx and none read rax after the call;xref:0x145bfb680,0x144654335,0x1446648b3,0x14466af67,0x144711578",
+   "notes": "gh:Swofty-Developments blind L2 agree at the corrected row: void(void *part, uint8_t notify), notify is the byte in dl, no return value read by callers"
   }
  ],
  "proofs": [
@@ -86,6 +96,25 @@
   {
    "by": "Swofty-Developments",
    "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14466951b",
+    "target": "0x144669530"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3812f948fa26a12088e36588d9524f0c9bc546a90e854d94c05be4ab58f4a00b"
+  },
+  {
+   "by": "Swofty-Developments",
+   "date": "2026-11-28",
    "tool": "binding.py verify",
    "exe": {
     "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
