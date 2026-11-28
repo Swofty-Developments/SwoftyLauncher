@@ -252,6 +252,7 @@ fn f1_25_commands_are_refused_for_overcooked_2_and_play_is_refused_for_f1_25() {
 }
 
 #[test]
+#[cfg(not(windows))]
 fn play_dry_run_prints_the_session_and_the_contract_environment() {
     let root = Root::new("play");
     root.core();
@@ -282,5 +283,27 @@ fn play_dry_run_prints_the_session_and_the_contract_environment() {
     ] {
         assert!(out.contains(&want), "{want} not in\n{out}");
     }
+    assert!(!root.0.join("data/games/overcooked_2/sessions").exists());
+}
+
+#[test]
+#[cfg(windows)]
+fn play_dry_run_on_windows_places_doorstop_next_to_the_exe() {
+    let root = Root::new("play-windows");
+    root.core();
+    let lib = root.library();
+    let game = root.app(&lib, 728_880, "Overcooked! 2", "20236421", "Overcooked2.exe");
+    let out = root.ok(&["--game", "overcooked_2", "play", "--dry-run"]);
+    for want in [
+        format!("cwd {}", game.display()),
+        "env SteamAppId=728880".to_owned(),
+        "env SWOFTY_OC2_SESSION=".to_owned(),
+        format!("place {}", game.join("winhttp.dll").display()),
+        format!("place {}", game.join("doorstop_config.ini").display()),
+        format!("run {}", game.join("Overcooked2.exe").display()),
+    ] {
+        assert!(out.contains(&want), "{want} not in\n{out}");
+    }
+    assert!(!game.join("winhttp.dll").exists());
     assert!(!root.0.join("data/games/overcooked_2/sessions").exists());
 }

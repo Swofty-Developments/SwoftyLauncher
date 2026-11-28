@@ -362,12 +362,13 @@ fn the_session_lists_the_addons_on_in_load_order_as_the_contract_says() {
         data.join("games/overcooked_2/sessions/20261129-001502-2")
     );
     let json: serde_json::Value = serde_json::from_slice(&std::fs::read(&written.path).unwrap()).unwrap();
+    let game_data = data.join("games").join("overcooked_2");
     let addon = |id: &str| {
         serde_json::json!({
             "id": id,
             "name": format!("Addon {id}"),
             "version": "0.1.0",
-            "dir": data.join("games/overcooked_2/addons").join(id),
+            "dir": game_data.join("addons").join(id),
             "assemblies": [format!("{}.dll", dll(id))],
         })
     };
@@ -377,7 +378,7 @@ fn the_session_lists_the_addons_on_in_load_order_as_the_contract_says() {
             "schema": 1,
             "launcher": "1.10.63",
             "game_dir": game,
-            "data_dir": data.join("games/overcooked_2"),
+            "data_dir": game_data,
             "log": written.dir.join("core.log"),
             "status": written.dir.join("status.json"),
             "addons": [addon("b.second"), addon("a.first")],
