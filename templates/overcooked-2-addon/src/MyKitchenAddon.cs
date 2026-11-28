@@ -45,7 +45,12 @@ namespace MyKitchen
             int count = File.Exists(visits) ? int.Parse(File.ReadAllText(visits).Trim()) + 1 : 1;
             File.WriteAllText(visits, count.ToString());
 
-            Dialogs.Message(context.Name, context.Name + " " + context.Version + "\n" + scenes + " scenes loaded this session, " + count + " visits to this dialog.");
+            Dialogs.Message(context.Name, context.Name + " " + context.Version + "\n" + Plural(scenes, "scene") + " loaded this session, " + Plural(count, "visit") + " to this dialog.");
+        }
+
+        private static string Plural(int n, string word)
+        {
+            return n + " " + (n == 1 ? word : word + "s");
         }
     }
 }

@@ -48,7 +48,7 @@ The default is the Steam library folder of each platform. Never ship the game's 
 * Write files only under `ctx.DataDirectory`. The addon folder can be replaced on update.
 * Button ids are global. Prefix them with the addon id.
 
-The std lib API is documented under Modding in the Swofty Launcher documentation.
+The std lib API is documented at https://f1.swofty.net/overcooked-2/std/.
 
 ## Licence
 
