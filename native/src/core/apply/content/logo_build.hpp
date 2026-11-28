@@ -248,6 +248,7 @@ struct Env {
     std::function<std::vector<std::string>()> list;
     std::function<std::shared_ptr<erpfile::Source>(const std::string &rel)> open;
     std::function<std::vector<std::string>(const std::string &rel)> overlays;
+    std::function<bool(const std::string &rel)> empty;
     SliceCache slices;
 };
 
@@ -260,6 +261,7 @@ struct Planned {
 struct Result {
     std::map<std::string, erpfile::Changes> changes;
     std::set<std::string> read;
+    std::set<std::string> empties;
     std::vector<std::string> lines;
     int built = 0, refused = 0;
     double encode_ms = 0;
@@ -403,6 +405,13 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
         out.refused += n;
         refusals.add(reason, example, n);
     };
+    auto adopt = [&](const std::string &rel, Open &&o) -> Open * {
+        size_t prefix = std::char_traits<char>::length(ARRAY_URI);
+        if (std::none_of(o.arc.entries.begin(), o.arc.entries.end(),
+                         [&](const erpfile::Entry &e) { return e.name.compare(0, prefix, ARRAY_URI) == 0; }))
+            out.empties.insert(rel);
+        return &opened.emplace(rel, std::move(o)).first->second;
+    };
     auto get = [&](const std::string &rel) -> Open * {
         auto it = opened.find(rel);
         if (it != opened.end())
@@ -412,8 +421,9 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
         if (!src || !erpfile::open(*src, o.arc, why))
             return nullptr;
         o.src = src;
-        return &opened.emplace(rel, std::move(o)).first->second;
+        return adopt(rel, std::move(o));
     };
+    auto known_empty = [&](const std::string &rel) { return env.empty && env.empty(rel); };
     auto layers_of = [&](const std::string &rel) {
         std::vector<std::string> layers{rel};
         if (env.overlays)
@@ -464,6 +474,23 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
         return false;
     }
     std::vector<std::string> files = env.list();
+    std::vector<std::string> unread;
+    for (auto &rel : files)
+        if (!opened.count(rel) && !known_empty(rel))
+            unread.push_back(rel);
+    std::vector<Open> ahead(unread.size());
+    std::vector<char> ahead_ok(unread.size(), 0);
+    run_parallel(unread.size(), [&](size_t i) {
+        auto src = env.open(unread[i]);
+        std::string reason;
+        if (src && erpfile::open(*src, ahead[i].arc, reason)) {
+            ahead[i].src = src;
+            ahead_ok[i] = 1;
+        }
+    });
+    for (size_t i = 0; i < unread.size(); i++)
+        if (ahead_ok[i] && !opened.count(unread[i]))
+            adopt(unread[i], std::move(ahead[i]));
     std::map<std::string, std::vector<const Want *>> by_array;
     for (auto &w : wants)
         by_array[w.array].push_back(&w);
@@ -495,9 +522,9 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
             return rels[0] + (rels.size() > 1 ? " and " + std::to_string(rels.size() - 1) + " more archive(s)" : "");
         };
         for (auto &rel : files) {
-            if (!get(rel))
-                continue;
             std::vector<std::string> layers = layers_of(rel);
+            if (std::all_of(layers.begin(), layers.end(), known_empty) || !get(rel))
+                continue;
             Found fi = top(layers, image), fv = top(layers, view);
             if (!fi.entry && !fv.entry)
                 continue;
