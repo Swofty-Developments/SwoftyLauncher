@@ -340,6 +340,20 @@ From 1.3.1. `list` shows every copy of F1 25 the launcher found, with its store,
 
 `launch` asks the EA app to start the EA app copy as it's installed, without your profile or offline play, so EA AntiCheat runs. It starts the EA app first when it's closed, prints the game's process ID once F1 25 starts, and exits. `--vr` passes `-vr`. It works only on an EA app copy.
 
+## `swofty --game`
+
+```sh
+swofty games
+swofty --game overcooked_2 addons list
+swofty --game overcooked_2 addons install <zip or folder>
+swofty --game overcooked_2 addons enable|disable|remove <id>
+swofty --game overcooked_2 play [--dir <folder>] [--dry-run] [--wait]
+```
+
+`--game` goes before the command and names the game it is for: `f1_25` (the default) or `overcooked_2`. `swofty games` lists every game the launcher knows, whether it is supported and where it was found. For Overcooked 2, `addons` and `play` work; every other command is for F1 25. See [Playing Overcooked 2 with the launcher](/overcooked-2/guide/playing).
+
+`play` writes the session file, starts Overcooked 2 with [Swofty Core](/overcooked-2/core), and prints the game's process ID and the session folder. `--dir` picks the game folder. `--dry-run` prints the session and the launch without writing or starting anything. `--wait` waits for the game to close, then prints what Swofty Core reported in `status.json`.
+
 ## `swofty doctor`
 
 Use `swofty doctor` to check Steam, your game copies (`copy` rows, the active one marked), your game install, Proton, launch options and the data folder. You'll also see any changes from the backed-up originals. The `steam client` row shows whether Steam is running and signed in. On Windows, the `run as admin` row shows whether `F1_25.exe` is set to run as administrator, which stops modded sessions from starting (see [Launching the game](/reference/launch#windows)).
