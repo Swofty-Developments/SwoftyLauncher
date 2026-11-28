@@ -286,12 +286,57 @@
   background-color: var(--flash-gray-dark);
   height: 100vh;
   display: grid;
-  grid-template-rows: min-content min-content 1fr min-content;
+  grid-template-rows: min-content min-content min-content 1fr min-content;
   z-index: 3;
 }
 
 .flash-docs > nav > * {
   padding: 1rem;
+}
+
+.flash-docs > nav > .games {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding-top: 0rem;
+  padding-bottom: 0.75rem;
+}
+
+.flash-docs > nav > .games > a {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border: 0.15rem solid var(--flash-dark);
+  border-radius: 9999px;
+  font-family: "Open Sans", sans-serif;
+  font-weight: 600;
+  color: var(--flash-light);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.flash-docs > nav > .games > a .icon {
+  color: var(--game-accent);
+  margin-right: 0;
+}
+
+.flash-docs > nav > .games > a:hover:not(.selected) {
+  background-color: var(--flash-hover);
+  color: var(--flash-white);
+}
+
+.flash-docs > nav > .games > a.selected {
+  border-color: var(--flash-tab-selected-bg);
+  background-color: var(--flash-tab-selected-bg);
+  color: var(--flash-tab-selected-color);
+}
+
+.flash-docs > nav > .games > a.selected .icon {
+  color: inherit;
 }
 
 .flash-docs > nav > .mode {

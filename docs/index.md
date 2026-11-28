@@ -21,9 +21,6 @@ screenshots:
 hero:
   name: Swofty Launcher for F1 25
   tagline: Bringing <em>mod support</em> to
-  game:
-    text: F1 25
-    link: https://store.steampowered.com/app/3059520/
   download:
     windows: https://cdn.swofty.net/launcher/latest/SwoftyLauncherInstaller.exe
     linux: https://cdn.swofty.net/launcher/latest/SwoftyLauncherInstaller-linux.zip
@@ -33,6 +30,7 @@ hero:
 
 links:
   - { icon: book, text: Documentation, link: /guide/ }
+  - { icon: flag, text: F1 25 on Steam, link: https://store.steampowered.com/app/3059520/ }
   - { icon: github, text: Source Code, link: https://github.com/Swofty-Developments/SwoftyLauncher }
   - { icon: tag, text: Releases, link: https://github.com/Swofty-Developments/SwoftyLauncher/releases }
 
