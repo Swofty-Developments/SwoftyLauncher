@@ -251,12 +251,11 @@ std::vector<std::string> Store::lend(const Lent &lent)
                     if (v == id && r != rec)
                         who = career + " uses " + std::to_string(id) + " for " + r;
             }
-            if (!who.empty()) {
-                out.push_back("[registry] stat ids: " + reg + " " + rec + " not lent (host's " + std::to_string(id) +
-                              "): " + who + " here, so this record keeps its own id");
-                claimed.erase(id);
-                continue;
-            }
+            if (!who.empty())
+                out.push_back("[registry] stat ids: " + reg + " " + rec + " takes the host's " + std::to_string(id) +
+                              " for this shared session (" + who +
+                              " on disk; ids.json is not written while lent, so "
+                              "that career keeps its own id)");
             for (auto &[other, en] : mine)
                 if (other != rec && en.id == id && !en.lent)
                     displaced.push_back(other);

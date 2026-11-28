@@ -243,10 +243,13 @@ int main()
         s.set_live("content.package", {"a/p", "b/q"});
         std::vector<std::string> lines;
         s.lend_json(R"({"ids":{"content.package":{"c/r":30}}})", &lines);
-        bool refused = false;
+        bool took = false;
         for (auto &l : lines)
-            refused = refused || l.find("not lent") != std::string::npos;
-        check(refused && s.get("content.package", "c/r").id < 0, "an id a career uses for another record is refused and logged");
+            took = took || l.find("takes the host's 30") != std::string::npos;
+        check(took && s.get("content.package", "c/r").id == 30,
+              "an id a career reserved for another record is lent for the shared session, not refused");
+        check(!s.dirty() && s.lent(), "lending over a career reservation never marks the store dirty");
+        check(s.dump().find("\"b/q\": 30") != std::string::npos, "the career's own reservation is untouched on disk");
         std::vector<std::string> both;
         s.lend_json(R"({"ids":{"content.package":{"x/p":50,"y/p":50}}})", &both);
         check(s.get("content.package", "x/p").id == 50 && s.get("content.package", "y/p").id < 0,

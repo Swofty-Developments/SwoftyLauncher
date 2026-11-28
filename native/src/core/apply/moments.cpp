@@ -106,6 +106,8 @@ void migrate_ids()
 void save_ids()
 {
     std::lock_guard g(ids_mu);
+    if (ids::store().lent())
+        return;
     if (!ids::store().dirty())
         return;
     if (write_file(registry_dir() + "\\ids.json", ids::store().dump()))
