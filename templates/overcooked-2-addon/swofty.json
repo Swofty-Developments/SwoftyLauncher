@@ -1,0 +1,10 @@
+{
+  "id": "example.my-kitchen",
+  "name": "My Kitchen",
+  "version": "0.1.0",
+  "author": "Your Name",
+  "description": "A starting point for an Overcooked 2 addon: a main menu button, a dialog, scene events, a data folder and a Harmony patch.",
+  "license": "MIT",
+  "compat": { "game": "overcooked_2", "std": ">=0.1.0" },
+  "assemblies": ["MyKitchen.dll"]
+}
