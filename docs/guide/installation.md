@@ -90,6 +90,7 @@ Either way, the install folder holds:
 | `bin/swofty` | The command line |
 | `bin/swofty-ui` | [Swofty UI](/reference/ui/swofty-ui) |
 | `loader/` | The in-game loader; keep it next to `bin/` |
+| `cores/overcooked_2/` | [Swofty Core for Overcooked 2](/overcooked-2/core); keep it next to `bin/` |
 
 On Windows, the files in `bin/` end in `.exe`. The setup guides call this folder the install folder.
 
