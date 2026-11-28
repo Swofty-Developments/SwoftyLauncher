@@ -39,6 +39,7 @@ export default {
           text: "Start here",
           items: [
             { text: "Your first addon", link: "/overcooked-2/addons/", icon: "file" },
+            { text: "The template", link: "/overcooked-2/addons/template", icon: "file" },
             { text: "swofty.json", link: "/overcooked-2/addons/manifest", icon: "file" },
             { text: "Building against the std lib", link: "/overcooked-2/addons/building", icon: "file" },
             { text: "How the core loads", link: "/overcooked-2/core", icon: "file" },

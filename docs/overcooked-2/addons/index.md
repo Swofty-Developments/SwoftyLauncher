@@ -146,7 +146,7 @@ Swofty Core 0.1.0, launcher 1.10.63.
 ## What each part does
 
 - **`swofty.json`** names the addon and its assembly. `compat.game` is `"overcooked_2"`: see [swofty.json](./manifest).
-- **`HelloKitchen.csproj`** builds `HelloKitchen.dll` for .NET Framework 3.5 against the standard library. Outside the repository, reference the built `Swofty.Overcooked2.dll` instead: see [Building against the std lib](./building).
+- **`HelloKitchen.csproj`** builds `HelloKitchen.dll` for .NET Framework 3.5 against the standard library. Outside the repository, start from [the template](./template): see [Building against the std lib](./building).
 - **`HelloKitchenAddon`** implements [`IAddon`](/overcooked-2/std/). Swofty Core creates it and calls `Load` when the game loads its first scene.
 - **`MainMenu.AddButton`** adds **Hello** to the **MODS** tab, after **Addons**: see [MainMenu](/overcooked-2/std/main-menu).
 - **`MainMenu.Shown`** and **`Game.SceneLoaded`** log to `core.log` through `ctx.Log`: see [Game](/overcooked-2/std/game) and [AddonContext and Log](/overcooked-2/std/addon-context).
