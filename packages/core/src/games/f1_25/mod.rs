@@ -46,6 +46,7 @@ pub static DEF: GameDef = GameDef {
     build: Some(&Pipeline),
     loader: Some(&VersionProxy),
     launch: Some(&SteamOrEaApp),
+    addons: None,
 };
 
 /// The copies of F1 25 on this computer (Steam's, the EA app's and folders the player added), in the

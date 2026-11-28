@@ -67,7 +67,9 @@ impl Shell {
 
     pub(crate) fn sub_nav(&self, layout_width: f32) -> Option<SubNav> {
         let tab = self.navigation.page.tab();
+        let own_store = self.games.side().is_some();
         let (links, fixed) = match tab {
+            Some(Tab::Library) if own_store => return None,
             Some(Tab::Library) => {
                 let mut links = vec![
                     Link::new(Page::Addons, Some(self.library.listed().count())),
@@ -221,7 +223,7 @@ impl Shell {
                 && plain
                 && (self.scaling.mode.is_some_and(|m| m.is_tv()) || ev.keystroke.modifiers.alt);
             if wanted && self.root_focus.is_focused(window) {
-                self.navigation.cursor = Some(Cursor::on_tab(self.navigation.page.tab()));
+                self.navigation.cursor = Some(Cursor::in_tabs(self.game_tabs(), self.navigation.page.tab()));
                 cx.stop_propagation();
                 cx.notify();
             }
@@ -240,7 +242,7 @@ impl Shell {
         };
         cx.stop_propagation();
         if let Some(k) = moved {
-            if cursor.apply(k, Tab::ALL.len() + ACTIONS, links.len()) == Step::IntoPage {
+            if cursor.apply(k, self.game_tabs().len() + ACTIONS, links.len()) == Step::IntoPage {
                 self.navigation.cursor = None;
                 self.navigation.popover = None;
                 window.focus(&self.root_focus, cx);
@@ -249,8 +251,8 @@ impl Shell {
             }
         } else if key == "enter" || key == "space" {
             match cursor.row {
-                Row::Tabs if cursor.col < Tab::ALL.len() => {
-                    let tab = Tab::ALL[cursor.col];
+                Row::Tabs if cursor.col < self.game_tabs().len() => {
+                    let tab = self.game_tabs()[cursor.col];
                     let page = if self.navigation.page.tab() == Some(tab) {
                         self.navigation.page
                     } else {
@@ -258,7 +260,7 @@ impl Shell {
                     };
                     self.open_page(page, cx);
                 }
-                Row::Tabs => match Action::ALL[cursor.col - Tab::ALL.len()] {
+                Row::Tabs => match Action::ALL[cursor.col - self.game_tabs().len()] {
                     Action::Notifications => self.open_popover(Popover::Notices, cx),
                     Action::Settings => self.open_page(Page::Settings, cx),
                     Action::Account => {

@@ -18,6 +18,8 @@ use swofty_core::install::Source;
 
 mod button;
 mod game_info;
+mod picker;
+mod side;
 mod status;
 
 pub(crate) fn store_badge(source: Source, p: Palette) -> Div {
@@ -26,6 +28,10 @@ pub(crate) fn store_badge(source: Source, p: Palette) -> Div {
         Source::EaApp => ("EA APP", p.warning),
         Source::Unknown => (tr("FOLDER"), p.text_muted),
     };
+    badge(text, color)
+}
+
+pub(crate) fn badge(text: &'static str, color: Hsla) -> Div {
     div()
         .flex_shrink_0()
         .px(px(5.))
@@ -106,7 +112,10 @@ impl Shell {
             )
     }
 
-    pub(crate) fn play_bar(&self, p: Palette, wide: bool, cx: &mut Context<Self>) -> impl IntoElement {
+    pub(crate) fn play_bar(&self, p: Palette, wide: bool, cx: &mut Context<Self>) -> AnyElement {
+        if let Some(side) = self.games.side() {
+            return self.side_play_bar(side, p, wide, cx);
+        }
         let state = self.play_state();
         // With a room open on the Online page and the game ready, the room's button replaces Play.
         let ready = matches!(state, PlayState::Ready | PlayState::Crashed(_));
@@ -118,7 +127,7 @@ impl Shell {
             .bg(p.chrome)
             .border_t_1()
             .border_color(p.border_variant)
-            .child(crate::ui::game_art(56., 56.).m(px(8.)))
+            .child(self.game_picker(p, cx))
             .child(
                 h_flex()
                     .flex_1()
@@ -135,5 +144,6 @@ impl Shell {
                     .child(self.footer_links(p, cx))
                     .when(!lobby_only, |d| d.child(self.big_button(&state, p, cx))),
             )
+            .into_any_element()
     }
 }

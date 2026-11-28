@@ -439,15 +439,44 @@ pub fn cache_path(root: &Path) -> PathBuf {
 
 /// When the saved catalog was last fetched.
 pub fn cached_at(root: &Path) -> Option<SystemTime> {
-    std::fs::metadata(cache_path(root))
-        .and_then(|m| m.modified())
-        .ok()
+    Feed::f1_25(root).cached_at()
 }
 
 pub fn cached(root: &Path) -> Option<Vec<Addon>> {
-    std::fs::read_to_string(cache_path(root))
-        .ok()
-        .and_then(|t| parse(&t))
+    Feed::f1_25(root).cached()
+}
+
+/// Where one game's catalog is listed and where the launcher saves it for the next start.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Feed {
+    pub url: String,
+    pub cache: PathBuf,
+}
+
+impl Feed {
+    /// F1 25's: every addon `/v1/addons` lists, saved under [`CACHE_DIR`].
+    pub fn f1_25(root: &Path) -> Self {
+        Self {
+            url: catalog_url(),
+            cache: cache_path(root),
+        }
+    }
+
+    /// The addons the registry lists for the game `game`, saved at `cache`.
+    pub fn game(game: &str, cache: PathBuf) -> Self {
+        Self {
+            url: format!("{}?game={game}", catalog_url()),
+            cache,
+        }
+    }
+
+    pub fn cached(&self) -> Option<Vec<Addon>> {
+        std::fs::read_to_string(&self.cache).ok().and_then(|t| parse(&t))
+    }
+
+    pub fn cached_at(&self) -> Option<SystemTime> {
+        std::fs::metadata(&self.cache).and_then(|m| m.modified()).ok()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -502,8 +531,13 @@ struct Waits {
 }
 
 impl Waits {
+    #[cfg(test)]
     fn catalog(root: &Path) -> Self {
-        let saved = std::fs::metadata(cache_path(root)).map_or(0, |m| m.len());
+        Self::saved_at(&cache_path(root))
+    }
+
+    fn saved_at(cache: &Path) -> Self {
+        let saved = std::fs::metadata(cache).map_or(0, |m| m.len());
         Self {
             connect: Duration::from_secs(15),
             response: Duration::from_secs(30),
@@ -542,21 +576,30 @@ fn read_catalog(url: &str, waits: Waits) -> std::result::Result<String, Trouble>
 /// The catalog from the registry, saved for the next start. A fetch that
 /// can't reach the registry is tried once more.
 pub fn fetch(root: &Path) -> std::result::Result<Vec<Addon>, Trouble> {
-    fetch_from(root, &catalog_url(), Waits::catalog(root))
+    fetch_feed(root, &Feed::f1_25(root))
 }
 
+/// [`fetch`] for one game's [`Feed`], with the registry log under `root`.
+pub fn fetch_feed(root: &Path, feed: &Feed) -> std::result::Result<Vec<Addon>, Trouble> {
+    fetch_into(root, &feed.url, &feed.cache, Waits::saved_at(&feed.cache))
+}
+
+#[cfg(test)]
 fn fetch_from(root: &Path, url: &str, waits: Waits) -> std::result::Result<Vec<Addon>, Trouble> {
+    fetch_into(root, url, &cache_path(root), waits)
+}
+
+fn fetch_into(root: &Path, url: &str, path: &Path, waits: Waits) -> std::result::Result<Vec<Addon>, Trouble> {
     let text = match read_catalog(url, waits) {
         Err(Trouble::Offline(_)) => read_catalog(url, waits)?,
         read => read?,
     };
     let addons = parse_noting(&text, &mut |line| log(root, line))
         .ok_or_else(|| Trouble::Failed(format!("{url}: not an addon catalog")))?;
-    let path = cache_path(root);
     if let Some(dir) = path.parent() {
         std::fs::create_dir_all(dir).ok();
     }
-    if let Err(e) = std::fs::write(&path, text) {
+    if let Err(e) = std::fs::write(path, text) {
         eprintln!("swofty-core: could not save the addon catalog: {e}");
     }
     Ok(addons)
@@ -860,7 +903,7 @@ fn ensure_dir(root: &Path, dir: &Path) -> std::io::Result<()> {
     std::fs::create_dir_all(dir)
 }
 
-fn file_name(addon: &Addon, v: &Version) -> String {
+pub(crate) fn file_name(addon: &Addon, v: &Version) -> String {
     let safe: String = addon
         .id
         .chars()

@@ -153,6 +153,12 @@ pub struct Config {
     /// Offer Addon Browser updates for installed addons that are off as well; off unless turned on.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub update_off_addons: bool,
+    /// The id of the game the launcher shows, picked in the bottom left; F1 25 when unset.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub game: Option<String>,
+    /// The copy Play uses for each game other than F1 25 (whose copy is `games.active`), by game id.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub game_copies: BTreeMap<String, PathBuf>,
 }
 
 fn on() -> bool {

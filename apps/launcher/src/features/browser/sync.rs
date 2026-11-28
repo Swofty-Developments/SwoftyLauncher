@@ -46,8 +46,13 @@ pub(super) fn avatar_dir(root: &Path) -> std::path::PathBuf {
     root.join(catalog::CACHE_DIR).join(AVATARS_DIR)
 }
 
-pub(super) fn fetch(root: &Path, shown: Vec<Addon>, known: BTreeSet<String>) -> Fetched {
-    let (addons, error) = match catalog::fetch(root) {
+pub(super) fn fetch(
+    root: &Path,
+    source: &catalog::Feed,
+    shown: Vec<Addon>,
+    known: BTreeSet<String>,
+) -> Fetched {
+    let (addons, error) = match catalog::fetch_feed(root, source) {
         Ok(addons) => (Some(addons), None),
         Err(e) => (None, Some(e)),
     };
@@ -133,12 +138,13 @@ impl Browser {
         let store = needs.store.clone();
         let root = store.root.clone();
         let shown = b.addons.clone();
+        let source = b.source.clone();
         let known = b.icons.keys().chain(b.avatars.keys()).cloned().collect();
         let started = Instant::now();
         cx.spawn(async move |this, cx| {
             let fetched = cx
                 .background_executor()
-                .spawn(async move { fetch(&root, shown, known) })
+                .spawn(async move { fetch(&root, &source, shown, known) })
                 .await;
             let listed = fetched.addons.clone();
             this.update(cx, |host, cx| {
@@ -435,7 +441,7 @@ impl Shell {
     }
 
     pub(super) fn installed_version(&self, id: &str) -> Option<semver::Version> {
-        installed_version(&self.library, id)
+        installed_version(self.browser_library(), id)
     }
 
     pub(super) fn open_details(&mut self, id: &str, window: &mut Window, cx: &mut Context<Self>) {

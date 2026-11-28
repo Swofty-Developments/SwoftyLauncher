@@ -4,8 +4,8 @@ use std::path::PathBuf;
 use clap::{Parser, Subcommand};
 
 use crate::commands::{
-    addons, build, db, dev, game, games, hud, laps, logs, offline, postfx, profile, registry, run, saves,
-    settings, setup, shaders, steam, testing, update,
+    addons, build, db, dev, game, games, hud, laps, logs, offline, play, postfx, profile, registry, run,
+    saves, settings, setup, shaders, steam, testing, update,
 };
 
 #[derive(Parser)]
@@ -24,8 +24,22 @@ pub(crate) struct Cli {
     pub(crate) data_dir: Option<PathBuf>,
     #[arg(long, global = true, help = "Profile (default: the active profile)")]
     pub(crate) profile: Option<String>,
+    #[arg(
+        long,
+        default_value = "f1_25",
+        value_parser = parse_game,
+        help = "The game the command is for, before the command: f1_25 or overcooked_2 (see swofty games)"
+    )]
+    pub(crate) game: swofty_core::game::GameId,
     #[command(subcommand)]
     pub(crate) command: Command,
+}
+
+fn parse_game(id: &str) -> Result<swofty_core::game::GameId, String> {
+    swofty_core::game::GameId::parse(id).ok_or_else(|| {
+        let known: Vec<&str> = swofty_core::game::GameId::ALL.iter().map(|g| g.id()).collect();
+        format!("{id} is not a game the launcher knows ({})", known.join(", "))
+    })
 }
 
 pub(crate) const GAME_HELP: &str = "Game folder (default: the active copy, see swofty game list)";
@@ -85,6 +99,10 @@ pub(crate) enum Command {
         about = "List the games the launcher knows, whether each is supported, and where each was found"
     )]
     Games(games::GamesArgs),
+    #[command(
+        about = "Start a game with its Swofty Core and the addons that are on (Overcooked 2: swofty --game overcooked_2 play)"
+    )]
+    Play(play::PlayArgs),
     #[command(
         about = "Show whether Steam is running and signed in; --start starts it and waits, as Play does"
     )]

@@ -32,7 +32,7 @@ impl Shell {
             return Offer::Failed;
         }
         let installed = self
-            .library
+            .browser_library()
             .addons
             .iter()
             .find(|x| x.manifest.id == a.id)
@@ -65,7 +65,7 @@ impl Shell {
         if let Some(cached) = self.browser.needs_cache.borrow().get(&a.id) {
             return cached.clone();
         }
-        let needs = match self.browser.requirements(&self.library, a) {
+        let needs = match self.browser.requirements(self.browser_library(), a) {
             Some(Ok(plan)) => (plan.also().iter().map(|s| s.label()).collect(), None),
             Some(Err(e)) => (Vec::new(), Some(e.to_string())),
             None => (Vec::new(), None),

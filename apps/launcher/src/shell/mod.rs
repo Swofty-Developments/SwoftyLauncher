@@ -8,6 +8,7 @@ use swofty_core::store::Store;
 pub(crate) mod account;
 mod console_window;
 pub(crate) mod download_dock;
+pub(crate) mod games;
 pub(crate) mod host;
 mod launch_alerts;
 mod nav;
@@ -82,6 +83,8 @@ pub struct Shell {
     pub(crate) _background: crate::shell::startup::Background,
     pub(crate) overlays: overlays::Overlays,
     pub(crate) navigation: crate::shell::nav::Navigation,
+    /// The game shown, picked in the bottom left, and every other game's own state.
+    pub(crate) games: crate::shell::games::Games,
 }
 
 pub struct SliderSlot {

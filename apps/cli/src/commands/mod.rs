@@ -5,11 +5,13 @@ pub(crate) mod db;
 pub(crate) mod dev;
 pub(crate) mod doctor;
 pub(crate) mod game;
+pub(crate) mod game_addons;
 pub(crate) mod games;
 pub(crate) mod hud;
 pub(crate) mod laps;
 pub(crate) mod logs;
 pub(crate) mod offline;
+pub(crate) mod play;
 pub(crate) mod postfx;
 pub(crate) mod profile;
 pub(crate) mod registry;
@@ -31,6 +33,7 @@ pub(crate) struct Invocation {
     pub(crate) store: Store,
     pub(crate) profile: String,
     pub(crate) named_profile: Option<String>,
+    pub(crate) game: &'static swofty_core::games::GameDef,
 }
 
 pub(crate) trait Execute {

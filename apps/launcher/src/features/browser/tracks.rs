@@ -35,7 +35,7 @@ impl Shell {
     pub(crate) fn addon_author(&self, id: &str) -> Option<String> {
         let listed = self.browser.find(id).map(Addon::author_name);
         let installed = self
-            .library
+            .browser_library()
             .addons
             .iter()
             .find(|x| x.manifest.id == id)

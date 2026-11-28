@@ -171,10 +171,14 @@ pub struct Cursor {
 }
 
 impl Cursor {
+    #[cfg(test)]
     pub fn on_tab(tab: Option<Tab>) -> Self {
-        let col = tab
-            .and_then(|t| Tab::ALL.iter().position(|x| *x == t))
-            .unwrap_or(0);
+        Self::in_tabs(&Tab::ALL, tab)
+    }
+
+    /// On `tab` in the bar that shows `tabs`.
+    pub fn in_tabs(tabs: &[Tab], tab: Option<Tab>) -> Self {
+        let col = tab.and_then(|t| tabs.iter().position(|x| *x == t)).unwrap_or(0);
         Self { row: Row::Tabs, col }
     }
 

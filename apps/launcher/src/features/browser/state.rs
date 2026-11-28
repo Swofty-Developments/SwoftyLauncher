@@ -22,6 +22,9 @@ use swofty_core::game_folder::busy::Busy;
 use swofty_core::store::Store;
 
 pub(crate) struct Browser {
+    /// The game whose catalog this is.
+    pub(crate) game: swofty_core::game::GameId,
+    pub(super) source: catalog::Feed,
     pub(crate) addons: Vec<Addon>,
     pub(crate) updates: Vec<Update>,
     /// What the registry says about the installed versions the catalog doesn't list.
@@ -73,7 +76,12 @@ pub(crate) struct Browser {
 }
 
 impl Browser {
-    pub(crate) fn new(root: &Path, window: &mut Window, cx: &mut Context<Shell>) -> Self {
+    pub(crate) fn new(
+        root: &Path,
+        game: swofty_core::game::GameId,
+        window: &mut Window,
+        cx: &mut Context<Shell>,
+    ) -> Self {
         let search = cx.new(|cx| {
             InputState::new(window, cx).placeholder(tr("Search names, authors, author: or category:"))
         });
@@ -82,13 +90,19 @@ impl Browser {
                 cx.notify();
             }
         });
-        let cached = catalog::cached(root);
+        let source = match swofty_core::games::def(game).addons {
+            Some(shelf) => shelf.feed(root),
+            None => catalog::Feed::f1_25(root),
+        };
+        let cached = source.cached();
         let feed = Feed {
             saved: cached.is_some(),
-            fetched_at: cached.as_ref().and_then(|_| catalog::cached_at(root)),
+            fetched_at: cached.as_ref().and_then(|_| source.cached_at()),
             ..Feed::default()
         };
         Self {
+            game,
+            source,
             addons: cached.unwrap_or_default(),
             updates: Vec::new(),
             withdrawn: catalog::withdrawn::Checks::load(root),
@@ -143,7 +157,35 @@ impl Browser {
     }
 
     pub(super) fn on_landing(&self, searching: bool) -> bool {
-        self.landing && self.tab.is_none() && !searching && self.facets.is_empty() && !self.hide_code
+        self.typed()
+            && self.landing
+            && self.tab.is_none()
+            && !searching
+            && self.facets.is_empty()
+            && !self.hide_code
+    }
+
+    /// Whether the game's addons have kinds, categories and tested platforms, which the landing, the filters and
+    /// the cards show; a game whose every addon is code has none of them.
+    pub(super) fn typed(&self) -> bool {
+        !swofty_core::games::def(self.game).addon_kinds.is_empty()
+    }
+
+    /// Whether a fetch, a star sync, a detail load or an install is running, whose answer comes back here.
+    pub(crate) fn busy(&self) -> bool {
+        self.feed.fetching
+            || self.feed.syncing
+            || !self.working.is_empty()
+            || !self.loading.is_empty()
+            || !self.profile_loading.is_empty()
+            || self.batch.is_some()
+            || self.queue.jobs().iter().any(|j| {
+                matches!(
+                    j.state,
+                    crate::services::download_queue::State::Queued
+                        | crate::services::download_queue::State::Active
+                )
+            })
     }
 
     pub(super) fn stale(&self) -> bool {
@@ -289,11 +331,15 @@ impl Hosted for Browser {
 impl Host<Browser> for Shell {
     fn split(&mut self) -> (&mut Browser, BrowserNeeds<'_>) {
         let locked = self.data_move_locked();
+        let library = match self.games.side() {
+            Some(side) => &side.library,
+            None => &self.library,
+        };
         (
             &mut self.browser,
             BrowserNeeds {
                 store: &self.store,
-                library: &self.library,
+                library,
                 locked,
                 building: self.game.build.as_ref(),
             },
@@ -302,7 +348,9 @@ impl Host<Browser> for Shell {
 
     fn changed(&mut self, change: BrowserChange, cx: &mut Context<Self>) {
         match change {
+            BrowserChange::Installed if self.games.side().is_some() => self.reload_side(cx),
             BrowserChange::Installed => self.reload(cx),
+            BrowserChange::TurnOn { .. } if self.games.side().is_some() => {}
             BrowserChange::TurnOn { id, note } => {
                 let shell = cx.entity().downgrade();
                 let note = note.action(tr("Turn on"), move |window, cx| {

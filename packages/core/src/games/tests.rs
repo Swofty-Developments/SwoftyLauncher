@@ -160,23 +160,71 @@ fn f1_25_has_every_capability_it_had() {
 }
 
 #[test]
-fn overcooked_2_has_no_capabilities() {
+fn overcooked_2_plays_with_its_own_addon_store_and_core() {
     let d = def(GameId::Overcooked2);
-    assert_eq!(d.info.support, Support::NotYet);
+    assert_eq!(d.info.support, Support::Full);
     assert_eq!(
         d.caps(),
         Capabilities {
-            play: false,
+            play: true,
             build: false,
-            native_core: false,
+            native_core: true,
             online: false,
             time_trial: false,
-            addons: false,
+            addons: true,
         }
     );
+    assert!(d.addons.is_some());
+    assert!(def(GameId::F1_25).addons.is_none());
     for kind in KINDS {
         assert!(!d.accepts_kind(kind), "{kind:?}");
     }
+}
+
+#[test]
+fn overcooked_2_is_found_by_its_linux_build() {
+    let t = Tree::new("oc2-linux");
+    let root = t.steam_root(&[]);
+    let dir = t.app(
+        "steam",
+        728_880,
+        "Overcooked! 2",
+        "20236421",
+        &["Overcooked2.x86_64"],
+    );
+    let config = Config::default();
+    assert_eq!(
+        def(GameId::Overcooked2).find(&probe(&config, &[root], &[])),
+        vec![Found {
+            game: GameId::Overcooked2,
+            dir,
+            store: Some(STEAM_OC2),
+            build_id: Some(20_236_421),
+        }]
+    );
+}
+
+#[test]
+fn an_addon_names_its_game_and_is_refused_for_the_other() {
+    let t = Tree::new("addon-game");
+    let manifest = |game: &str| {
+        serde_json::json!({ "id": "a.b", "name": "Hello Kitchen", "compat": { "game": game } }).to_string()
+    };
+    t.file("oc2/swofty.json", &manifest("overcooked_2"));
+    t.file("f1/swofty.json", &manifest("f1_25"));
+    t.file("other/swofty.json", &manifest("some_game"));
+    assert_eq!(addon_game(&t.0.join("oc2")), Some(GameId::Overcooked2));
+    assert_eq!(addon_game(&t.0.join("f1")), Some(GameId::F1_25));
+    assert_eq!(addon_game(&t.0.join("other")), None);
+    assert_eq!(addon_game(&t.0.join("missing")), None);
+    let why = other_game_refusal(&t.0.join("oc2"), GameId::F1_25).unwrap();
+    assert!(
+        why.starts_with("Hello Kitchen is an addon for Overcooked 2, not F1 25"),
+        "{why}"
+    );
+    assert!(other_game_refusal(&t.0.join("oc2"), GameId::Overcooked2).is_none());
+    assert!(other_game_refusal(&t.0.join("f1"), GameId::Overcooked2).is_some());
+    assert!(other_game_refusal(&t.0.join("other"), GameId::F1_25).is_none());
 }
 
 #[test]
@@ -348,7 +396,7 @@ fn epic_items_find_overcooked_2_by_its_exe() {
 }
 
 #[test]
-fn the_stub_writes_nothing() {
+fn detection_writes_nothing() {
     let t = Tree::new("writes");
     let lib = t.0.join("lib2");
     let root = t.steam_root(&[&lib]);
@@ -364,11 +412,8 @@ fn the_stub_writes_nothing() {
 }
 
 #[test]
-fn the_stub_starts_no_process_and_opens_no_connection() {
-    let sources = [
-        ("detect.rs", include_str!("detect.rs")),
-        ("overcooked_2.rs", include_str!("overcooked_2.rs")),
-    ];
+fn detection_starts_no_process_and_opens_no_connection() {
+    let sources = [("detect.rs", include_str!("detect.rs"))];
     let banned = [
         "Command",
         "process::",
