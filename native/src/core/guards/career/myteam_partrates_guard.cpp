@@ -62,6 +62,7 @@ void record_load(safetyhook::Context &c)
 {
     if (!mp::skips(c.r15))
         return;
+    c.rax = 0;
     c.rip = resume_at;
     if (said.fetch_add(1) >= mp::LOG_LIMIT)
         return;
