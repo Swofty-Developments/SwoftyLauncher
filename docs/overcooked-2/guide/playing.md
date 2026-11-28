@@ -40,7 +40,7 @@ swofty games                                                     # every game, w
 
 ## Play
 
-**Play** writes the session file and starts Overcooked 2 with Swofty Core. Steam must be running. While the game runs, the play bar shows **Running · 2 addons · pid 41234** and **Stop**, which closes the game. After it closes, the play bar shows the addons that failed to load, and **Core log** opens the session's `core.log`.
+**Play** writes the session file and starts Overcooked 2 with Swofty Core. Steam must be running. While the game runs, the play bar shows **Running · 2 addons on · pid 41234** and **Stop**, which closes the game. After it closes, the play bar shows **2 addons on · 1 failed to load last time** when an addon failed, and **Core log** opens that session's `core.log`.
 
 On Linux, the launcher plays the native Linux build. The Windows build under Proton is not supported yet.
 
