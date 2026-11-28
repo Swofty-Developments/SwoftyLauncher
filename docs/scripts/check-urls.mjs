@@ -10,6 +10,7 @@
 //
 // A URL is every file of the build outside assets/, as the site serves it: guide/index.html is /guide/,
 // guide/linux.html is /guide/linux. A redirect page counts when the page it points at is in the build.
+// It also fails on a link in a page of the after build, such as a sidebar entry, to a URL that build lacks.
 
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -54,16 +55,33 @@ function redirectOf(dist, file) {
   return to.endsWith(".html") ? to.slice(0, -".html".length) : to;
 }
 
+function linksOf(dist, file) {
+  if (!file.endsWith(".html")) return [];
+  const html = fs.readFileSync(path.join(dist, file), "utf8");
+  const out = new Set();
+  for (const m of html.matchAll(/href="(\/[^"#?]*)/g)) {
+    const link = m[1];
+    if (link.startsWith("//") || link.startsWith("/assets/")) continue;
+    out.add(link.endsWith(".html") ? link.slice(0, -".html".length) : link);
+  }
+  return [...out];
+}
+
 function listBuild(dist) {
   if (!fs.existsSync(path.join(dist, "index.html"))) throw new Error(`${dist} is not a docs build`);
   const files = walk(dist);
   const urls = new Set(files.map(urlOf));
   const broken = [];
+  const dead = new Map();
   for (const f of files) {
     const to = redirectOf(dist, f);
     if (to !== null && !urls.has(to)) broken.push(`${urlOf(f)} -> ${to}`);
+    for (const link of linksOf(dist, f)) {
+      if (urls.has(link) || urls.has(`${link}/`)) continue;
+      if (!dead.has(link)) dead.set(link, urlOf(f));
+    }
   }
-  return { urls, broken };
+  return { urls, broken, dead };
 }
 
 function readList(file) {
@@ -123,4 +141,5 @@ console.log(`${before.size} URLs before, ${after.urls.size} after, ${added.lengt
 for (const u of added) console.log(`  new   ${u}`);
 for (const u of lost) console.log(`  lost  ${u}`);
 for (const b of after.broken) console.log(`  dead redirect  ${b}`);
-process.exit(lost.length || after.broken.length ? 1 : 0);
+for (const [link, from] of after.dead) console.log(`  dead link  ${link} (first in ${from})`);
+process.exit(lost.length || after.broken.length || after.dead.size ? 1 : 0);
