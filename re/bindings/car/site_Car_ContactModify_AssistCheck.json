@@ -6,7 +6,7 @@
  "row": {
   "addr": "0x142f04876",
   "type": "code",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "evidence": "decomp:own capstone disasm of Car_Contact_ModifyVehicle (KB 0x142f04040, this site KB 0x142f04876);xref:0x142f06e13,0x142f06e1d;kb:Car_Contact_ModifyVehicle",
   "notes": "In Car_Contact_ModifyVehicle, rsi = contact record, rdi/rbx = the two cars: mov rcx,[rip+slot] (contact-assist setting holder), mov rcx,[rcx], test rcx,rcx, je far, then cmp byte [rcx+8],0. Right after the contact's mass ratio is written (contact+0x64). No branch lands inside the first 19 bytes. Contact Physics (kizi.ai-tweaks) hooks here to read each car-to-car contact before the solver."
@@ -52,6 +52,16 @@
    "verdict": "agree",
    "evidence": "decomp:own disasm 0x142f065d0-0x142f073b3 Car_Contact_ModifyVehicle, 0x142f06e06 is mov rcx,[rip+0x317c29b] right after vmovss [rsi+0x64],xmm0 (mass ratio), then mov rcx,[rcx], test, je, cmp byte [rcx+8],0, bytes 48 8B 0D 9B C2 17 03 match expect and no branch targets the next 19 bytes;xref:0x142f06e13,0x142f06e1d",
    "notes": "gh:Swofty-Developments agree at L1, Car_Contact_ModifyVehicle sits at KB 0x142f04040 plus 0x2590"
+  },
+  {
+   "date": "2026-11-28",
+   "verifier": "Swofty-Developments",
+   "kind": "global",
+   "item": "site_Car_ContactModify_AssistCheck",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x142f065d0-0x142f073b2 Car_Contact_ModifyVehicle (pdata function start 0x142f065d0, rcx = contact record saved to rsi at 0x142f0662e, rbx and rdi = the two cars from the contact bodies, +0x558 is each car's state);xref:0x142f06e13,0x142f06e1d,0x142f06e01",
+   "notes": "gh:Swofty-Developments blind L2 on build 26566308: 0x142f06e06 is mov rcx,[rip+0x317c29b] (48 8B 0D 9B C2 17 03) straight after vdivss/vmovss [rsi+0x64] at 0x142f06dfd-0x142f06e01 (m_a/m_b read from +0x3e4 of the two cars' states), then mov rcx,[rcx]; test; je 0x142f06f5d; cmp byte [rcx+8],0; je 0x142f06f5d. No branch in the function lands in 0x142f06e07-0x142f06e18. +0x64 is also written at 0x142f0698d (constant, that path exits without reaching the site). At the site al=0 and r14 are live"
   }
  ],
  "proofs": [
@@ -77,6 +87,25 @@
   {
    "by": "Swofty-Developments",
    "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f06dfd",
+    "target": "0x142f06e06"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "555a682435542ee041d4ca4749e3534ea417edd3c82c2dc2275c929e6d5423df"
+  },
+  {
+   "by": "Swofty-Developments",
+   "date": "2026-11-28",
    "tool": "binding.py verify",
    "exe": {
     "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
