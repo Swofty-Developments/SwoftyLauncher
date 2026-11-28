@@ -18,95 +18,11 @@ hello-kitchen/
 └── HelloKitchen.cs
 ```
 
-```json [swofty.json]
-{
-  "id": "swofty.hello-kitchen",
-  "name": "Hello Kitchen",
-  "version": "0.1.0",
-  "author": "Swofty",
-  "description": "Adds a Hello button to the main menu.",
-  "compat": { "game": "overcooked_2", "std": ">=0.1.0" },
-  "assemblies": ["HelloKitchen.dll"]
-}
-```
+<<< @/../games/overcooked_2/examples/hello-kitchen/swofty.json{json} [swofty.json]
 
-```xml [HelloKitchen.csproj]
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net35</TargetFramework>
-    <AssemblyName>HelloKitchen</AssemblyName>
-    <RootNamespace>HelloKitchen</RootNamespace>
-    <Version>0.1.0</Version>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net35" Version="1.0.3" PrivateAssets="all" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="../../std/Swofty.Overcooked2.csproj" Private="false" />
-  </ItemGroup>
-</Project>
-```
+<<< @/../games/overcooked_2/examples/hello-kitchen/HelloKitchen.csproj{xml} [HelloKitchen.csproj]
 
-```csharp [HelloKitchen.cs]
-using System;
-using System.Globalization;
-using System.IO;
-using HarmonyLib;
-using Swofty.Overcooked2;
-
-namespace HelloKitchen
-{
-    public sealed class HelloKitchenAddon : IAddon
-    {
-        private static AddonContext context;
-
-        public void Load(AddonContext ctx)
-        {
-            context = ctx;
-            ctx.Log.Info(ctx.Name + " " + ctx.Version + " loaded on Overcooked 2 build " + Game.Version + " with Swofty Core " + Runtime.CoreVersion);
-
-            MainMenu.AddButton("swofty.hello-kitchen.hello", "Hello", SayHello);
-            MainMenu.Shown += () => ctx.Log.Info("the main menu has shown");
-            Game.SceneLoaded += scene => ctx.Log.Info("scene loaded: " + scene);
-
-            Type frontend = AccessTools.TypeByName("T17FrontendFlow");
-            if (frontend != null)
-            {
-                ctx.Harmony.Patch(AccessTools.Method(frontend, "Awake"), postfix: new HarmonyMethod(typeof(HelloKitchenAddon), nameof(FrontendAwake)));
-            }
-        }
-
-        private static void FrontendAwake()
-        {
-            context.Log.Info("the front end is up");
-        }
-
-        private static void SayHello()
-        {
-            int count = CountHello();
-            context.Log.Info("hello number " + count);
-            Dialogs.Message(
-                "Hello Kitchen",
-                "Hello from " + context.Name + " " + context.Version + "!\n"
-                + "You have said hello " + count + (count == 1 ? " time" : " times") + ".\n"
-                + "Swofty Core " + Runtime.CoreVersion + ", launcher " + (Runtime.LauncherVersion ?? "none") + ".");
-        }
-
-        private static int CountHello()
-        {
-            string file = Path.Combine(context.DataDirectory, "hello-count.txt");
-            int count = 0;
-            if (File.Exists(file))
-            {
-                int.TryParse(File.ReadAllText(file).Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out count);
-            }
-            count++;
-            File.WriteAllText(file, count.ToString(CultureInfo.InvariantCulture));
-            return count;
-        }
-    }
-}
-```
+<<< @/../games/overcooked_2/examples/hello-kitchen/HelloKitchen.cs{csharp} [HelloKitchen.cs]
 
 ## Build, install and play
 
