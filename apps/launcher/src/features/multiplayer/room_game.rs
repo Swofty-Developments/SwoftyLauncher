@@ -2,7 +2,7 @@ use std::path::Path;
 use std::time::Instant;
 
 use swofty_core::online::multiplayer::client::Session;
-use swofty_core::online::multiplayer::types::LaunchAsk;
+use swofty_core::online::multiplayer::types::{GameStatus, LaunchAsk, Screen};
 
 use super::model::exit_leaves;
 use super::state::{EXIT_WAIT, RoomLaunch};
@@ -62,6 +62,8 @@ pub(crate) struct RoomGame {
     pub(super) held: Option<RoomLaunch>,
     /// When the room's game was first seen gone, while the room waits for the session to write how it ended.
     pub(super) exited_at: Option<Instant>,
+    /// Latched once the room's game joined the session, so a return to the main menu afterwards reads as a leave.
+    pub(super) entered: bool,
 }
 
 impl RoomGame {
@@ -70,6 +72,20 @@ impl RoomGame {
     pub(crate) fn due(&self, session: &impl RoomSession, busy: bool) -> Option<LaunchAsk> {
         let ask = session.launch_ask()?;
         (self.ask_seq != ask.seq && !busy).then_some(ask)
+    }
+
+    /// With the room's game running, whether it has gone back to the main menu after joining the session (a
+    /// quit to the main menu, or the race ending): the room then closes it, so the player can't walk into
+    /// Career on the room's borrowed registry ids. Latches that the game entered the session, so the main
+    /// menu the game passes through on the way in is not mistaken for a leave.
+    pub(crate) fn left_to_menu(&mut self, status: Option<&GameStatus>) -> bool {
+        let Some(status) = status else {
+            return false;
+        };
+        if status.in_session {
+            self.entered = true;
+        }
+        self.entered && !status.in_session && matches!(status.screen, Screen::MainMenu)
     }
 
     /// Takes up `ask`: writes the host's row ids for the build and arms the room launch. None when the ids
@@ -204,11 +220,43 @@ mod tests {
     use std::cell::RefCell;
     use std::path::{Path, PathBuf};
 
-    use swofty_core::online::multiplayer::types::LaunchAsk;
+    use swofty_core::online::multiplayer::types::{GameStatus, LaunchAsk, Role, Screen};
     use swofty_core::row_ids::Overrides;
 
     use super::{RoomGame, RoomSession, Withdrawn};
     use crate::features::multiplayer::RoomLaunch;
+
+    fn game(screen: Screen, in_session: bool) -> GameStatus {
+        GameStatus {
+            screen,
+            in_session,
+            role: Role::None,
+            configured: false,
+            self_member: 0,
+            base: 0,
+            cover: None,
+            room_failed: None,
+            content: None,
+        }
+    }
+
+    #[test]
+    fn the_room_closes_the_game_once_it_returns_to_the_menu_from_the_session() {
+        let mut g = RoomGame::default();
+        assert!(!g.left_to_menu(None), "no read yet, nothing to do");
+        assert!(
+            !g.left_to_menu(Some(&game(Screen::MainMenu, false))),
+            "the main menu on the way in, before the game has joined, is not a leave"
+        );
+        assert!(
+            !g.left_to_menu(Some(&game(Screen::Other, true))),
+            "in the session is not a leave"
+        );
+        assert!(
+            g.left_to_menu(Some(&game(Screen::MainMenu, false))),
+            "back on the main menu, out of the session, is a quit to the menu"
+        );
+    }
 
     #[derive(Default)]
     struct Told {
