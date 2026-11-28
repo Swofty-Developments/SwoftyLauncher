@@ -109,6 +109,7 @@ UNITS = [
     Unit('log_csv', 'CSV recorder unit test'),
     Unit('main_menu', 'Main menu logic unit test'),
     Unit('mem_scan', 'Memory scan helpers unit test'),
+    Unit('myteam_partrates', 'My Team part rates guard unit test'),
     Unit('myteam_vehicle_guard', 'My Team vehicle base guard unit test'),
     Unit('myteam_vehicle_heal', 'My Team vehicle heal unit test'),
     Unit('myteam_vehicle_keep', 'My Team vehicle keep unit test'),

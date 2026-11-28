@@ -14,6 +14,7 @@
 namespace runtime::loader {
 
 enum class CoreRank : uint8_t {
+    myteam_partrates,
     pit_garage_state,
     session_job_probe,
     car_live,
