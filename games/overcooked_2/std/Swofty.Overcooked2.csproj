@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net35</TargetFramework>
+    <AssemblyName>Swofty.Overcooked2</AssemblyName>
+    <RootNamespace>Swofty.Overcooked2</RootNamespace>
+    <Version>$(SwoftyStdVersion)</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <Description>The Swofty Core standard library for Overcooked 2 addons.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net35" Version="1.0.3" PrivateAssets="all" />
+    <PackageReference Include="Lib.Harmony" Version="$(HarmonyVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Swofty.Overcooked2.Core" />
+    <InternalsVisibleTo Include="Swofty.Overcooked2.Tests" />
+  </ItemGroup>
+</Project>

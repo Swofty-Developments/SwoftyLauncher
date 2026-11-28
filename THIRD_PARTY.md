@@ -160,6 +160,41 @@ Python is Copyright (c) 2001 Python Software Foundation; All Rights Reserved.
 
 Releases include `dxc/`: dxc, dxcompiler and dxil built by `.github/workflows/dxc.yml` from <https://github.com/microsoft/DirectXShaderCompiler> at the tag in `tools/dxc/version`. They compile addons' post-process passes. `dxc/LICENSE.txt` (University of Illinois/NCSA Open Source License, with MIT-licensed parts) and `dxc/ThirdPartyNotices.txt` are copied from that tag.
 
+## Swofty Core for Overcooked 2
+
+Releases include `cores/overcooked_2/`, built by `games/overcooked_2/build.sh`:
+
+| Component | Licence |
+|---|---|
+| `core/0Harmony.dll`: Harmony 2.3.6 from the `Lib.Harmony` NuGet package, <https://github.com/pardeike/Harmony>, with the MonoMod libraries it merges, <https://github.com/MonoMod/MonoMod> | MIT, below; MonoMod is under the MIT licence too |
+| `doorstop/linux_x64/libdoorstop.so` and `doorstop/windows_x64/winhttp.dll`: Unity Doorstop 4.5.0, <https://github.com/NeighTools/UnityDoorstop>, unmodified from its release, source at <https://github.com/NeighTools/UnityDoorstop/tree/v4.5.0> | GNU Lesser General Public License version 2.1, copied to `doorstop/LICENSE` |
+
+The launcher does not link Doorstop: it is loaded into the game process when Overcooked 2 starts with addons.
+
+```
+MIT License
+
+Copyright (c) 2017 Andreas Pardeike
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
 ## Discord logo
 
 `apps/launcher/assets/discord.svg` is the Discord logo from Simple Icons, <https://simpleicons.org/>, released under CC0 1.0. Discord and the Discord logo are trademarks of Discord Inc.

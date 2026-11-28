@@ -48,6 +48,7 @@
               openssl
               xvfb-run
               wineWow64Packages.stable
+              dotnet-sdk_8
             ];
             buildInputs = runtimeLibs ++ [ pkgs.zstd pkgs.openssl ];
             LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath runtimeLibs;

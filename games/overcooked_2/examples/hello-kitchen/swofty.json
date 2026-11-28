@@ -1,0 +1,9 @@
+{
+  "id": "swofty.hello-kitchen",
+  "name": "Hello Kitchen",
+  "version": "0.1.0",
+  "author": "Swofty",
+  "description": "Adds a Hello button to the main menu.",
+  "compat": { "game": "overcooked_2", "std": ">=0.1.0" },
+  "assemblies": ["HelloKitchen.dll"]
+}

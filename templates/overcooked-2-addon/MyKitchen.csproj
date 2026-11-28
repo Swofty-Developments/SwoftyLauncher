@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net35</TargetFramework>
+    <AssemblyName>MyKitchen</AssemblyName>
+    <RootNamespace>MyKitchen</RootNamespace>
+    <Version>0.1.0</Version>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <DebugType>none</DebugType>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <SwoftyCoreDir Condition="'$(SwoftyCoreDir)' == ''">$(MSBuildThisFileDirectory)../../games/overcooked_2/dist</SwoftyCoreDir>
+    <OC2_DIR Condition="'$(OC2_DIR)' == '' And '$(OS)' == 'Windows_NT'">C:\Program Files (x86)\Steam\steamapps\common\Overcooked! 2</OC2_DIR>
+    <OC2_DIR Condition="'$(OC2_DIR)' == ''">$(HOME)/.local/share/Steam/steamapps/common/Overcooked! 2</OC2_DIR>
+    <OC2Managed>$(OC2_DIR)/Overcooked2_Data/Managed</OC2Managed>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net35" Version="1.0.3" PrivateAssets="all" />
+    <Reference Include="Swofty.Overcooked2" HintPath="$(SwoftyCoreDir)/core/Swofty.Overcooked2.dll" Private="false" />
+    <Reference Include="0Harmony" HintPath="$(SwoftyCoreDir)/core/0Harmony.dll" Private="false" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(OC2Managed)/Assembly-CSharp.dll')">
+    <Reference Include="$(OC2Managed)/Assembly-CSharp.dll" Private="false" />
+    <Reference Include="$(OC2Managed)/UnityEngine*.dll" Private="false" />
+  </ItemGroup>
+
+  <Target Name="SwoftyCheckCore" BeforeTargets="ResolveAssemblyReferences" Condition="!Exists('$(SwoftyCoreDir)/core/Swofty.Overcooked2.dll')">
+    <Error Text="Swofty Core not found in $(SwoftyCoreDir). Build it with games/overcooked_2/build.sh or pass -p:SwoftyCoreDir=&lt;launcher&gt;/cores/overcooked_2." />
+  </Target>
+
+  <Target Name="SwoftyAddonFolder" AfterTargets="Build">
+    <Copy SourceFiles="swofty.json;$(TargetPath)" DestinationFolder="dist" />
+  </Target>
+
+</Project>

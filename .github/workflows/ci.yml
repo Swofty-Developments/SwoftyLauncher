@@ -29,6 +29,7 @@ jobs:
       docs: ${{ steps.scope.outputs.all == 'true' || steps.filter.outputs.docs == 'true' }}
       std: ${{ steps.scope.outputs.all == 'true' || steps.filter.outputs.std == 'true' }}
       compat: ${{ steps.scope.outputs.all == 'true' || steps.filter.outputs.compat == 'true' }}
+      overcooked-2: ${{ steps.scope.outputs.all == 'true' || steps.filter.outputs.overcooked-2 == 'true' }}
     steps:
       # GitHub lists at most 3,000 of a pull request's files, in path order, so the filter would miss every area
       # whose files come after the first 3,000 (a bulk change to re/bindings hides templates/ and tools/). A pull
@@ -120,6 +121,11 @@ jobs:
             compat:
               - *always
               - tools/compat/**
+            # Swofty Core for Overcooked 2 (C#) and the addon template that builds against it.
+            overcooked-2:
+              - *always
+              - games/overcooked_2/**
+              - templates/overcooked-2-addon/**
 
   # The first answer on a change: formatting needs only the toolchain, so it reports within a minute.
   format:
@@ -382,6 +388,24 @@ jobs:
       # The native job builds the templates; this checks their registry data files against the schemas.
       - name: Template data files
         run: python3 tools/std/templates.py --no-build
+
+  # Swofty Core for Overcooked 2 builds without the game: the core, the std lib, the example addon and the
+  # template, then the host tests.
+  overcooked-2:
+    name: Overcooked 2 core
+    needs: changes
+    if: needs.changes.outputs.overcooked-2 == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build and host tests
+        run: games/overcooked_2/build.sh
 
   # The binding generator, capture and verifier tests use only the standard library. A job of their own reports
   # them apart from the native build and tests.
