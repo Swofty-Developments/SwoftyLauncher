@@ -7,8 +7,18 @@ use crate::{Error, Result, io_err, with_retry};
 
 use super::{
     Artifacts, EAC_EXE, command, ea_signed, heal_disk, heal_stale_backup, journal_path, loader_hint, not_eas,
-    require_launcher, set_aside, start_error,
+    pin, require_launcher, set_aside, start_error,
 };
+
+/// The file under state/offline/ recording the pinned offline-play build that
+/// last staged, so a kill marker a previous build left behind can be told from
+/// one the current build wrote.
+const STAGED_BUILD: &str = "staged-build";
+
+/// The marker the in-game hook writes, relative to the game folder, when the
+/// server marks this offline-play build killed. The native stage stands down
+/// while it is present.
+const KILL_MARKER: &str = "swofty/offline/state";
 
 /// Stage the session: park the anti-cheat launcher, drop the stub, and place
 /// the hook where the loader picks it up. Everything goes in the journal.
@@ -18,7 +28,12 @@ pub fn stage(game: &Path, a: &Artifacts, journal: &Path) -> Result<Vec<String>> 
     if let Some(parent) = journal.parent() {
         std::fs::create_dir_all(parent).map_err(|e| io_err(parent.to_path_buf())(e))?;
     }
+    let record = journal.with_file_name(STAGED_BUILD);
+    let current = pin("f1op_hook.dll");
     let mut notes = heal_stale_backup(game, journal)?;
+    if let Some(note) = clear_superseded_kill_marker(game, &record, current)? {
+        notes.push(note);
+    }
     require_launcher(game)?;
     let hook_dest = game.join("swofty/mods/core/f1op_hook.dll");
     let out = command(&a.prelaunch)?
@@ -42,8 +57,60 @@ pub fn stage(game: &Path, a: &Artifacts, journal: &Path) -> Result<Vec<String>> 
             loader_hint(&a.prelaunch, out.status)
         )));
     }
-    notes.push("staged offline play for this session".into());
+    // The native stage returns success whether it staged or stood down; only a
+    // run that actually staged writes a journal. Record the build (so a later
+    // launch can tell this build's kill marker from an earlier build's) and say
+    // "staged" only then; otherwise name the stand-down plainly, so the log is
+    // not read as a modded launch that then failed.
+    if journal.exists() {
+        if let Some(cur) = current {
+            std::fs::write(&record, cur).ok();
+        }
+        notes.push("staged offline play for this session".into());
+    } else if game.join(KILL_MARKER).is_file() {
+        notes.push(format!(
+            "not staged: this offline-play build is marked stopped ({KILL_MARKER}); the game starts unmodded"
+        ));
+    } else {
+        notes.push("not staged: offline play stood down this session; the game starts unmodded".into());
+    }
     Ok(notes)
+}
+
+/// Remove a kill marker that cannot belong to the build about to be staged.
+///
+/// A build the server kills writes `<game>/swofty/offline/state`, and the
+/// native stage stands down while it is present. Nothing clears it during a
+/// session -- the report that learns of the kill arrives after the gate has
+/// passed, and no code un-patches -- so the marker persisting from one launch
+/// to the next is what carries a kill across sessions. That makes it the only
+/// thing enforcing a kill on the installed build, so it must not be cleared
+/// blindly.
+///
+/// It belongs to the build named in `record` as the last to stage. When that is
+/// the build about to stage (`current`), the marker is this build's own kill and
+/// is kept, so the stage stands down as the server intended. When the record is
+/// missing or names a different build, the marker is from a build since replaced
+/// -- a version the player updated away from -- and would otherwise deadlock the
+/// updated build forever (stage stands down, the hook never loads, nothing ever
+/// clears it); it is cleared. Returns a note when it clears one.
+pub(super) fn clear_superseded_kill_marker(
+    game: &Path,
+    record: &Path,
+    current: Option<&str>,
+) -> Result<Option<String>> {
+    let marker = game.join(KILL_MARKER);
+    if !marker.is_file() {
+        return Ok(None);
+    }
+    let recorded = std::fs::read_to_string(record).ok();
+    if current.is_some() && recorded.as_deref().map(str::trim) == current {
+        return Ok(None);
+    }
+    with_retry(&marker, || std::fs::remove_file(&marker))?;
+    Ok(Some(
+        "cleared a stale offline-play kill marker left by a build that is no longer installed".into(),
+    ))
 }
 
 #[derive(Debug, Deserialize)]
