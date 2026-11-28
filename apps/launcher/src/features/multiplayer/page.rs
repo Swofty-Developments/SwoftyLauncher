@@ -2,10 +2,12 @@ use std::collections::HashSet;
 
 use crate::ui::scale::px;
 use gpui_kit::assets::IconName;
-use gpui_kit::component::{Icon, h_flex, v_flex};
+use gpui_kit::component::button::{Button, ButtonVariants};
+use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::*;
 
 use super::model::{RoomFocus, shows_ad};
+use super::state::outro_wait;
 
 /// The drivers of the global ranking the Multiplayer page's rail lists above the player's own place.
 const RAIL_RANKS: usize = 5;
@@ -13,11 +15,73 @@ use crate::features::ads::Unit;
 use crate::features::online::Online;
 use crate::shell::Shell;
 use crate::shell::tabs::{OnlineTab, rooms_label};
+use crate::ui::Overlay;
 use crate::ui::label;
 use crate::ui::theme::Palette;
-use swofty_i18n::tr;
+use swofty_i18n::{tr, trf};
 
 impl Shell {
+    /// The interstitial shown after leaving a room closed the game: a short house ad that holds the launcher
+    /// for five seconds so the player can't drop straight into Career on the room's borrowed registry ids.
+    pub(crate) fn multiplayer_outro(&self, p: Palette, cx: &mut Context<Self>) -> Option<impl IntoElement> {
+        let since = self.rooms.outro?;
+        let (closable, secs) = outro_wait(since.elapsed());
+        let close = cx.listener(|this, _, _, cx| {
+            this.rooms.outro = None;
+            cx.notify();
+        });
+        let card = v_flex()
+            .w(px(460.))
+            .items_center()
+            .gap(px(20.))
+            .p(px(32.))
+            .rounded(px(16.))
+            .border_1()
+            .border_color(p.border)
+            .bg(p.surface)
+            .shadow_lg()
+            .child(
+                div()
+                    .text_size(px(11.))
+                    .text_color(p.text_placeholder)
+                    .child(tr("ADVERTISEMENT")),
+            )
+            .child(
+                div()
+                    .text_size(px(22.))
+                    .font_weight(FontWeight::BOLD)
+                    .text_color(p.text)
+                    .text_center()
+                    .child(tr("Thanks for playing Multiplayer.")),
+            )
+            .child(
+                div()
+                    .text_size(px(14.))
+                    .text_color(p.text_muted)
+                    .text_center()
+                    .child(tr("This was brought to you by our industry partners.")),
+            )
+            .child(
+                Button::new("mp-outro-close")
+                    .primary()
+                    .h(px(40.))
+                    .px(px(22.))
+                    .disabled(!closable)
+                    .label(if closable {
+                        tr("Close").to_owned()
+                    } else {
+                        trf!("Close ({secs}s)", secs = secs)
+                    })
+                    .on_click(close),
+            );
+        Some(
+            Overlay::new("multiplayer-outro")
+                .opaque(p.background)
+                .below_title_bar()
+                .child(card),
+        )
+    }
+
     /// The room page, while the Multiplayer page shows a room rather than the list of rooms.
     pub(crate) fn room_page(&mut self, p: Palette, cx: &mut Context<Self>) -> Option<AnyElement> {
         match self.rooms.focus() {

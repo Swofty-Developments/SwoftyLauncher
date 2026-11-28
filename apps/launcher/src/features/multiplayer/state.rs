@@ -31,6 +31,9 @@ pub(super) const GAME_EVERY: Duration = Duration::from_secs(2);
 pub(super) const ROOMS_EVERY: Duration = Duration::from_secs(5);
 /// How long the room waits after its game exited for the game's session to write how it ended.
 pub(super) const EXIT_WAIT: Duration = Duration::from_secs(5);
+
+/// How long the room-outro interstitial holds before the player can dismiss it.
+pub(super) const OUTRO: Duration = Duration::from_secs(5);
 pub(super) const MIN_PLAYERS: u8 = 2;
 pub(super) const MAX_PLAYERS: u8 = 24;
 pub(super) const AVATARS_DIR: &str = "avatars";
@@ -109,6 +112,8 @@ pub(crate) struct Multiplayer {
     pub(super) notice: Option<String>,
     pub(super) error: Option<String>,
     pub(super) copied: Option<Instant>,
+    /// Set when leaving a room closed the game: the outro interstitial shows until the player dismisses it.
+    pub(super) outro: Option<Instant>,
     pub(crate) game: RoomGame,
     pub(super) fix: RoomFix,
     /// The session plays the room profile: it started with that profile's fingerprint, or the match built it.
@@ -160,6 +165,7 @@ impl Multiplayer {
             notice: None,
             error: None,
             copied: None,
+            outro: None,
             game: RoomGame::default(),
             fix: RoomFix::default(),
             roomed: Arc::default(),
@@ -229,6 +235,13 @@ impl Multiplayer {
 
 pub(super) fn due(at: Option<Instant>, every: Duration, now: Instant) -> bool {
     at.is_none_or(|at| now.duration_since(at) >= every)
+}
+
+/// Whether the room-outro interstitial can be dismissed yet, and the whole seconds still to wait.
+pub(super) fn outro_wait(elapsed: Duration) -> (bool, u64) {
+    let left = OUTRO.saturating_sub(elapsed);
+    let secs = left.as_secs() + u64::from(left.subsec_nanos() > 0);
+    (left.is_zero(), secs)
 }
 
 /// What the page polls while no room is joined: the game, the room list and this profile's addons.
