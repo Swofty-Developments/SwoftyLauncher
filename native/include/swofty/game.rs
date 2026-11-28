@@ -22018,6 +22018,11 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Car_ContactModify_AssistCheck: Binding = Binding {
+        id: "site_Car_ContactModify_AssistCheck",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Car_EngineDriveTorque: Binding = Binding {
         id: "site_Car_EngineDriveTorque",
         kind: "site",
