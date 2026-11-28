@@ -195,3 +195,20 @@ pub fn stop_game_in(dir: &Path) -> std::io::Result<Vec<u32>> {
 
 #[cfg(test)]
 mod tests;
+
+/// The pid of a process running `exe` that `pid` is, or that `pid` started directly or further down: a game a
+/// wrapper such as `steam-run` started runs as a grandchild.
+pub fn descendant_running(pid: u32, exe: &Path) -> Option<u32> {
+    if !cfg!(target_os = "linux") {
+        return None;
+    }
+    let runs = |p: u32| std::fs::read_link(format!("/proc/{p}/exe")).is_ok_and(|e| same_path(&e, exe));
+    if runs(pid) {
+        return Some(pid);
+    }
+    std::fs::read_dir("/proc")
+        .ok()?
+        .flatten()
+        .filter_map(|e| e.file_name().to_str()?.parse::<u32>().ok())
+        .find(|p| *p != pid && runs(*p) && descends_from(*p, pid))
+}

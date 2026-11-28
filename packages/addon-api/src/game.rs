@@ -115,14 +115,14 @@ pub const OVERCOOKED_2: GameInfo = GameInfo {
     game: GameId::Overcooked2,
     id: "overcooked_2",
     name: "Overcooked 2",
-    exes: &["Overcooked2.exe"],
+    exes: &["Overcooked2.x86_64", "Overcooked2.exe"],
     stores: &[
         StoreId::Steam { app_id: 728_880 },
         StoreId::Epic {
             exe: "Overcooked2.exe",
         },
     ],
-    support: Support::NotYet,
+    support: Support::Full,
 };
 
 #[cfg(test)]
@@ -149,11 +149,12 @@ mod tests {
     }
 
     #[test]
-    fn overcooked_2_is_a_steam_and_epic_game_not_supported_yet() {
+    fn overcooked_2_is_a_supported_steam_and_epic_game_with_a_linux_and_a_windows_build() {
         assert_eq!(OVERCOOKED_2.id, "overcooked_2");
-        assert_eq!(OVERCOOKED_2.exe(), "Overcooked2.exe");
+        assert_eq!(OVERCOOKED_2.exes, ["Overcooked2.x86_64", "Overcooked2.exe"]);
         assert_eq!(OVERCOOKED_2.steam_app_id(), Some(728_880));
-        assert_eq!(OVERCOOKED_2.support, Support::NotYet);
-        assert_eq!(OVERCOOKED_2.support.id(), "not_yet");
+        assert_eq!(OVERCOOKED_2.support, Support::Full);
+        assert_eq!(OVERCOOKED_2.support.id(), "full");
+        assert_eq!(Support::NotYet.id(), "not_yet");
     }
 }

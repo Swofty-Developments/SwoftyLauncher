@@ -132,6 +132,9 @@ impl Store {
                 });
         }
         let src = &crate::addons::import::addon_root(src).unwrap_or_else(|| src.to_path_buf());
+        if let Some(why) = crate::games::other_game_refusal(src, crate::game::GameId::F1_25) {
+            return Err(Error::Other(why));
+        }
         if src.join(crate::dbedit::package::MARKER).is_file() {
             return crate::dbedit::package::install(self, src).map(|(p, _)| {
                 std::fs::remove_file(self.registry_install_path(&p.manifest.id)).ok();
