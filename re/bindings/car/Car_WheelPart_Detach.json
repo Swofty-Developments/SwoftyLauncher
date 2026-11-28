@@ -5,11 +5,11 @@
  "author": "Kizikafuka",
  "row": {
   "addr": "0x144666cc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
-  "proto": "uint64_t Car_WheelPart_Detach(void *part, uint64_t notify)",
+  "proto": "void Car_WheelPart_Detach(void *part, uint8_t notify)",
   "evidence": "decomp:own capstone disasm of 0x144669530 (saves r15..rbx and xmm6-xmm15, 0x338 frame, cmp qword [rcx+40h],0 then je);xref:0x145bfb680",
-  "notes": "Wheel part vtable (rva 0x5bfb5e0) slot +0xa0: detaches a wheel from its car and makes the free wheel. part+0x10 car, +0x40 the new wheel's body holder (body at holder+0x18, set during the call), +0xe0 tether node (-1 = no tether path), +0x100 connection, +0x10c active. The game calls it again on already detached parts. Hooked by Contact Physics (kizi.ai-tweaks) for loose wheels without tethers."
+  "notes": "Wheel part vtable (rva 0x5bfb5e0) slot +0xa0: detaches a wheel from its car and makes the free wheel. part+0x10 car, +0x40 the new wheel's body holder (body at holder+0x18, set during the call), +0xe0 tether node (-1 = no tether path), +0x100 connection, +0x10c active. The game calls it again on already detached parts. Hooked by Contact Physics (kizi.ai-tweaks) for loose wheels without tethers.  Blind round 2026-11-28: notify is a byte (dl; callers pass mov dl,1 or xor edx,edx), nothing is returned."
  },
  "signature": {
   "id": "car.wheel_part_detach",
@@ -51,6 +51,16 @@
    "verdict": "agree",
    "evidence": "decomp:own disasm 0x144669530-0x14466a64f pdata function start, early out when [rcx+0x40] is set, otherwise creates the free body through 0x1440c1bf0 into part+0x40, checks the tether index at +0xe0 against -1, stores the connection at +0x100 and sets +0x10c to 1, ret. Class is the wheel part: vtable 0x145bfb5e0 is stored by the suspension damage node binder 0x144656340 that binds tyre_/wheel_/tether_ nodes, and slot 20 is this function where the generic part table 0x145bfb690 has 0x14466b960;xref:0x145bfb680",
    "notes": "gh:Swofty-Developments agree at L1, the +0xa0 slot of the wheel part vtable, not the generic part detach"
+  },
+  {
+   "date": "2026-11-28",
+   "verifier": "Swofty-Developments",
+   "kind": "func",
+   "item": "Car_WheelPart_Detach",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own disasm 0x144669530-0x14466a64f pdata function start, vtable slot 0x145bfb680;xref:0x145bfb680,0x14466af67,0x1446648b3,0x144654335,0x144711578",
+   "notes": "gh:Swofty-Developments partial at L2. Holds: start 0x144669530 (KB 0x144666cc0 plus 0x2870), the only pointer to it is vtable 0x145bfb5e0 slot +0xa0 (0x145bfb680), part+0x10 car, +0x40 body holder (body at holder+0x18), +0xe0 tether index (-1 skips the connection), +0x100 connection from call 0x1440cff80, +0x10c set to 1 only when the connection is non-null. Wrong: the prototype. edx is used as a byte (mov ebp,edx; mov [rsp+0x70],bpl; test bpl,bpl) and the callers pass it with mov dl,1 or xor edx,edx, so the upper bits of rdx are undefined; no exit sets rax (the common epilogue 0x1446695a4 leaves the caller rax and the failed allocation path tail-calls an import) and no caller reads a result. Correct prototype: void Car_WheelPart_Detach(void *part, uint8_t notify)"
   }
  ],
  "proofs": [

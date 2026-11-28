@@ -6,10 +6,10 @@
  "row": {
   "addr": "0x142f04dd1",
   "type": "code",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "evidence": "decomp:own capstone disasm of Car_Contact_ModifyVehicle (KB 0x142f04040, this site KB 0x142f04dd1);xref:0x142f0662e;kb:Car_Contact_ModifyVehicle",
-  "notes": "Common exit of Car_Contact_ModifyVehicle (its first early-out jumps here too): vmovaps xmm6,[rsp+40h], xmm7,[rsp+50h], xmm8,[rsp+60h], rsi = contact record still live. Contact Physics' rigid-body contact (kizi.ai-tweaks, kizi_contact_sim.hpp) computes its contact response here."
+  "notes": "Common exit of Car_Contact_ModifyVehicle (its first early-out jumps here too): vmovaps xmm6,[rsp+40h], xmm7,[rsp+50h], xmm8,[rsp+60h], rsi = contact record still live. Contact Physics' rigid-body contact (kizi.ai-tweaks, kizi_contact_sim.hpp) computes its contact response here.  Blind round 2026-11-28: rsi is the contact record on every path except the first early out at KB 0x142f04040+0x2590 (cmp [rip+slot],rcx, same contact as the last call), which jumps here before rsi is loaded; there rcx still holds the contact record and rsi is the caller's."
  },
  "signature": {
   "id": "car.contact_modify_exit",
@@ -52,6 +52,16 @@
    "verdict": "agree",
    "evidence": "decomp:own disasm 0x142f065d0-0x142f073b3, 0x142f07361 is vmovaps xmm6,[rsp+0x40] after call 0x1440c38b0 and the xmm7/xmm8 restores then the epilogue, bytes C5 F8 28 74 24 40 match expect, the early out je at 0x142f06628 and jumps at 0x142f0699a and 0x142f069ac land on it, rsi holds the contact record from rcx;xref:0x142f0662e,0x142f06628",
    "notes": "gh:Swofty-Developments agree at L1, common exit of Car_Contact_ModifyVehicle"
+  },
+  {
+   "date": "2026-11-28",
+   "verifier": "Swofty-Developments",
+   "kind": "global",
+   "item": "site_Car_ContactModify_Exit",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own disasm 0x142f065d0-0x142f073b2 Car_Contact_ModifyVehicle;xref:0x142f0662e,0x142f06628",
+   "notes": "gh:Swofty-Developments partial. Holds: 0x142f07361 is vmovaps xmm6,[rsp+0x40] (C5 F8 28 74 24 40) and the epilogue, 14 jumps and the fall through after call 0x1440c38b0 land on it, rsi is the contact record on all of them but one. Wrong: rsi at the exit is not always the contact record. rsi is loaded from rcx at 0x142f0662e, after the first early out at 0x142f06628 (cmp [rip+0x317ca70],rcx, the contact equals the cached last one), so on that path rsi is the caller value and only rcx holds the contact record"
   }
  ],
  "proofs": [
