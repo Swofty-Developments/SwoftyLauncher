@@ -297,6 +297,7 @@
 .flash-docs > nav > .games {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   gap: 0.25rem;
   padding-top: 0rem;
   padding-bottom: 0.75rem;

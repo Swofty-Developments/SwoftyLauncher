@@ -118,6 +118,15 @@ export default defineConfigWithTheme<DocsThemeConfig>({
     socialLinks: [{ icon: "github", link: repo }],
     search: {
       provider: "local",
+      options: {
+        _render(src, env, md) {
+          const html = md.render(src, env);
+          const game = gameOf(env.relativePath, env.frontmatter?.game);
+          const h1 = /<h1[^>]*>([^<]*)/.exec(html)?.[1] ?? "";
+          if (game.prefix === "/" || h1.includes(game.name)) return html;
+          return html.replace(/<h1([^>]*)>/, `<h1$1>${game.name}: `);
+        },
+      },
     },
     games,
     shared,

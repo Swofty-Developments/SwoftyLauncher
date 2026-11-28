@@ -62,7 +62,7 @@ const footPaths = footBands.map((b) => ({ color: b.color, d: wave(b, 1440, 420) 
 </script>
 
 <template>
-  <div class="lp">
+  <div class="lp" :class="{ 'lp--no-shot': !shots.hero }">
     <a class="lp-skip" href="#lp-main">Skip to content</a>
 
     <nav class="lp-nav" aria-label="Site">
