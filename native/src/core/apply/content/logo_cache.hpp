@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <functional>
+#include <iterator>
 #include <map>
 #include <set>
 #include <string>
@@ -305,5 +306,73 @@ inline Keyed key_archives(uint64_t key, const std::vector<std::string> &files, c
     out.key = key;
     return out;
 }
+
+inline constexpr const char *CARRIERS = "carriers.idx";
+inline constexpr const char *CARRIERS_FORMAT = "#format\tcarriers-1";
+
+struct Listed {
+    uint64_t size = 0, time = 0;
+};
+
+using Listing = std::map<std::string, Listed>;
+
+class Empties {
+public:
+    bool known(const std::string &rel, const Listed &now) const
+    {
+        auto it = by_.find(rel);
+        return it != by_.end() && it->second.size == now.size && it->second.time == now.time;
+    }
+
+    void learn(const std::string &rel, const Listed &now) { by_[rel] = now; }
+
+    void keep_only(const Listing &listing)
+    {
+        for (auto it = by_.begin(); it != by_.end();)
+            it = listing.count(it->first) ? std::next(it) : by_.erase(it);
+    }
+
+    size_t size() const { return by_.size(); }
+
+    bool operator==(const Empties &o) const
+    {
+        return by_.size() == o.by_.size() && std::equal(by_.begin(), by_.end(), o.by_.begin(), [](const auto &a, const auto &b) {
+                   return a.first == b.first && a.second.size == b.second.size && a.second.time == b.second.time;
+               });
+    }
+
+    std::string text() const
+    {
+        std::string out = std::string(CARRIERS_FORMAT) + "\n";
+        for (auto &[rel, l] : by_)
+            out += rel + "\t" + std::to_string(l.size) + "\t" + std::to_string(l.time) + "\n";
+        return out;
+    }
+
+    static Empties parse(const std::string &text)
+    {
+        Empties out;
+        size_t at = text.find('\n');
+        if (at == std::string::npos || text.compare(0, at, CARRIERS_FORMAT))
+            return out;
+        for (at++; at < text.size();) {
+            size_t end = text.find('\n', at);
+            if (end == std::string::npos)
+                end = text.size();
+            std::string line = text.substr(at, end - at);
+            at = end + 1;
+            size_t a = line.find('\t'), b = a == std::string::npos ? a : line.find('\t', a + 1);
+            Listed l;
+            if (!a || b == std::string::npos || line.find('\t', b + 1) != std::string::npos ||
+                !number(line.substr(a + 1, b - a - 1), l.size) || !number(line.substr(b + 1), l.time))
+                continue;
+            out.by_[line.substr(0, a)] = l;
+        }
+        return out;
+    }
+
+private:
+    std::map<std::string, Listed> by_;
+};
 
 }

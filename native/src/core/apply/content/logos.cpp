@@ -241,6 +241,8 @@ void prune_slices(const std::wstring &dir, const logo_build::Result &res)
     FindClose(h);
 }
 
+constexpr double SLOW_STEP_MS = 10000.0;
+
 struct FileSource {
     HANDLE h = INVALID_HANDLE_VALUE;
     erpfile::Source src;
@@ -258,7 +260,8 @@ std::wstring game_file(const std::string &rel)
     return runtime::game_root() + L"\\" + runtime::wide(p);
 }
 
-void list_erps(const std::wstring &dir, const std::string &rel, std::vector<std::string> &out, unsigned depth)
+void list_erps(const std::wstring &dir, const std::string &rel, std::vector<std::string> &out, logo_cache::Listing &listing,
+               unsigned depth)
 {
     if (depth > 4)
         return;
@@ -272,9 +275,12 @@ void list_erps(const std::wstring &dir, const std::string &rel, std::vector<std:
             continue;
         std::string r = rel + runtime::narrow(n);
         if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-            list_erps(dir + n + L"\\", r + "/", out, depth + 1);
-        else if (r.size() > 4 && runtime::lower(r.substr(r.size() - 4)) == ".erp")
+            list_erps(dir + n + L"\\", r + "/", out, listing, depth + 1);
+        else if (r.size() > 4 && runtime::lower(r.substr(r.size() - 4)) == ".erp") {
+            listing[r] = {(uint64_t(fd.nFileSizeHigh) << 32) | fd.nFileSizeLow,
+                          (uint64_t(fd.ftLastWriteTime.dwHighDateTime) << 32) | fd.ftLastWriteTime.dwLowDateTime};
             out.push_back(r);
+        }
     } while (FindNextFileW(h, &fd));
     FindClose(h);
     std::sort(out.begin(), out.end());
@@ -435,7 +441,13 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
     std::set<std::string> seen;
     logo_build::Refusals refusals;
     perf::Stopwatch steps;
-    auto step = [&](double ms, const std::string &name) { swofty::log(perf::STEP_LINE, ms, ("logo " + name).c_str()); };
+    auto step = [&](double ms, const std::string &name) {
+        swofty::log(perf::STEP_LINE, ms, ("logo " + name).c_str());
+        if (ms >= SLOW_STEP_MS)
+            swofty::log("[core] team.logo: slow disk: the step \"%s\" took %.1f s on the game's main thread (antivirus, a disk "
+                        "tool or a slow drive makes file access slow; the game's boot watchdog gives up after 180 s)",
+                        name.c_str(), ms / 1000.0);
+    };
     uint64_t key = runtime::fnv64_field(runtime::FNV64_BASIS, logo_cache::CACHE_FORMAT);
     for (auto &l : logos) {
         if (!seen.insert(l.array + "|" + l.key).second)
@@ -478,14 +490,23 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
     if (wants.empty())
         return;
     std::vector<std::string> files;
-    list_erps(game_file(logo_build::UI_FOLDER), logo_build::UI_FOLDER, files, 0);
+    logo_cache::Listing listing;
+    list_erps(game_file(logo_build::UI_FOLDER), logo_build::UI_FOLDER, files, listing, 0);
     std::string base = swofty_base();
     auto overlays = overlay_archives(base);
     std::set<std::string> overlay_rels;
     for (auto &[target, list] : overlays)
         overlay_rels.insert(list.begin(), list.end());
+    std::string dir = "addons/" + std::string(CACHE_ADDON) + "/";
+    std::wstring empties_path = runtime::under_swofty(dir + logo_cache::CARRIERS);
+    logo_cache::Empties empties_before = logo_cache::Empties::parse(runtime::read_file(empties_path, size_t(4) << 20));
+    logo_cache::Empties empties = empties_before;
     logo_build::Env env;
     env.slices = slices;
+    env.empty = [&](const std::string &rel) {
+        auto it = listing.find(rel);
+        return it != listing.end() && empties.known(rel, it->second);
+    };
     env.list = [&] { return files; };
     env.overlays = [&](const std::string &rel) {
         auto it = overlays.find(runtime::lower(rel));
@@ -522,14 +543,20 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
         if (it != overlays.end())
             keyed_files.insert(keyed_files.end(), it->second.begin(), it->second.end());
     }
-    std::string dir = "addons/" + std::string(CACHE_ADDON) + "/";
     uint32_t unwritable = runtime::write_refusal(runtime::under_swofty(dir));
     std::wstring stamps_path = runtime::under_swofty(dir + logo_cache::STAMPS);
     DeleteFileW(runtime::under_swofty(dir + logo_cache::OLD_STAMPS).c_str());
     std::string stamps_before = runtime::read_file(stamps_path, size_t(16) << 20);
     logo_cache::Env stamp_env{
-        size_file, stat_file,
-        [&](const std::string &rel, uint64_t &hash) { return logo_build::input_hash(env, rel, hash_file, hash); }, file_clock};
+        [&](const std::string &rel, uint64_t &size) {
+            auto it = listing.find(rel);
+            if (it == listing.end())
+                return size_file(rel, size);
+            size = it->second.size;
+            return true;
+        },
+        stat_file, [&](const std::string &rel, uint64_t &hash) { return logo_build::input_hash(env, rel, hash_file, hash); },
+        file_clock};
     auto key_inputs = [&](const std::set<std::string> &inputs, const logo_cache::Stamps &before) {
         DWORD t0 = GetTickCount();
         logo_cache::Keyed k = logo_cache::key_archives(key, keyed_files, inputs, stamp_env, before);
@@ -592,6 +619,11 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
         write_plan(slices_dir, res, path_of);
         prune_slices(slices_dir, res);
         step(built_ms - res.encode_ms, "read and plan (" + std::to_string(res.read.size()) + " archive(s) read)");
+        for (auto &rel : res.empties) {
+            auto it = listing.find(rel);
+            if (it != listing.end() && rel != logo_build::DATABASES)
+                empties.learn(rel, it->second);
+        }
         made.lines = res.lines;
         made.refused += res.refused;
         made.built = res.built;
@@ -741,6 +773,9 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
         report.refused++;
         report.lines.push_back("team.logo: " + f.rel + " is not delivered: " + f.why);
     }
+    empties.keep_only(listing);
+    if (!(empties == empties_before))
+        runtime::write_file(empties_path, empties.text());
     std::string stamps_after = logo_cache::text(keyed.stamps);
     if (stamps_after != stamps_before)
         runtime::write_file(stamps_path, stamps_after);

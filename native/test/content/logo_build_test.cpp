@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <fstream>
 #include <map>
+#include <mutex>
 #include <set>
 #include <sstream>
 
@@ -246,6 +247,24 @@ int main(int argc, char **argv)
           "the two carriers and databases.erp change, the archive without the array does not");
     check(res.read == std::set<std::string>{lb::DATABASES, list[1], list[3]},
           "the build reads databases.erp and the two carriers");
+
+    check(res.empties.count(list[2]) && !res.empties.count(list[1]) && !res.empties.count(list[3]),
+          "the archive that carries no array is reported as empty and the carriers are not");
+    {
+        lb::Env known = env;
+        std::set<std::string> opened_rels;
+        std::mutex opened_lock;
+        known.open = [&](const std::string &rel) {
+            std::lock_guard<std::mutex> g(opened_lock);
+            opened_rels.insert(rel);
+            return env.open(rel);
+        };
+        known.empty = [&](const std::string &rel) { return res.empties.count(rel) != 0; };
+        lb::Result again;
+        check(build_logos(known, wants, again) && again.built == 2 && again.refused == 0 &&
+                  again.changes.size() == res.changes.size() && again.read == res.read && !opened_rels.count(list[2]),
+              "an archive known to carry no array is not opened again and the build is the same");
+    }
 
     fs::path out = argc > 2 ? argv[2] : "../build/bc7/logo_out";
     fs::create_directories(out);

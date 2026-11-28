@@ -372,6 +372,30 @@ int main()
         check(!lc::cacheable(0, 0, 0), "a build with no archive is not cached");
     }
 
+    {
+        lc::Empties e;
+        lc::Listed a{4096, 777}, moved{4096, 778}, grown{4097, 777};
+        e.learn("ui/a.erp", a);
+        e.learn("ui/gone.erp", a);
+        check(e.known("ui/a.erp", a), "an archive learned as carrying no array is known by its size and write time");
+        check(!e.known("ui/a.erp", moved) && !e.known("ui/a.erp", grown),
+              "an archive whose write time or size moved is read again");
+        check(!e.known("ui/b.erp", a), "an archive never read is not known");
+        lc::Empties back = lc::Empties::parse(e.text());
+        check(back == e && back.known("ui/a.erp", a), "the index comes back from its text");
+        lc::Listing listing = {{"ui/a.erp", a}};
+        back.keep_only(listing);
+        check(back.size() == 1 && !back.known("ui/gone.erp", a) && back.known("ui/a.erp", a),
+              "an archive no longer in the folder is dropped from the index");
+        check(lc::Empties::parse("").size() == 0 && lc::Empties::parse("ui/a.erp\t1\t2\n").size() == 0,
+              "text with no format line reads as an empty index");
+        check(lc::Empties::parse(std::string(lc::CARRIERS_FORMAT) + "\nui/a.erp\t1\nui/b.erp\tx\t2\nui/c.erp\t1\t2\t3\n\t1\t2\n")
+                      .size() == 0,
+              "malformed index lines are skipped");
+        check(lc::Empties::parse(std::string(lc::CARRIERS_FORMAT) + "\nui/c.erp\t5\t6\n").known("ui/c.erp", {5, 6}),
+              "a well-formed line after the format line is read");
+    }
+
     std::printf("%s\n", failures ? "FAILED" : "all logo cache checks passed");
     return failures ? 1 : 0;
 }
