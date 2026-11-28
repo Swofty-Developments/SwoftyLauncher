@@ -276,11 +276,11 @@ static void slot_list()
                    hl.find("f1_career_sw_progressive.driver_career:00000000000000a1") != nullptr,
                "and the loaded career's id still takes over that row");
 
-        cs::Index far;
-        far.load("{\"careers\":[{\"career\":\"driver_career:new1\",\"content\":\"g\",\"mode\":\"driver_career\","
-                 "\"last_saved\":1761500000000}]}");
-        r = far.apply_list({slot(1, 0xa1)}, ctx("s1", true));
-        expect(r.healed == 0 && far.size() == 2, "a provisional row saved at another time is not taken for the slot");
+        cs::Index early;
+        early.load("{\"careers\":[{\"career\":\"driver_career:new1\",\"content\":\"g\",\"mode\":\"driver_career\","
+                   "\"last_saved\":1761500000000}]}");
+        r = early.apply_list({slot(1, 0xa1)}, ctx("s1", true));
+        expect(r.healed == 0 && early.size() == 2, "a provisional row saved at another time is not taken for the slot");
 
         cs::Index two;
         two.load("{\"careers\":[{\"career\":\"driver_career:new1\",\"content\":\"g\",\"mode\":\"driver_career\","
