@@ -40,10 +40,10 @@ cores/overcooked_2/
 
 ## The launch
 
-On the native Linux build, the launcher starts `Overcooked2.x86_64` from the game folder with:
+On the native Linux build, the launcher starts `Overcooked2.x86_64 -logFile <session>/player.log` from the game folder with:
 
 ```sh
-LD_PRELOAD=$CORE/doorstop/linux_x64/libdoorstop.so
+LD_PRELOAD=$CORE/doorstop/linux_x64/libdoorstop.so      # before any LD_PRELOAD you already have
 DOORSTOP_ENABLED=1
 DOORSTOP_TARGET_ASSEMBLY=$CORE/core/Swofty.Overcooked2.Core.dll
 SteamAppId=728880
@@ -53,13 +53,15 @@ SWOFTY_OC2_SESSION=$DATA/games/overcooked_2/sessions/<stamp>/session.json
 
 Steam must be running. Nothing in the game folder changes.
 
-On the Windows build, the launcher copies `winhttp.dll` into the game folder, writes `doorstop_config.ini` next to `Overcooked2.exe`, starts the game, and removes both files when it exits:
+On the Windows build, the launcher copies `winhttp.dll` into the game folder, writes `doorstop_config.ini` next to `Overcooked2.exe`, starts the game with the same `-logFile`, `SteamAppId`, `SteamGameId` and `SWOFTY_OC2_SESSION`, and removes both files when it exits:
 
 ```ini [doorstop_config.ini]
 [General]
 enabled = true
 target_assembly = C:\…\cores\overcooked_2\core\Swofty.Overcooked2.Core.dll
 ```
+
+A `winhttp.dll` or `doorstop_config.ini` already in the game folder, such as another mod loader's, stops Play with `… is already in the game folder; take it out (another mod loader?) and press Play again`.
 
 ## The session file
 
