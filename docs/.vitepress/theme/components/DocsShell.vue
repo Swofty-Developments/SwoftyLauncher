@@ -5,13 +5,15 @@ import { VPNavBarSearch, VPSocialLink } from "vitepress/theme-without-fonts";
 import Icon from "./Icon.vue";
 import NavItem from "./NavItem.vue";
 import type { DocsThemeConfig, NavItem as Item } from "../types";
+import { useGame } from "../games";
 import { useLinks } from "../links";
 
 const { theme, page, frontmatter } = useData<DocsThemeConfig>();
 const route = useRoute();
 const { to, samePage } = useLinks();
+const { games, game } = useGame();
 
-const tabs = computed(() => theme.value.tabs);
+const tabs = computed(() => game.value.tabs);
 
 function contains(items: Item[]): boolean {
   return items.some((i) => samePage(i.link, route.path) || contains(i.items ?? []));
@@ -110,12 +112,25 @@ onUnmounted(() => window.removeEventListener("hashchange", syncHash));
 
     <nav id="flash-nav" :class="{ collapsed: !menuOpen }" aria-label="Documentation">
       <header>
-        <a :href="to('/')">
+        <a :href="to(game.landing)">
           <img :src="withBase('/logo.svg')" alt="" width="36" height="36" />
-          <span>Swofty Launcher for F1 25</span>
+          <span>{{ game.title }}</span>
         </a>
         <VPSocialLink class="button" icon="github" :link="theme.repo" aria-label="Source code on GitHub" />
       </header>
+
+      <div v-if="games.length > 1" class="games" role="group" aria-label="Game">
+        <a
+          v-for="g in games"
+          :key="g.id"
+          :href="to(g.docs)"
+          :class="{ selected: g.id === game.id }"
+          :aria-current="g.id === game.id ? 'true' : undefined"
+          :style="{ '--game-accent': g.accent }"
+        >
+          <Icon :name="g.icon" /><span>{{ g.name }}</span>
+        </a>
+      </div>
 
       <div class="mode" role="tablist">
         <button
@@ -165,7 +180,7 @@ onUnmounted(() => window.removeEventListener("hashchange", syncHash));
       <div v-if="page.isNotFound" class="text vp-doc">
         <h1>Page not found</h1>
         <p>There is no page at this address. It may have moved when the docs were reorganised.</p>
-        <p><a :href="to('/guide/')">Go to the documentation home</a></p>
+        <p><a :href="to(game.docs)">Go to the documentation home</a></p>
       </div>
       <div v-else class="text vp-doc">
         <Content />

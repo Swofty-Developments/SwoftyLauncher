@@ -193,6 +193,7 @@ impl Shell {
             cx.notify();
         }))
         .into_any_element();
+        let typed = self.browser.typed();
         v_flex()
             .w(px(FILTERS_W))
             .flex_shrink_0()
@@ -214,10 +215,12 @@ impl Shell {
                     .gap(px(16.))
                     .pr(px(SCROLLBAR_GAP))
                     .pb(px(8.))
-                    .child(group(tr("TYPE"), types))
+                    .when(typed, |d| d.child(group(tr("TYPE"), types)))
                     .child(group(tr("STATE"), states))
-                    .child(group(tr("PLATFORM"), platforms))
-                    .child(group(tr("RUNS CODE IN THE GAME"), vec![code]))
+                    .when(typed, |d| {
+                        d.child(group(tr("PLATFORM"), platforms))
+                            .child(group(tr("RUNS CODE IN THE GAME"), vec![code]))
+                    })
                     .when(!authors.is_empty(), |d| d.child(group(tr("AUTHOR"), authors))),
             )
     }

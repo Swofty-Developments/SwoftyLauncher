@@ -85,8 +85,22 @@ fn dispatch(store: &Store, cli: Cli) -> Result<ExitCode> {
         store: store.clone(),
         profile: cli.profile.clone().unwrap_or_else(|| store.active_profile()),
         named_profile: cli.profile,
+        game: swofty_core::games::def(cli.game),
     };
+    if invocation.game.addons.is_some() && !cli.command.for_every_game() {
+        anyhow::bail!(
+            "this command is for F1 25; for {} use addons, play or games",
+            invocation.game.info.name
+        );
+    }
     cli.command.execute(&invocation)
+}
+
+impl Command {
+    /// Whether the command works for every game; the rest are F1 25's.
+    fn for_every_game(&self) -> bool {
+        matches!(self, Command::Addons(_) | Command::Play(_) | Command::Games(_))
+    }
 }
 
 impl Execute for Command {
@@ -108,6 +122,7 @@ impl Execute for Command {
             Command::Doctor => doctor::doctor(&invocation.store),
             Command::Game(cmd) => cmd.execute(invocation),
             Command::Games(args) => args.execute(invocation),
+            Command::Play(args) => args.execute(invocation),
             Command::Saves(cmd) => cmd.execute(invocation),
             Command::Laps(cmd) => cmd.execute(invocation),
             Command::Steam(args) => args.execute(invocation),

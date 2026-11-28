@@ -173,6 +173,11 @@ defineProps<{ name: string }>();
       <path d="m7.5 10 2.5 2-2.5 2" />
       <path d="M12 14.5h4" />
     </template>
+    <template v-else-if="name === 'chef'">
+      <path d="M6.5 14a4 4 0 0 1 .9-7.9 5 5 0 0 1 9.2 0 4 4 0 0 1 .9 7.9" />
+      <path d="M6.5 14v6h11v-6" />
+      <path d="M6.5 17h11" />
+    </template>
     <template v-else-if="name === 'deck'">
       <rect x="2.5" y="7" width="19" height="10" rx="5" />
       <rect x="8" y="9" width="8" height="6" rx="1" />

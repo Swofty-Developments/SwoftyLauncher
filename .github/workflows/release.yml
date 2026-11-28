@@ -69,6 +69,26 @@ jobs:
           name: core-patches
           path: native/release/
 
+  overcooked-2:
+    name: Overcooked 2 core
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build
+        run: games/overcooked_2/build.sh
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: overcooked-2
+          path: games/overcooked_2/dist/
+
   # The binaries come from main's CI run for the tagged commit (release-binaries.yml, called by ci.yml), which
   # the maintainer waits for before tagging: this job waits for that run while it is still going and takes its
   # binaries when it passed. Without such a run it leaves the run id empty, and the binaries job builds them.
@@ -110,11 +130,11 @@ jobs:
     with:
       ref: ${{ inputs.tag || github.ref_name }}
 
-  # The packaging job per system joins the native loader and that system's binaries.
+  # The packaging job per system joins the native loader, the Overcooked 2 core and that system's binaries.
   linux:
     name: Linux
-    needs: [native, ci-binaries, binaries]
-    if: ${{ !cancelled() && needs.native.result == 'success' && (needs.ci-binaries.outputs.run-id != '' || needs.binaries.result == 'success') }}
+    needs: [native, overcooked-2, ci-binaries, binaries]
+    if: ${{ !cancelled() && needs.native.result == 'success' && needs.overcooked-2.result == 'success' && (needs.ci-binaries.outputs.run-id != '' || needs.binaries.result == 'success') }}
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v7
@@ -135,6 +155,11 @@ jobs:
           name: native
           path: native/dist
 
+      - uses: actions/download-artifact@v8
+        with:
+          name: overcooked-2
+          path: games/overcooked_2/dist
+
       - name: Fetch dxc
         env:
           GH_TOKEN: ${{ github.token }}
@@ -143,9 +168,10 @@ jobs:
       - name: Package
         run: |
           out="swofty-launcher-$TAG-linux-x86_64"
-          mkdir -p "$out/bin" "$out/loader" "$out/share/applications" "$out/share/icons/hicolor/256x256/apps" "$out/share/icons/hicolor/512x512/apps" "$out/share/icons/hicolor/scalable/apps"
+          mkdir -p "$out/bin" "$out/loader" "$out/cores/overcooked_2" "$out/share/applications" "$out/share/icons/hicolor/256x256/apps" "$out/share/icons/hicolor/512x512/apps" "$out/share/icons/hicolor/scalable/apps"
           cp target/release/swofty target/release/swofty-launcher target/release/swofty-ads dist/swofty-ui/swofty-ui "$out/bin/"
           cp -r native/dist/. "$out/loader/"
+          cp -r games/overcooked_2/dist/. "$out/cores/overcooked_2/"
           if [ -d dxc ]; then cp -r dxc "$out/dxc"; fi
           cp apps/launcher/assets/net.swofty.ModLauncher.desktop tools/swofty-ui/res/net.swofty.SwoftyUI.desktop "$out/share/applications/"
           cp apps/launcher/assets/icon-256.png "$out/share/icons/hicolor/256x256/apps/net.swofty.ModLauncher.png"
@@ -163,8 +189,8 @@ jobs:
 
   windows:
     name: Windows
-    needs: [native, ci-binaries, binaries]
-    if: ${{ !cancelled() && needs.native.result == 'success' && (needs.ci-binaries.outputs.run-id != '' || needs.binaries.result == 'success') }}
+    needs: [native, overcooked-2, ci-binaries, binaries]
+    if: ${{ !cancelled() && needs.native.result == 'success' && needs.overcooked-2.result == 'success' && (needs.ci-binaries.outputs.run-id != '' || needs.binaries.result == 'success') }}
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
@@ -182,6 +208,11 @@ jobs:
           name: native
           path: native/dist
 
+      - uses: actions/download-artifact@v8
+        with:
+          name: overcooked-2
+          path: games/overcooked_2/dist
+
       - name: Fetch dxc
         shell: bash
         env:
@@ -192,9 +223,10 @@ jobs:
         shell: pwsh
         run: |
           $out = "swofty-launcher-$env:TAG-windows-x86_64"
-          New-Item -ItemType Directory -Force "$out/bin", "$out/loader" | Out-Null
+          New-Item -ItemType Directory -Force "$out/bin", "$out/loader", "$out/cores/overcooked_2" | Out-Null
           Copy-Item target/release/swofty.exe, target/release/swofty-launcher.exe, dist/swofty-ui/swofty-ui.exe "$out/bin/"
           Copy-Item -Recurse native/dist/* "$out/loader/"
+          Copy-Item -Recurse games/overcooked_2/dist/* "$out/cores/overcooked_2/"
           if (Test-Path dxc) { Copy-Item -Recurse dxc "$out/dxc" }
           Copy-Item LICENSE, README.md, THIRD_PARTY.md "$out/"
           Compress-Archive -Path $out -DestinationPath "$out.zip"

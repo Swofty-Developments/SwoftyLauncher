@@ -1,0 +1,20 @@
+<Project>
+  <PropertyGroup>
+    <SwoftyCoreVersion>0.1.0</SwoftyCoreVersion>
+    <SwoftyStdVersion>0.1.0</SwoftyStdVersion>
+    <HarmonyVersion>2.3.6</HarmonyVersion>
+    <UnityEngineRefVersion>5.6.1</UnityEngineRefVersion>
+    <OC2_DIR Condition="'$(OC2_DIR)' == ''">/mnt/gaming/SteamLibrary/steamapps/common/Overcooked! 2</OC2_DIR>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Deterministic>true</Deterministic>
+    <DebugType>none</DebugType>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <Company>Swofty</Company>
+    <Product>Swofty Core for Overcooked 2</Product>
+    <Copyright>Swofty</Copyright>
+  </PropertyGroup>
+</Project>

@@ -213,6 +213,7 @@ impl Browser {
             catalog::pending::Pending::begin(needs.store, &addon.id, &version.version, from.as_ref());
         let store = needs.store.clone();
         let catalog_now = b.addons.clone();
+        let shelf = swofty_core::games::def(b.game).addons;
         let started = Instant::now();
         let tracked = job.clone();
         cx.spawn(async move |this, cx| {
@@ -220,9 +221,18 @@ impl Browser {
             let result = cx
                 .background_executor()
                 .spawn(async move {
-                    catalog::requires::install_in_profile(&store, &catalog_now, &target, &v, &profile, &|e| {
-                        job.track(&target.id, e)
-                    })
+                    let track = |e: catalog::requires::Event<'_>| job.track(&target.id, e);
+                    match shelf {
+                        Some(shelf) => shelf.install_listed(&store.root, &target, &v, &track),
+                        None => catalog::requires::install_in_profile(
+                            &store,
+                            &catalog_now,
+                            &target,
+                            &v,
+                            &profile,
+                            &track,
+                        ),
+                    }
                 })
                 .await;
             this.update(cx, |host, cx| {

@@ -51,7 +51,7 @@ impl Shell {
     }
 
     pub(crate) fn open_page(&mut self, page: Page, cx: &mut Context<Self>) {
-        let page = after_access(self.nav_mp(), page);
+        let page = super::games::page_for(self.games.active, after_access(self.nav_mp(), page));
         if self.navigation.page != page {
             self.cancel_scroll();
         }

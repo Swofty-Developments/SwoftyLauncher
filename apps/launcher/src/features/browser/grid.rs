@@ -4,6 +4,7 @@ use std::sync::Arc;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::{Disableable, h_flex, v_flex};
+use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::catalog::Addon;
 use swofty_core::catalog::publishers::{self};
@@ -210,7 +211,12 @@ impl Shell {
             .gap(px(12.))
             .flex_shrink_0()
             .items_start()
-            .child(div().flex_1().min_w_0().child(self.category_bar(p, cx)))
+            .child(
+                div()
+                    .flex_1()
+                    .min_w_0()
+                    .when(self.browser.typed(), |d| d.child(self.category_bar(p, cx))),
+            )
             .child(
                 h_flex()
                     .gap(px(10.))
@@ -228,13 +234,30 @@ impl Shell {
     }
 
     fn grid_empty(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        let (title, body, action) = if self.browser.addons.is_empty() {
+        let game = self.browser.game.info().name;
+        let reached = self.browser.feed.live && self.browser.feed.trouble.is_none();
+        let (title, body, action) = if self.browser.addons.is_empty() && reached && !self.browser.typed() {
             (
-                tr("No addons to show yet"),
+                trf!("No {game} addons yet", game = game),
+                trf!(
+                    "Nobody has published an addon for {game} yet. Addons for {game} that creators publish show here, and you can still install one from a file in the Library.",
+                    game = game
+                ),
+                Button::new("browser-empty-retry")
+                    .outline()
+                    .tap_sm()
+                    .icon(IconName::RefreshCw)
+                    .label(tr("Check again"))
+                    .disabled(self.browser.feed.fetching)
+                    .on_click(cx.listener(|this, _, _, cx| Browser::fetch_catalog(this, cx))),
+            )
+        } else if self.browser.addons.is_empty() {
+            (
+                tr("No addons to show yet").to_owned(),
                 if self.browser.feed.fetching {
-                    tr("Checking the registry for addons…")
+                    tr("Checking the registry for addons…").to_owned()
                 } else {
-                    tr("The registry couldn't be reached. Retry to check again.")
+                    tr("The registry couldn't be reached. Retry to check again.").to_owned()
                 },
                 Button::new("browser-empty-retry")
                     .outline()
@@ -246,10 +269,11 @@ impl Shell {
             )
         } else {
             (
-                tr("No addons match"),
+                tr("No addons match").to_owned(),
                 tr(
                     "Nothing matches this search and these filters. Check the spelling, or try author: or category:.",
-                ),
+                )
+                .to_owned(),
                 Button::new("browser-empty-clear")
                     .outline()
                     .tap_sm()

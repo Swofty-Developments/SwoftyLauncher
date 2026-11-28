@@ -63,7 +63,12 @@ impl Render for Shell {
             crate::ui::scale::current(),
         );
         self.layout.window_width = layout_width;
-        let side = self.profiles_sidebar(p, cx);
+        let side = self
+            .games
+            .side()
+            .is_none()
+            .then(|| self.profiles_sidebar(p, cx))
+            .flatten();
         if side.is_some() {
             self.layout.content_width = (self.layout.content_width - self.profiles_width()).max(320.);
         }
@@ -85,7 +90,9 @@ impl Render for Shell {
         for note in std::mem::take(&mut self.account.toasts) {
             window.notify(note, cx);
         }
+        let own_store = self.games.side().is_some();
         let content = match self.navigation.page {
+            Page::Addons if own_store => self.game_addons_page(p, cx),
             Page::News => self.news_page(p, short, cx),
             Page::Importer => self.importer_page(p, cx),
             Page::Tools => match self.developer_section(p, cx) {
@@ -177,8 +184,8 @@ impl Render for Shell {
             .child(self.play_bar(p, wide, cx))
             .children(ad_video)
             .children(self.task_dialog(p, window, cx))
-            .children(self.crash_overlay(p, cx))
-            .children(self.multiplayer_outro(p, cx))
+            .children(self.crash_overlay(p, cx).filter(|_| !own_store))
+            .children(self.multiplayer_outro(p, cx).filter(|_| !own_store))
             .children(self.ban_overlay(p, cx))
             .children(self.data_move_overlay(p, cx))
             .children(self.found_data_overlay(p, cx))

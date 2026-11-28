@@ -184,6 +184,9 @@ impl Shell {
         if paths.is_empty() {
             return;
         }
+        if self.games.side().is_some() {
+            return self.install_side(paths, window, cx);
+        }
         let store = self.store.clone();
         let registry = self.library.registry.clone();
         let profile = self.library.profile.clone();
@@ -402,9 +405,16 @@ impl Shell {
                             .text_size(px(13.))
                             .line_height(px(19.))
                             .text_color(p.text_muted)
-                            .child(tr(
-                                "Addon folders, .swoftyaddon files, zip and rar archives, track packages and the files your addons import.",
-                            )),
+                            .child(match self.games.side() {
+                                Some(side) => trf!(
+                                    "Addon folders and zip archives for {game}; they come on when they are installed.",
+                                    game = side.def.info.name
+                                ),
+                                None => tr(
+                                    "Addon folders, .swoftyaddon files, zip and rar archives, track packages and the files your addons import.",
+                                )
+                                .to_owned(),
+                            }),
                     ),
             )
     }

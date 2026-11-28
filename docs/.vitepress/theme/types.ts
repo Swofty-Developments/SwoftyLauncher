@@ -21,7 +21,22 @@ export interface NavTab {
   groups: NavGroup[];
 }
 
+export interface Game {
+  id: string;
+  name: string;
+  title: string;
+  icon: string;
+  accent: string;
+  prefix: string;
+  landing: string;
+  docs: string;
+  store?: string;
+  disclaimer: string;
+  tabs: NavTab[];
+}
+
 export interface DocsThemeConfig extends DefaultTheme.Config {
   repo: string;
-  tabs: NavTab[];
+  games: Game[];
+  shared: string[];
 }
