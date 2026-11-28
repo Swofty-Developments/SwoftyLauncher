@@ -190,6 +190,7 @@ bool save_sandbox_armed();
 std::string save_sandbox_source();
 // The save file the last profile load read, or what read it when the core did not see the read.
 std::string save_sandbox_file();
+void career_saves_renamed(const std::string &from, const std::string &to);
 std::string career_saves_id_for_slot(const std::string &key);
 std::string career_saves_content_for_slot(const std::string &key);
 std::string career_saves_slot_key(uint64_t slot_id, bool my_team);
