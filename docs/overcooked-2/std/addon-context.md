@@ -77,7 +77,7 @@ public sealed class Log
 }
 ```
 
-Each call appends one line to the session's `core.log` and to Unity's `Player.log`:
+Each call appends one line to the session's `core.log` and to Unity's log, `player.log` in the same folder:
 
 ```csharp
 ctx.Log.Info("ready");

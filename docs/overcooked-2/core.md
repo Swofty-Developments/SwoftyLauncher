@@ -135,3 +135,5 @@ A failed addon is in `failed` with its error:
 ```json
 { "id": "yourname.broken", "error": "NullReferenceException: Object reference not set to an instance of an object" }
 ```
+
+The launcher also keeps the game's own logs in the session folder: Unity's log in `player.log`, and what the game prints in `output.log`.
