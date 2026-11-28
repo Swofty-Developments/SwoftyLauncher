@@ -5,11 +5,13 @@ use std::time::{Duration, Instant};
 use swofty_core::catalog;
 use swofty_core::online::multiplayer::client::Local;
 use swofty_core::online::multiplayer::matching::{self, Own, Progress, ROOM_PROFILE};
-use swofty_core::online::multiplayer::types::{HostPrint, SessionState, StepProblem, StepState};
+use swofty_core::online::multiplayer::types::{
+    FixStep, HostPrint, Phase, SessionState, StepProblem, StepState,
+};
 use swofty_core::store::Store;
 use swofty_i18n::{tr, trf};
 
-use super::model::{blocker_line, replace_lines};
+use super::model::{blocker_line, repeats, replace_lines};
 use super::state::read_local;
 
 /// Matching the host's addons for a room launch: the Addon Browser installs, then the room profile, for the
@@ -143,6 +145,56 @@ pub(crate) fn patch(state: &mut SessionState, fix: &FixView) {
             });
         }
     }
+}
+
+/// Before a joiner's game is built for the room, its built-in and build-hook addons print from their data
+/// files and profile state, not from a build, so they can't equal the host's built prints and the module
+/// reports an addons mismatch. Until a build has happened that is expected, not a difference to act on: the
+/// build and restart steps already say what to do, so surfacing it as a "doesn't match the host's" alert only
+/// alarms the player. This clears that mismatch from the addons step and the session problem while no build
+/// has happened and the mismatch has no addon-level fix. A mismatch with a fix (a version, an addon to turn
+/// off, an option or the load order), or one still reported once the game is built, is a real difference and
+/// is left alone.
+pub(crate) fn hide_unbuilt_mismatch(state: &mut SessionState) {
+    if built_for_room(state) {
+        return;
+    }
+    let Some(step) = state.steps.iter_mut().find(|s| s.id == "addons") else {
+        return;
+    };
+    let unbuilt = step.warns()
+        && step
+            .problem
+            .as_ref()
+            .is_some_and(|p| p.code == "addons_differ" && !actionable(&p.fix_plan));
+    if !unbuilt {
+        return;
+    }
+    let text = step.problem.take().map(|p| p.text);
+    step.warning = false;
+    if let Some(text) = text
+        && state.problem.as_ref().is_some_and(|p| repeats(&p.text, &text))
+    {
+        state.problem = None;
+    }
+}
+
+/// Whether the room's game has been built and started, so its profile now prints from that build: the session
+/// has reached the lobby or the race, or a step after the addons step has finished.
+fn built_for_room(state: &SessionState) -> bool {
+    if matches!(state.phase, Phase::InLobby | Phase::Racing) {
+        return true;
+    }
+    match state.steps.iter().position(|s| s.id == "addons") {
+        Some(i) => state.steps[i + 1..].iter().any(|s| s.state == StepState::Done),
+        None => false,
+    }
+}
+
+/// Whether a fix plan has a step the launcher or player can act on, rather than only notes: a mismatch with one
+/// is a real difference to fix, not the game merely not being built yet.
+fn actionable(plan: &[FixStep]) -> bool {
+    plan.iter().any(|s| !matches!(s, FixStep::Manual { .. }))
 }
 
 /// Installs what the host's addons need from the Addon Browser, builds the room profile and reads its

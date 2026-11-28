@@ -463,6 +463,7 @@ impl Multiplayer {
             if let Some(fix) = m.fix.view() {
                 fix::patch(&mut state, &fix);
             }
+            fix::hide_unbuilt_mismatch(&mut state);
             if m.state.as_ref() != Some(&state) {
                 m.state = Some(state);
                 changed = true;
