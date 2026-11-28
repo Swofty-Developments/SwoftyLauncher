@@ -62,6 +62,16 @@
    "verdict": "partial",
    "evidence": "decomp:own disasm 0x142f065d0-0x142f073b2 Car_Contact_ModifyVehicle;xref:0x142f0662e,0x142f06628",
    "notes": "gh:Swofty-Developments partial. Holds: 0x142f07361 is vmovaps xmm6,[rsp+0x40] (C5 F8 28 74 24 40) and the epilogue, 14 jumps and the fall through after call 0x1440c38b0 land on it, rsi is the contact record on all of them but one. Wrong: rsi at the exit is not always the contact record. rsi is loaded from rcx at 0x142f0662e, after the first early out at 0x142f06628 (cmp [rip+0x317ca70],rcx, the contact equals the cached last one), so on that path rsi is the caller value and only rcx holds the contact record"
+  },
+  {
+   "date": "2026-11-28",
+   "verifier": "Swofty-Developments",
+   "kind": "global",
+   "item": "site_Car_ContactModify_Exit",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142f065d0-0x142f073b2 Car_Contact_ModifyVehicle, Steam 1.0.145 (KB 0x142f04040 plus 0x2590);xref:0x142f06621,0x142f06628,0x142f0662e,0x142f07361",
+   "notes": "gh:Swofty-Developments gh:Swofty-Developments agree at L2. Early out cmp 0x142f06621 (KB 0x142f04091), je 0x142f06628 (KB 0x142f04098) to 0x142f07361, mov rsi,rcx at 0x142f0662e (KB 0x142f0409e) is the only write to rsi in the function. Exit 0x142f07361 is vmovaps xmm6,[rsp+0x40] then the xmm7 and xmm8 restores (and xmm9-14) and the epilogue. Signature 48 8D 54 24 30 4C 8D 44 24 20 E8 ?? ?? ?? ?? C5 F8 28 74 24 40 matches at 0x142f07352, anchor 0xf gives 0x142f07361"
   }
  ],
  "proofs": [
@@ -87,6 +97,25 @@
   {
    "by": "Swofty-Developments",
    "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f07352",
+    "target": "0x142f07361"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f783b8ee4faf5ecc85695eed3217b0652b45ebc0b20bc14f7dc652e70303b457"
+  },
+  {
+   "by": "Swofty-Developments",
+   "date": "2026-11-28",
    "tool": "binding.py verify",
    "exe": {
     "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",

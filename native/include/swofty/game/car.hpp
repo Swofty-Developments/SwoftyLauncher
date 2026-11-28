@@ -557,6 +557,7 @@ inline constexpr site<"site_Car_AeroStoreTotalDrag"> site_Car_AeroStoreTotalDrag
 inline constexpr site<"site_Car_AeroStoreTotalLift"> site_Car_AeroStoreTotalLift{}; // L2 experimental
 inline constexpr site<"site_Car_ChassisRegistryCount"> site_Car_ChassisRegistryCount{}; // L2 experimental
 inline constexpr site<"site_Car_ContactModify_AssistCheck"> site_Car_ContactModify_AssistCheck{}; // L2 experimental
+inline constexpr site<"site_Car_ContactModify_Exit"> site_Car_ContactModify_Exit{}; // L2 experimental
 inline constexpr site<"site_Car_EngineDriveTorque"> site_Car_EngineDriveTorque{}; // L2 experimental
 inline constexpr call<"site_Car_EngineStepInput_UpdateWearCall"> site_Car_EngineStepInput_UpdateWearCall{}; // L2 experimental
 inline constexpr site<"site_Car_ErsGearModifierLoad"> site_Car_ErsGearModifierLoad{}; // L2 experimental

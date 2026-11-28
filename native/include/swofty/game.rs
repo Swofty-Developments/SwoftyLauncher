@@ -22029,6 +22029,11 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Car_ContactModify_Exit: Binding = Binding {
+        id: "site_Car_ContactModify_Exit",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Car_EngineDriveTorque: Binding = Binding {
         id: "site_Car_EngineDriveTorque",
         kind: "site",
