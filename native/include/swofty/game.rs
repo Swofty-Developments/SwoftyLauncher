@@ -3946,6 +3946,7 @@ pub type Car_Tyre_CurveMap_FindBracketB_t =
 pub type Car_Tyre_IsCompoundAllowed_t = unsafe extern "C" fn(set: *const c_void) -> bool;
 pub type Car_Tyre_SetWearFactor_t =
     unsafe extern "C" fn(tyre_component: *mut c_void, apply_set: bool, force: u16);
+pub type Car_WheelPart_Detach_t = unsafe extern "C" fn(part: *mut c_void, notify: u8);
 pub type Career_Add_SeasonWeekend_t = unsafe extern "C" fn(season: *mut c_void, weekend: *mut c_void) -> u64;
 pub type Career_Add_TeamModifier_t = unsafe extern "C" fn(list: *mut c_void, key: u32, value: f32);
 pub type Career_Add_TrackSetToSeason_t =
@@ -5965,6 +5966,11 @@ pub mod bindings {
     };
     pub const Car_Upgrades_CalcTypeMass: Binding = Binding {
         id: "Car_Upgrades_CalcTypeMass",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_WheelPart_Detach: Binding = Binding {
+        id: "Car_WheelPart_Detach",
         kind: "func",
         status: Status::Experimental,
     };
