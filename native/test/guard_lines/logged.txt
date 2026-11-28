@@ -39,6 +39,12 @@
 [career] calendar: %zu of %zu round(s) kept; the season runs without the %zu round(s) on tracks the game has no track data for
 [career] calendar track guard off: %s is not found on this build
 
+[log career/myteam_partrates_guard.cpp]
+[myteam] %s
+[myteam] part rates guard off (SWOFTY_MYTEAM_PARTRATES_GUARD=%s)
+[myteam] part rates guard: the hook failed: %s
+[myteam] part rates guard armed: a new My Team career whose local player has no part-rate record skips the player's part rates instead of faulting
+
 [log career/myteam_vehicle_guard.cpp]
 [myteam] save: My Team vehicle base %llu (stat id %u) uses vehicle '%s' from %s (%s), which is not in the game data (no entrants.vehicles row; the addon is off or gone); the base is skipped and the rest of the career loads. Turn %s back on, or if it is on, add that engine back in its settings, to bring this car back%s
 [myteam] save: My Team vehicle base %llu (stat id %u) uses vehicle '%s', which is not in the game data (no entrants.vehicles row; the addon that adds it is off or gone); the base is skipped and the rest of the career loads. Turn that addon back on to bring this car back%s

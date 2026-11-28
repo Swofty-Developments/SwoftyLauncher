@@ -20,6 +20,7 @@ init
   src/core/guards/engine/anim_clip_time_guard.cpp
   src/core/guards/cars/tyre_curve_guard.cpp
   src/core/guards/career/resume_gate_guard.cpp
+  src/core/guards/career/myteam_partrates_guard.cpp
   src/core/guards/garage/pit_garage_state.cpp
   src/core/assets/db_first_read.cpp
   src/core/loading/game_settings.cpp
@@ -374,6 +375,7 @@ exit
   src/core/live/live_state.cpp
   src/core/assets/db_first_read.cpp
   src/core/guards/garage/pit_garage_state.cpp
+  src/core/guards/career/myteam_partrates_guard.cpp
   src/core/guards/career/resume_gate_guard.cpp
   src/core/guards/cars/tyre_curve_guard.cpp
   src/core/guards/engine/anim_clip_time_guard.cpp
@@ -384,6 +386,7 @@ exit
   src/core/guards/ai/ai_marker_cap_guard.cpp
   src/core/guards/tracks/collision_pool_guard.cpp
 mixins
+  src/core/guards/career/myteam_partrates_guard.cpp  SWOFTY_HOOK_GUARD(myteam_partrates)
   src/core/guards/garage/pit_garage_state.cpp  SWOFTY_HOOK_GUARD(pit_garage_state)
   src/core/diagnostics/session_job_probe.cpp  SWOFTY_ON_LOAD
   src/core/hooks/car_live.cpp  SWOFTY_ON_LOAD
@@ -409,6 +412,7 @@ mixins
   src/core/frontend/home_tiles.cpp  SWOFTY_WRAP(FeHome_Handle_Command)
   src/core/frontend/home_tiles.cpp  SWOFTY_ON_LOAD
 on-load
+  src/core/guards/career/myteam_partrates_guard.cpp  SWOFTY_HOOK_GUARD(myteam_partrates), arms myteam_partrates
   src/core/guards/garage/pit_garage_state.cpp  SWOFTY_HOOK_GUARD(pit_garage_state), arms pit_garage_state
   src/core/diagnostics/session_job_probe.cpp  SWOFTY_ON_LOAD
   src/core/hooks/car_live.cpp  SWOFTY_ON_LOAD
@@ -435,6 +439,7 @@ bindings
   src/core/assets/entitlements.cpp
   src/core/frontend/home_tiles.cpp
 explicit
+  myteam_partrates  src/core/guards/career/myteam_partrates_guard.cpp  SWOFTY_HOOK_GUARD(myteam_partrates), arms myteam_partrates
   pit_garage_state  src/core/guards/garage/pit_garage_state.cpp  SWOFTY_HOOK_GUARD(pit_garage_state), arms pit_garage_state
   session_job_probe  src/core/diagnostics/session_job_probe.cpp  SWOFTY_ON_LOAD
   car_live  src/core/hooks/car_live.cpp  SWOFTY_ON_LOAD

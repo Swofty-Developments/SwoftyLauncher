@@ -137,6 +137,7 @@ core/guards/ai/ai_ers_guard.cpp: const swofty_core::guards::MidHookSpec spec{ =>
 core/guards/career/activity_resume_guard.cpp: runtime::loader::Installed r = runtime::loader::install(slot, at, s.what, skip); => via
 core/guards/career/activity_resume_guard.cpp: if (arm(h_first, S_FIRST, first) && arm(h_second, S_SECOND, second)) => mid sig S_FIRST S_SECOND
 core/guards/career/calendar_track_guard.cpp: const swofty_core::guards::MidHookSpec spec{ => mid sig S_CALENDAR_FILLED
+core/guards/career/myteam_partrates_guard.cpp: runtime::loader::Installed r = runtime::loader::install(h_record, at, S_RECORD_LOAD.what, record_load); => mid sig S_RECORD_LOAD
 core/guards/career/rnd_suppliers_guard.cpp: runtime::loader::Installed l = runtime::loader::install(h_load, load, S_LOAD.what, reinterpret_cast<void *>(&load_hook)); => inline sig S_LOAD
 core/guards/career/rnd_suppliers_guard.cpp: runtime::loader::Installed a = runtime::loader::install(h_add, add, S_ADD.what, reinterpret_cast<void *>(&add_hook)); => inline sig S_ADD
 core/guards/career/sequencer_records_guard.cpp: runtime::loader::Installed r = runtime::loader::install(hook, at, site, fn); => via
