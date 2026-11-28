@@ -542,6 +542,8 @@ inline constexpr address<"Car_Tyres_CompletePitstopForCarList"> Car_Tyres_Comple
 inline constexpr address<"Car_Upgrades_ApplyToVehicle"> Car_Upgrades_ApplyToVehicle{}; // L3 experimental
 inline constexpr address<"Car_Upgrades_CalcNonLinearMass"> Car_Upgrades_CalcNonLinearMass{}; // L2 experimental
 inline constexpr address<"Car_Upgrades_CalcTypeMass"> Car_Upgrades_CalcTypeMass{}; // L2 experimental
+using Car_WheelPart_Detach_t = void(void *part, uint8_t notify);
+inline constexpr fn<"Car_WheelPart_Detach", Car_WheelPart_Detach_t> Car_WheelPart_Detach{}; // L2 experimental
 inline constexpr address<"Car_Write_Differential"> Car_Write_Differential{}; // L2 experimental
 inline constexpr address<"Car_Write_EnergyRecovery"> Car_Write_EnergyRecovery{}; // L2 experimental
 inline constexpr address<"Car_Write_Engine"> Car_Write_Engine{}; // L2 experimental
