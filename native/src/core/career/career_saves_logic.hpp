@@ -15,6 +15,7 @@ namespace career::saves {
 using swofty::json::Value;
 
 constexpr int INDEX_VERSION = 1;
+constexpr int64_t HEAL_SKEW_S = 2;
 constexpr size_t MAX_DATA = size_t(8) << 20;
 constexpr size_t MAX_CAREERS = 4096;
 
@@ -46,6 +47,7 @@ struct ListContext {
 
 struct ListResult {
     std::vector<std::string> added, back, deleted, missing;
+    size_t healed = 0;
     bool changed = false;
 };
 
@@ -296,6 +298,60 @@ public:
         return true;
     }
 
+    bool promote(std::string_view from, std::string_view to)
+    {
+        if (from == to || !find(from))
+            return false;
+        Value *slot_row = find(to);
+        if (!slot_row) {
+            Value *s = find_by_tail(id_tail(to));
+            slot_row = s && str(*s, "source") == "slots" ? s : nullptr;
+        }
+        if (!slot_row) {
+            Value *c = find(from);
+            note_was(*c, str(*c, "career"));
+            (*c)["career"] = Value(std::string(to));
+            return true;
+        }
+        std::string from_id(from);
+        Value prov = *find(from);
+        std::string slot_id(str(*slot_row, "career"));
+        merge(*slot_row, prov);
+        note_was(*slot_row, slot_id);
+        note_was(*slot_row, from_id);
+        (*slot_row)["career"] = Value(std::string(to));
+        slot_row->erase("source");
+        std::erase_if(careers_, [&](const Value &c) { return str(c, "career") == from_id; });
+        return true;
+    }
+
+    size_t heal(std::string_view current = {})
+    {
+        size_t healed = 0;
+        for (;;) {
+            std::string prov_id, slot_id;
+            for (const Value &p : careers_) {
+                std::string pid(str(p, "career"));
+                if (pid == current || !provisional_tail(id_tail(pid)) || str(p, "content").empty() || !p["last_saved"].is_int())
+                    continue;
+                std::string match = unique_slot_for(p);
+                if (match.empty())
+                    continue;
+                prov_id = pid;
+                slot_id = match;
+                break;
+            }
+            if (prov_id.empty())
+                return healed;
+            Value prov = *find(prov_id);
+            Value *slot_row = find(slot_id);
+            merge(*slot_row, prov);
+            note_was(*slot_row, prov_id);
+            std::erase_if(careers_, [&](const Value &c) { return str(c, "career") == prov_id; });
+            healed++;
+        }
+    }
+
     ListResult apply_list(const std::vector<SlotRead> &now, const ListContext &ctx)
     {
         ListResult out;
@@ -365,6 +421,9 @@ public:
             else
                 rec->erase("hidden");
         }
+        out.healed = heal(ctx.current);
+        if (out.healed)
+            out.changed = true;
         if (!ctx.complete)
             return out;
         bool switched = ctx.at_load && !seen.empty() && !kept_this_session.empty() && !any_known;
@@ -423,6 +482,77 @@ public:
     }
 
 private:
+    static bool slot_owned(std::string_view key)
+    {
+        for (std::string_view k :
+             {"career", "source", "slot", "slot_name", "slot_season", "slot_weekend", "driver_raw", "team_raw", "vehicle_raw",
+              "listed_at", "listed_session", "last_played", "hidden", "status", "renamed_from"})
+            if (k == key)
+                return true;
+        return false;
+    }
+
+    static void note_was(Value &c, std::string_view was)
+    {
+        Value &from = c["renamed_from"];
+        if (!from.is_array())
+            from = Value::array();
+        for (const Value &w : *from.if_array())
+            if (w.as_string() == was)
+                return;
+        from.push_back(Value(std::string(was)));
+    }
+
+    void merge(Value &into, const Value &prov)
+    {
+        std::string id(str(into, "career"));
+        if (const swofty::json::Object *o = prov.if_object())
+            for (const auto &[k, v] : *o)
+                if (!slot_owned(k) && k != "addons")
+                    into[k] = v;
+        if (const swofty::json::Array *list = prov["addons"].if_array())
+            for (const Value &a : *list) {
+                std::string aid(a["id"].as_string());
+                if (aid.empty())
+                    continue;
+                need(id, {aid, std::string(a["need"].as_string()), std::string(a["why"].as_string())});
+                if (!a.contains("version"))
+                    continue;
+                for (Value &m : *into["addons"].if_array())
+                    if (m["id"].as_string() == aid && !m.contains("version"))
+                        m["version"] = a["version"];
+            }
+    }
+
+    std::string unique_slot_for(const Value &p) const
+    {
+        int64_t at = p["last_saved"].as_int() / 1000;
+        std::string found;
+        for (const Value &s : careers_) {
+            if (str(s, "source") != "slots" || !str(s, "content").empty() || !s["last_played"].is_int())
+                continue;
+            if (str(s, "mode") != str(p, "mode"))
+                continue;
+            int64_t d = s["last_played"].as_int() - at;
+            if (d < -HEAL_SKEW_S || d > HEAL_SKEW_S)
+                continue;
+            if (!found.empty())
+                return {};
+            found = std::string(str(s, "career"));
+        }
+        if (found.empty())
+            return {};
+        for (const Value &q : careers_) {
+            if (&q == &p || !provisional_tail(id_tail(str(q, "career"))) || str(q, "content").empty() ||
+                str(q, "mode") != str(p, "mode") || !q["last_saved"].is_int())
+                continue;
+            int64_t d = q["last_saved"].as_int() / 1000 - at;
+            if (d >= -HEAL_SKEW_S && d <= HEAL_SKEW_S)
+                return {};
+        }
+        return found;
+    }
+
     std::vector<Value> careers_;
 };
 

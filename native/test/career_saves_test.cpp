@@ -251,6 +251,88 @@ static void slot_list()
                ad.find("progressive.driver_career:00000000000000a1")->operator[]("renamed_from").if_array()->size() == 1,
            "a second load of the career renames nothing");
 
+    {
+        const char *prov = "f1_career_sw_progressive.driver_career:new1";
+        cs::Index hl;
+        hl.load(
+            "{\"careers\":[{\"career\":\"f1_career_sw_progressive.driver_career:new1\",\"label\":\"f1_career_sw_progressive, "
+            "2012\","
+            "\"content\":\"f1_career_sw_progressive\",\"content_record\":\"swofty.swofty-seasons-progressive/sw_progressive\","
+            "\"mode\":\"driver_career\",\"season\":2012,\"last_saved\":1761600000196,\"status\":\"present\","
+            "\"addons\":[{\"id\":\"swofty.swofty-seasons-progressive\",\"why\":\"career content f1_career_sw_progressive\"}]}]}");
+        r = hl.apply_list({slot(1, 0xa1)}, ctx("s1", true));
+        const Value *row = hl.find("driver_career:00000000000000a1");
+        expect(r.healed == 1 && hl.size() == 1 && !hl.knows(prov) && row &&
+                   (*row)["content"].as_string() == "f1_career_sw_progressive" && (*row)["season"].as_int() == 2012 &&
+                   (*row)["slot"].as_string() == "00000000000000a1" && (*row)["source"].as_string() == "slots",
+               "a slot row takes over the content of the provisional row saved at the same time");
+        expect(hl.content_for_slot("00000000000000a1") == "f1_career_sw_progressive" &&
+                   (*row)["addons"][0]["id"].as_string() == "swofty.swofty-seasons-progressive" &&
+                   (*row)["renamed_from"][0].as_string() == prov,
+               "the resume list finds the career's data group by the slot key, and the add-on it needs");
+        r = hl.apply_list({slot(1, 0xa1)}, ctx("s1", false));
+        expect(r.healed == 0 && !r.changed, "a healed index changes nothing on the next list");
+        expect(hl.adopt("f1_career_sw_progressive.driver_career:00000000000000a1") && hl.size() == 1 &&
+                   hl.find("f1_career_sw_progressive.driver_career:00000000000000a1") != nullptr,
+               "and the loaded career's id still takes over that row");
+
+        cs::Index early;
+        early.load("{\"careers\":[{\"career\":\"driver_career:new1\",\"content\":\"g\",\"mode\":\"driver_career\","
+                   "\"last_saved\":1761500000000}]}");
+        r = early.apply_list({slot(1, 0xa1)}, ctx("s1", true));
+        expect(r.healed == 0 && early.size() == 2, "a provisional row saved at another time is not taken for the slot");
+
+        cs::Index two;
+        two.load("{\"careers\":[{\"career\":\"driver_career:new1\",\"content\":\"g\",\"mode\":\"driver_career\","
+                 "\"last_saved\":1761600000000}]}");
+        r = two.apply_list({slot(1, 0xa1), slot(2, 0xb2)}, ctx("s1", true));
+        expect(r.healed == 0 && two.size() == 3, "two slots saved at the same time are ambiguous: nothing is linked");
+
+        cs::Index twin;
+        twin.load("{\"careers\":[{\"career\":\"driver_career:new1\",\"content\":\"g\",\"mode\":\"driver_career\","
+                  "\"last_saved\":1761600000000},{\"career\":\"driver_career:new2\",\"content\":\"h\","
+                  "\"mode\":\"driver_career\",\"last_saved\":1761600001000}]}");
+        r = twin.apply_list({slot(1, 0xa1)}, ctx("s1", true));
+        expect(r.healed == 0 && twin.size() == 3, "two provisional rows for one slot are ambiguous: nothing is linked");
+
+        cs::Index live;
+        live.load("{\"careers\":[{\"career\":\"driver_career:new1\",\"content\":\"g\",\"mode\":\"driver_career\","
+                  "\"last_saved\":1761600000000}]}");
+        cs::ListContext c = ctx("s1", false);
+        c.current = "driver_career:new1";
+        r = live.apply_list({slot(1, 0xa1)}, c);
+        expect(r.healed == 0 && live.knows("driver_career:new1"),
+               "the loaded career's own provisional row is left to the rename");
+    }
+
+    {
+        cs::Index pr;
+        pr.apply_list({slot(1, 0xa1)}, ctx("s1", true));
+        pr.set_text("f1_career_sw_progressive.driver_career:new1", "content", "f1_career_sw_progressive");
+        pr.set_text("f1_career_sw_progressive.driver_career:new1", "mode", "driver_career");
+        pr.need("f1_career_sw_progressive.driver_career:new1", {"p.q", "", "career content"});
+        pr.saved("f1_career_sw_progressive.driver_career:new1", 1761600000000);
+        expect(pr.promote("f1_career_sw_progressive.driver_career:new1",
+                          "f1_career_sw_progressive.driver_career:00000000000000a1") &&
+                   pr.size() == 1 && !pr.knows("f1_career_sw_progressive.driver_career:new1"),
+               "the first save's rename folds the provisional row into the slot list's row");
+        const Value *row = pr.find("f1_career_sw_progressive.driver_career:00000000000000a1");
+        expect(row && (*row)["content"].as_string() == "f1_career_sw_progressive" &&
+                   (*row)["slot"].as_string() == "00000000000000a1" && !row->contains("source") && (*row)["addons"].size() == 1 &&
+                   (*row)["renamed_from"].size() == 2,
+               "the real id keeps the content, the add-ons and the slot's details, and lists what it was");
+        r = pr.apply_list({slot(1, 0xa1)}, ctx("s1", false));
+        expect(!r.changed && pr.size() == 1, "and the next list matches it by its slot key");
+
+        cs::Index lone;
+        lone.touch("driver_career:new1");
+        lone.set_text("driver_career:new1", "content", "g");
+        expect(lone.promote("driver_career:new1", "driver_career:00000000000000a1") && lone.size() == 1 &&
+                   lone.knows("driver_career:00000000000000a1") &&
+                   !lone.promote("driver_career:new1", "driver_career:00000000000000a1"),
+               "a provisional row with no slot row is renamed to the real id");
+    }
+
     cs::Index tk;
     tk.apply_list({slot(3, 0xc3, 9, cs::FLAG_MY_TEAM)}, ctx("s1", true));
     for (const char *id : {"mt-00000001-00d00000", "mt-00000001-00bc0000"}) {

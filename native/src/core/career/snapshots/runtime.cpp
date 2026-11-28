@@ -162,6 +162,7 @@ void refresh_slot()
         if (f.career && f.career->id == from)
             f.career->id = to;
     });
+    runtime::career_saves_renamed(from, to);
     swofty::log("[registry] career %s: its save slot now reads %s at this save%s", from.c_str(), to.c_str(),
                 moved ? "; its entry moved with it" : "");
 }

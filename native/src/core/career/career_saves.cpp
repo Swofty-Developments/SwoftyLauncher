@@ -391,6 +391,9 @@ void career_saves_listed(const std::vector<career::saves::SlotRead> &slots, bool
         for (auto &id : r.missing)
             swofty::log("[saves] career %s is in the career list and the %s did not find it", id.c_str(),
                         at_load ? "profile load" : "profile save");
+        if (r.healed)
+            swofty::log("[saves] %zu career(s) listed from the save slots took over the record of their provisional id",
+                        r.healed);
         if (r.changed || at_load || !slots.empty())
             flush_locked();
     }
@@ -408,6 +411,20 @@ std::vector<career::saves::SlotRead> career_listed_slots()
 {
     std::lock_guard<std::mutex> g(mu);
     return listed_slots;
+}
+
+void career_saves_renamed(const std::string &from, const std::string &to)
+{
+    std::lock_guard<std::mutex> g(mu);
+    read_index_locked();
+    bool moved = index_.promote(from, to);
+    if (current_id == from)
+        current_id = to;
+    if (moved) {
+        swofty::log("[saves] career %s is now %s in the career index (its save slot was read at the first save)", from.c_str(),
+                    to.c_str());
+        flush_locked();
+    }
 }
 
 std::string career_saves_id_for_slot(const std::string &key)
