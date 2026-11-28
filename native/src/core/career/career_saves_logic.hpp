@@ -484,9 +484,9 @@ public:
 private:
     static bool slot_owned(std::string_view key)
     {
-        for (std::string_view k : {"career", "source", "slot", "slot_name", "slot_season", "slot_weekend", "driver_raw", "team_raw",
-                                   "vehicle_raw", "listed_at", "listed_session", "last_played", "hidden", "status",
-                                   "renamed_from"})
+        for (std::string_view k :
+             {"career", "source", "slot", "slot_name", "slot_season", "slot_weekend", "driver_raw", "team_raw", "vehicle_raw",
+              "listed_at", "listed_session", "last_played", "hidden", "status", "renamed_from"})
             if (k == key)
                 return true;
         return false;

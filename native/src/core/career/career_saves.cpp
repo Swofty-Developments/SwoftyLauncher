@@ -392,7 +392,8 @@ void career_saves_listed(const std::vector<career::saves::SlotRead> &slots, bool
             swofty::log("[saves] career %s is in the career list and the %s did not find it", id.c_str(),
                         at_load ? "profile load" : "profile save");
         if (r.healed)
-            swofty::log("[saves] %zu career(s) listed from the save slots took over the record of their provisional id", r.healed);
+            swofty::log("[saves] %zu career(s) listed from the save slots took over the record of their provisional id",
+                        r.healed);
         if (r.changed || at_load || !slots.empty())
             flush_locked();
     }
