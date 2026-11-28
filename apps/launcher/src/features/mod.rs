@@ -5,6 +5,7 @@ pub(crate) mod career_saves;
 pub(crate) mod console;
 pub(crate) mod db;
 pub(crate) mod developer;
+pub(crate) mod game_addons;
 pub(crate) mod importer;
 pub(crate) mod multiplayer;
 pub(crate) mod news;

@@ -21,7 +21,7 @@ impl Shell {
     ) -> PageHeader {
         PageHeader::new(title)
             .subtitle(subtitle)
-            .error(self.library.error.clone())
+            .error(self.browser_library().error.clone())
             .actions(actions)
     }
 

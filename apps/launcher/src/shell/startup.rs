@@ -64,6 +64,7 @@ pub(crate) struct Background {
     _live: Task<()>,
     _updates: Task<()>,
     _catalog: Task<()>,
+    _games: Task<()>,
 }
 
 impl Shell {
@@ -88,7 +89,9 @@ impl Shell {
         let console_closed = cx.on_window_closed(move |cx, id| {
             shell.update(cx, |s, cx| s.console_closed(id, cx)).ok();
         });
-        let browser = Browser::new(&store.root, window, cx);
+        let games = crate::shell::games::Games::new(&store.root, &config);
+        let browser = Browser::new(&store.root, games.active, window, cx);
+        let games_watch = Self::watch_games(cx);
         let shaders = cx.new(|cx| crate::features::shaders::ShadersView::new(store.clone(), window, cx));
         let shaders_events = cx.subscribe(&shaders, Self::shaders_event);
         let catalog = Browser::watch(cx);
@@ -158,8 +161,10 @@ impl Shell {
                 _live: live,
                 _updates: updates,
                 _catalog: catalog,
+                _games: games_watch,
             },
             overlays: super::overlays::Overlays::default(),
+            games,
             navigation: crate::shell::nav::Navigation {
                 page: Page::News,
                 cursor: None,
@@ -171,6 +176,7 @@ impl Shell {
         };
         crate::features::sections::AddonViews::refresh(&mut shell, cx);
         shell.follow_online_access(cx);
+        shell.rediscover_games(cx);
         match std::env::var("SWOFTY_LAUNCHER_OPEN_PAGE").as_deref() {
             Ok("saves") => shell.open_page(Page::Careers, cx),
             Ok("shaders") => shell.open_page(Page::Shaders, cx),

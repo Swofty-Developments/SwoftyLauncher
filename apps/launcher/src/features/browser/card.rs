@@ -208,7 +208,10 @@ impl Shell {
         let category = a.category_label();
         let kinds = a.kind_labels();
         let native = a.native(&current_version());
-        let platforms = Where::tags(a.platforms());
+        let platforms = match self.browser.typed() {
+            true => Where::tags(a.platforms()),
+            false => Vec::new(),
+        };
         Some(
             h_flex()
                 .flex_wrap()

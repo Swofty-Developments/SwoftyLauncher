@@ -24,7 +24,8 @@ impl Shell {
         window: &Window,
         cx: &mut Context<Self>,
     ) -> impl IntoElement {
-        let labels: Vec<&str> = Tab::ALL.iter().map(|t| t.label()).collect();
+        let shown_tabs = self.game_tabs();
+        let labels: Vec<&str> = shown_tabs.iter().map(|t| t.label()).collect();
         let step = fit::choose(
             fit::bar_width(layout_width, window_buttons(window)),
             &labels,
@@ -52,12 +53,12 @@ impl Shell {
         } else {
             h_flex()
                 .gap(fixed(2.))
-                .children(Tab::ALL.iter().enumerate().map(|(i, tab)| {
+                .children(shown_tabs.iter().enumerate().map(|(i, tab)| {
                     self.tab_button(*tab, Some(*tab) == current, focus == Some(i), step.tight(), p, cx)
                 }))
                 .into_any_element()
         };
-        let action_focus = |a: usize| focus == Some(Tab::ALL.len() + a);
+        let action_focus = |a: usize| focus == Some(shown_tabs.len() + a);
         let notices = self.notices().len() + cx.global::<crate::shell::notices::Notices>().unread();
         let actions = h_flex()
             .flex_shrink_0()
@@ -339,9 +340,10 @@ impl Shell {
         p: Palette,
         cx: &mut Context<Self>,
     ) -> impl IntoElement {
+        let tabs = self.game_tabs();
         let shown = focus
-            .filter(|i| *i < Tab::ALL.len())
-            .map(|i| Tab::ALL[i])
+            .filter(|i| *i < tabs.len())
+            .map(|i| tabs[i])
             .or(current)
             .map_or(tr("Menu"), |t| t.label());
         let shell = cx.entity().downgrade();
@@ -352,7 +354,7 @@ impl Shell {
             .dropdown_caret(true)
             .when(focus.is_some(), |b| b.border_color(p.accent))
             .dropdown_menu_with_anchor(Anchor::TopLeft, move |mut menu, _, _| {
-                for tab in Tab::ALL {
+                for tab in tabs.iter().copied() {
                     let shell = shell.clone();
                     menu = menu.item(
                         PopupMenuItem::new(tab.label())

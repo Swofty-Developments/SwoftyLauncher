@@ -169,7 +169,7 @@ impl Shell {
         if !idle {
             return None;
         }
-        match self.browser.requirements(&self.library, listed)? {
+        match self.browser.requirements(self.browser_library(), listed)? {
             Ok(plan) if plan.also().is_empty() => None,
             Ok(plan) => {
                 let names = plan

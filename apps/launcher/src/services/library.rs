@@ -437,6 +437,26 @@ impl Library {
         }
     }
 
+    /// The addons of a game that keeps them in its own store, as the Addon Browser reads a library: no
+    /// profiles, panels or folders.
+    pub fn of_game(game: &str, addons: Vec<AddonItem>) -> Self {
+        Self {
+            tracks_page: None,
+            rebuild: Vec::new(),
+            profile: Profile::new(game),
+            addons,
+            profiles: Vec::new(),
+            sections: Vec::new(),
+            registry: Registry::default(),
+            error: None,
+            broken: Vec::new(),
+            folders: Folders::default(),
+            entries: Vec::new(),
+            loaded: Instant::now(),
+            unsaved_order: false,
+        }
+    }
+
     pub fn save_order(&mut self, store: &Store) {
         if !std::mem::take(&mut self.unsaved_order) {
             return;
