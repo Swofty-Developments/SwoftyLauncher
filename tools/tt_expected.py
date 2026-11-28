@@ -207,6 +207,52 @@ def boxes(content):
     return content if isinstance(content, list) else [content]
 
 
+class SelectorError(ValueError):
+    pass
+
+
+STRING_KEYS = ('content', 'content_exact', 'owner', 'data_group', 'mode', 'session_type')
+UNKNOWABLE_KEYS = ('track', 'setup_mode', 'vehicle_package', 'entrant_list')
+
+
+def holds(entry, content, addon):
+    """One selector entry for a Time Trial of the box `content`, by the rules of Selectors in
+    native/src/core/hooks/context.hpp: every key must hold, `any` is an OR over entries, `not` negates one."""
+    if not isinstance(entry, dict):
+        raise SelectorError('a selector entry is not an object: %r' % (entry,))
+    for key, val in entry.items():
+        if key in STRING_KEYS or key in UNKNOWABLE_KEYS:
+            if not (isinstance(val, str) or (isinstance(val, list) and all(isinstance(x, str) for x in val))):
+                raise SelectorError('selector "%s" takes a string or an array of strings' % key)
+        if key in ('content', 'content_exact'):
+            ok = content in boxes(val)
+        elif key == 'owner':
+            ok = addon in boxes(val)
+        elif key in ('data_group', 'year'):
+            ok = False
+        elif key in ('mode', 'session_type'):
+            ok = 'time_trial' in boxes(val)
+        elif key == 'any':
+            if not isinstance(val, list):
+                raise SelectorError('selector "any" takes an array of selectors')
+            ok = any(holds(x, content, addon) for x in val)
+        elif key == 'not':
+            ok = not holds(val, content, addon)
+        elif key in UNKNOWABLE_KEYS:
+            raise SelectorError('selector "%s" depends on the session, which a Time Trial table cannot know' % key)
+        else:
+            raise SelectorError('unknown selector "%s"' % key)
+        if not ok:
+            return False
+    return True
+
+
+def within_holds(within, content, addon):
+    if not isinstance(within, list):
+        raise SelectorError('the selectors are not an array')
+    return all(holds(w, content, addon) for w in within)
+
+
 def norm(key):
     return key.replace('_', '').lower()
 
@@ -466,18 +512,18 @@ def season_cars(addon_dir, stock, db, tiers):
         layers = []
         ordered = sorted(reg.get('car.profile', {}).items(), key=lambda kv: (kv[1].get('priority', 0), kv[0]))
         for pid, prof in ordered:
-            within = prof.get('within') or []
-            if not any(content in boxes(w.get('content')) for w in within):
-                continue
-            # Every entry has to hold: two entries naming one box each match no box at all.
-            if not all(content in boxes(w.get('content')) for w in within if 'content' in w):
+            try:
+                if not within_holds(prof.get('within') or [], content, addon):
+                    continue
+            except SelectorError as e:
+                problems.append('%s: car.profile %s: %s, not applied' % (content, pid, e))
                 continue
             if 'when' in prof and 'time_trial' not in boxes(prof['when']):
                 continue
-            if all(set(w) == {'content'} for w in within) and 'cars' not in prof:
-                layers.append(prof)
+            if 'cars' in prof:
+                problems.append('%s: car.profile %s has a cars selector, not applied' % (content, pid))
             else:
-                problems.append('%s: car.profile %s has a selector besides content, not applied' % (content, pid))
+                layers.append(prof)
         # The AI's car and the player's: a core without player_only profiles builds the player's car as the AI's.
         variants = [[p for p in layers if not p.get(skip)] for skip in ('player_only', 'ai_only')]
         variants = [v for i, v in enumerate(variants) if v not in variants[:i]]
