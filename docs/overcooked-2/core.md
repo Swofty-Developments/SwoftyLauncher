@@ -73,8 +73,8 @@ A `winhttp.dll` or `doorstop_config.ini` already in the game folder, such as ano
   "launcher": "1.10.63",
   "game_dir": "/home/you/.local/share/Steam/steamapps/common/Overcooked! 2",
   "data_dir": "/home/you/.local/share/swofty/games/overcooked_2",
-  "log": "/home/you/.local/share/swofty/games/overcooked_2/sessions/20261129-001500/core.log",
-  "status": "/home/you/.local/share/swofty/games/overcooked_2/sessions/20261129-001500/status.json",
+  "log": "/home/you/.local/share/swofty/games/overcooked_2/sessions/20261128-131500/core.log",
+  "status": "/home/you/.local/share/swofty/games/overcooked_2/sessions/20261128-131500/status.json",
   "addons": [
     {
       "id": "swofty.hello-kitchen",
@@ -93,11 +93,11 @@ Without a session file, or with one it cannot read, Swofty Core writes to Unity'
 
 ## Logs
 
-Each session has its own folder, `$DATA/games/overcooked_2/sessions/<stamp>/`. Swofty Core appends to `core.log` in it, one line per message, tagged `core` or with the addon id:
+Each session has its own folder, `$DATA/games/overcooked_2/sessions/<stamp>/`, where `<stamp>` is the start time in UTC, such as `20261128-131500`. Swofty Core appends to `core.log` in it, one line per message, tagged `core` or with the addon id:
 
 ```text [core.log]
 00:15:01 [core] Swofty Core 0.1.0 for Overcooked 2 (std 0.1.0, Harmony 2.3.6, Doorstop 4.5.0)
-00:15:01 [core] session /home/you/.local/share/swofty/games/overcooked_2/sessions/20261129-001500/session.json from launcher 1.10.63, 1 addon(s)
+00:15:01 [core] session /home/you/.local/share/swofty/games/overcooked_2/sessions/20261128-131500/session.json from launcher 1.10.63, 1 addon(s)
 00:15:02 [core] Overcooked 2 build 66.678012
 00:15:03 [core] first scene Boot; loading addons
 00:15:03 [swofty.hello-kitchen] Hello Kitchen 0.1.0 loaded on Overcooked 2 build 66.678012 with Swofty Core 0.1.0
