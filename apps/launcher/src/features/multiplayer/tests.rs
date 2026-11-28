@@ -901,6 +901,141 @@ fn a_warning_shows_its_problem_and_fix_plan_without_stopping_the_steps_after_it(
     );
 }
 
+/// The module reports a joiner's addons as a mismatch because their game isn't built with them yet; its
+/// bullets have no addon-level fix, only notes about the build.
+fn unbuilt_addons_step() -> SessionStep {
+    let mut s = step("addons", "done");
+    s.warning = true;
+    s.problem = Some(
+        serde_json::from_value(serde_json::json!({
+            "code": "addons_differ",
+            "text": "SwoftyMod and 1 more don't match the host's.",
+            "retry": false,
+            "detail": "Your game wasn't built with it, so its files count instead; start F1 25 again.",
+            "fix_plan": [
+                {"action": "manual", "line": "SwoftyMod (swofty.core) has other data or profile state than the host's"},
+                {"action": "manual", "line": "Simplified for Swofty (teamsimplified.mods) has other data or profile state than the host's"},
+            ],
+        }))
+        .unwrap(),
+    );
+    s
+}
+
+fn mismatch_problem(text: &str) -> Problem {
+    Problem {
+        text: text.into(),
+        retry: false,
+        detail: None,
+    }
+}
+
+#[test]
+fn the_not_built_mismatch_is_hidden_before_a_build_and_the_build_step_still_guides() {
+    use super::fix::hide_unbuilt_mismatch;
+
+    let mut before = stepped(
+        Phase::WaitingForGame("game".into()),
+        false,
+        vec![
+            step("room", "done"),
+            unbuilt_addons_step(),
+            step("build", "active"),
+            step("game", "pending"),
+        ],
+    );
+    before.problem = Some(mismatch_problem("SwoftyMod and 1 more don't match the host's."));
+    hide_unbuilt_mismatch(&mut before);
+
+    let addons = before.steps.iter().find(|s| s.id == "addons").unwrap();
+    assert!(!addons.warns(), "the unbuilt mismatch no longer warns");
+    assert!(addons.problem.is_none());
+    assert!(
+        before.problem.is_none(),
+        "the session problem it mirrored is gone too, so no alert shows"
+    );
+    let card = StepCard::of(&before, false).unwrap();
+    assert!(
+        !row(&card, "addons").warning,
+        "the addons step is a plain done step"
+    );
+    assert_eq!(
+        row(&card, "build").state,
+        StepState::Active,
+        "the build step still carries the restart/build guidance"
+    );
+}
+
+#[test]
+fn a_version_mismatch_has_a_fix_so_it_shows_even_before_a_build() {
+    use super::fix::hide_unbuilt_mismatch;
+
+    let mut warned = step("addons", "done");
+    warned.warning = true;
+    warned.problem = Some(
+        serde_json::from_value(serde_json::json!({
+            "code": "addons_differ", "text": "Timing HUD doesn't match the host's.", "retry": false,
+            "detail": "Timing HUD (t.hud) is 1.0.0; the host has 1.2.0.",
+            "fix_plan": [{"action": "install", "id": "t.hud", "name": "Timing HUD", "version": "1.2.0", "sha256": null}],
+        }))
+        .unwrap(),
+    );
+    let mut state = stepped(
+        Phase::WaitingForGame("game".into()),
+        false,
+        vec![step("room", "done"), warned, step("build", "active")],
+    );
+    state.problem = Some(mismatch_problem("Timing HUD doesn't match the host's."));
+    hide_unbuilt_mismatch(&mut state);
+
+    let addons = state.steps.iter().find(|s| s.id == "addons").unwrap();
+    assert!(
+        addons.warns(),
+        "a version mismatch is a real difference with a fix, so it still shows"
+    );
+    assert!(state.problem.is_some());
+}
+
+#[test]
+fn a_mismatch_still_reported_once_the_game_is_built_is_a_real_one_and_stays() {
+    use super::fix::hide_unbuilt_mismatch;
+
+    // Built for the room through a finished step before the addons step's successors, with the game started.
+    let mut via_steps = stepped(
+        Phase::WaitingForGame("network".into()),
+        false,
+        vec![
+            step("room", "done"),
+            unbuilt_addons_step(),
+            step("build", "done"),
+            step("game", "done"),
+            step("network", "active"),
+        ],
+    );
+    via_steps.problem = Some(mismatch_problem("SwoftyMod and 1 more don't match the host's."));
+    hide_unbuilt_mismatch(&mut via_steps);
+    let addons = via_steps.steps.iter().find(|s| s.id == "addons").unwrap();
+    assert!(
+        addons.warns(),
+        "once the game is built the same difference is genuine content and must still show"
+    );
+    assert!(via_steps.problem.is_some());
+
+    // Built for the room by reaching the lobby.
+    let mut in_lobby = stepped(
+        Phase::InLobby,
+        false,
+        vec![step("room", "done"), unbuilt_addons_step(), step("game", "done")],
+    );
+    in_lobby.problem = Some(mismatch_problem("SwoftyMod and 1 more don't match the host's."));
+    hide_unbuilt_mismatch(&mut in_lobby);
+    assert!(
+        in_lobby.steps.iter().find(|s| s.id == "addons").unwrap().warns(),
+        "a mismatch in the lobby is genuine and stays"
+    );
+    assert!(in_lobby.problem.is_some());
+}
+
 #[test]
 fn a_fix_plan_reads_as_one_sentence_per_change() {
     let plan: Vec<swofty_core::online::multiplayer::types::FixStep> =
