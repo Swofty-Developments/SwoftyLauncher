@@ -1,5 +1,5 @@
 use std::collections::HashSet;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use swofty_core::online::multiplayer::types::{
     GameStatus, MemberStage, MemberState, MemberStats, Phase, PrintMatch, Problem, RelayStatus, Role,
@@ -15,7 +15,7 @@ use super::model::{
     RoomFocus, StepCard, StepRow, closed_subtitle, default_room_name, fix_lines, game_after_room,
     leaves_on_exit, lobby_hint, repeats, room_focus, shows_ad, starting, step_title,
 };
-use super::state::{Lobby, room_sizes, unasked};
+use super::state::{Lobby, outro_wait, room_sizes, unasked};
 use swofty_core::online::multiplayer::types::RoomContent;
 
 #[test]
@@ -368,6 +368,15 @@ fn leaves_the_room_when_the_rooms_game_exits() {
     );
     assert_eq!(exit_notice(false), "F1 25 closed, so you left the room.");
     assert_eq!(exit_notice(true), "F1 25 closed, so your room closed.");
+}
+
+#[test]
+fn the_leave_interstitial_holds_for_five_seconds_then_opens() {
+    assert_eq!(outro_wait(Duration::from_secs(0)), (false, 5));
+    assert_eq!(outro_wait(Duration::from_millis(2500)), (false, 3));
+    assert_eq!(outro_wait(Duration::from_millis(4500)), (false, 1));
+    assert_eq!(outro_wait(Duration::from_secs(5)), (true, 0));
+    assert_eq!(outro_wait(Duration::from_secs(30)), (true, 0));
 }
 
 #[test]

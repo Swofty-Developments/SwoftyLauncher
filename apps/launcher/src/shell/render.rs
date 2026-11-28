@@ -178,6 +178,7 @@ impl Render for Shell {
             .children(ad_video)
             .children(self.task_dialog(p, window, cx))
             .children(self.crash_overlay(p, cx))
+            .children(self.multiplayer_outro(p, cx))
             .children(self.ban_overlay(p, cx))
             .children(self.data_move_overlay(p, cx))
             .children(self.found_data_overlay(p, cx))

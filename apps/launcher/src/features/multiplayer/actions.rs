@@ -173,7 +173,20 @@ impl Shell {
 
     pub(crate) fn room_leave(&mut self, cx: &mut Context<Self>) {
         if self.rooms.leave() {
-            Multiplayer::close_room_game(self);
+            if Multiplayer::close_room_game(self) {
+                self.rooms.outro = Some(std::time::Instant::now());
+                cx.spawn(async move |this, cx| {
+                    for _ in 0..OUTRO.as_secs() {
+                        cx.background_executor()
+                            .timer(std::time::Duration::from_secs(1))
+                            .await;
+                        if this.update(cx, |_, cx| cx.notify()).is_err() {
+                            break;
+                        }
+                    }
+                })
+                .detach();
+            }
             cx.notify();
         }
     }
@@ -610,11 +623,11 @@ impl Multiplayer {
     /// Closes the room's F1 25 when the player leaves the room, so a left-over game can't open Career on the
     /// room's borrowed registry ids and save over a real career. It logs a stop failure rather than notifying,
     /// as the leave paths carry no window; the game exiting on its own already leaves the room through
-    /// [`State::watch_game`], which this does not touch.
-    pub(super) fn close_room_game<H: Host<Self>>(host: &mut H) {
+    /// [`Multiplayer::watch_game`], which this does not touch.
+    pub(super) fn close_room_game<H: Host<Self>>(host: &mut H) -> bool {
         let (m, needs) = host.split();
         let Some(dir) = needs.game_dir else {
-            return;
+            return false;
         };
         let pids: Vec<u32> = needs
             .processes
@@ -623,7 +636,7 @@ impl Multiplayer {
             .map(|g| g.pid)
             .collect();
         if pids.is_empty() {
-            return;
+            return false;
         }
         swofty_core::session::request_stop(&needs.store.root);
         let mut closing = Vec::new();
@@ -633,9 +646,11 @@ impl Multiplayer {
                 Err(e) => crate::app::app_log::action("stop f1 25").failed(&e),
             }
         }
-        if !closing.is_empty() {
+        let closed = !closing.is_empty();
+        if closed {
             m.game.closing = Some(closing);
         }
+        closed
     }
 
     /// Cancels the room's Play while it waits on its checks or a prompt once the session no longer asks for
